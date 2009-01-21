@@ -17,12 +17,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 ------------------------------------------------------------------------------
 
-you'll have to install python (http://python.org) and panda3d 
-http://panda3d.org) in turn to run this game. final release will come in
-an all-in-one package - promise :)
+IMPORTANT:
+this game depends on python 2.6 [1] and panda3d 1.5.4 [2]
 
-visit http://sourceforge.net/projects/azure-is/ for project news
-or our wiki under http://apps.sourceforge.net/mediawiki/azure-is/
+don't forget to visit our project page on SF [3] for news and our wiki [4]
 
+[1] http://python.org
+[2] http://panda3d.org
+[3] http://sourceforge.net/projects/azure-is/
+[4] http://apps.sourceforge.net/mediawiki/azure-is/
 
 # vim:set textwidth=79:
