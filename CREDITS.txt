@@ -1,0 +1,3 @@
+project admins:
+neovertex aka Alex <killernoob212 at users.sourceforge.net>
+Nemesis#13 aka Hubert Grzeskowiak <nemesis13 at users.sourceforge.net>

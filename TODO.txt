@@ -1,0 +1,10 @@
+cleanup:
+* add many exceptions
+
+planned for 0.03:
+* flying aircraft
+
+maybe for 0.04
+* physics
+* station for testing purposes
+* remake griffin
