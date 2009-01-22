@@ -5,7 +5,7 @@ c = ClockObject.getGlobalClock()
 
 import ConfigParser
 specs = ConfigParser.SafeConfigParser()
-specs.read('CraftSpecs.cfg')
+specs.read('etc/CraftSpecs.cfg')
 
 
 class aeroplane():

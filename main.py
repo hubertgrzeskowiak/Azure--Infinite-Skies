@@ -32,8 +32,8 @@ ESC - quit
 verbose = 1
 
 # some configuration settings
-
-#from pandac.PandaModules import loadPrcFileData
+from pandac.PandaModules import loadPrcFileData
+loadPrcFileData("", "model-path $MAIN_DIR/models")
 # let's see how many FPS we can get maximal
 #loadPrcFileData("", "sync-video 0")
 # some cool control tools
@@ -45,7 +45,7 @@ verbose = 1
 #messenger.toggleVerbose()
 
 # python standard modules
-import sys
+import sys, os
 
 # panda3d modules
 import direct.directbase.DirectStart
@@ -58,6 +58,7 @@ from pandac.PandaModules import ClockObject
 c = ClockObject.getGlobalClock()
 
 # custom modules
+sys.path.append("modules")
 from aeroplaneBackend import aeroplane
 from interface import printInstructions
 
