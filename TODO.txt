@@ -1,10 +1,15 @@
-cleanup:
-* add many exceptions
+This is a list of implementations planned for future revisions. Before asking what to do, take a look at these points and try to get something done. Also try to keep this page in sync with the Todo page on the wiki, please.
 
-planned for 0.03:
-* flying aircraft
+Primary Goals:
+-Cleanup
+ *Add many exceptions (for missing files etc.)
+ *Make sure the code is cross-plattform (at least Windows XP+Vista and GNU/Linux)
+-Flying aircraft
+ *Basic physics
+ *Tracking camera
+-Terrain/station (for better orientation and to have something to fly around :) )
+-A skybox
 
-maybe for 0.04
-* physics
-* station for testing purposes
-* remake griffin
+Secondary Goals:
+-Basic collision detection (no explosions or anything. just an event/an onscreen message)
+
