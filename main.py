@@ -57,6 +57,9 @@ from pandac.PandaModules import TextNode
 from pandac.PandaModules import ClockObject
 c = ClockObject.getGlobalClock()
 
+# assures that if module is called from another directory, all references still work
+os.chdir(sys.path[0])
+
 # custom modules
 sys.path.append("modules")
 from aeroplaneBackend import aeroplane

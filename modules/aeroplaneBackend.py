@@ -100,10 +100,13 @@ class aeroplane():
 
 		# todo: physical correct slackness
 
+
 		if movement == "roll-left":
 			self.dummy_node.setR(self.plane_model, -1 * self.roll_speed * c.getDt())
+			print 1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90
 		if movement == "roll-right":
 			self.dummy_node.setR(self.plane_model, self.roll_speed * c.getDt())
+			print 1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90
 		if movement == "pitch-up":
 			self.dummy_node.setP(self.plane_model, self.pitch_speed * c.getDt())
 		if movement == "pitch-down":
@@ -112,3 +115,16 @@ class aeroplane():
 			self.dummy_node.setH(self.plane_model, -1 * self.yaw_speed * c.getDt())
 		if movement == "heap-right":
 			self.dummy_node.setH(self.plane_model, self.yaw_speed * c.getDt())
+		if movement == "move-forward":
+			sign = [1,1,1]
+			if self.dummy_node.getHpr()[0] > 0:
+				sign[0] = -1
+			if self.dummy_node.getHpr()[0] < -90 or self.dummy_node.getHpr()[0] > 90:
+				sign[1] = -1
+			if self.dummy_node.getHpr()[1] < 0:
+				sign[2] = -1
+			self.dummy_node.setFluidPos(self.dummy_node.getPos()[0] + self.max_speed * c.getDt() * sign[0] * (1 - abs(90 - abs(self.dummy_node.getHpr()[0])) / 90), self.dummy_node.getPos()[1] + self.max_speed * c.getDt() * sign[1] * abs(90 - abs(self.dummy_node.getHpr()[0])) / 90, self.dummy_node.getPos()[2] + self.max_speed * c.getDt() * sign[2] * (1 - abs(90 - abs(self.dummy_node.getHpr()[1])) / 90))
+			if self.dummy_node.getHpr()[2] < 0:
+				self.dummy_node.setHpr(self.dummy_node.getHpr()[0] + 40 * c.getDt() * (1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90), self.dummy_node.getHpr()[1], self.dummy_node.getHpr()[2])
+			elif self.dummy_node.getHpr()[2] > 0:
+				self.dummy_node.setHpr(self.dummy_node.getHpr()[0] - 40 * c.getDt() * (1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90), self.dummy_node.getHpr()[1], self.dummy_node.getHpr()[2])

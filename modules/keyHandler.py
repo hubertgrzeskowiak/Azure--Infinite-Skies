@@ -19,7 +19,8 @@ class keyHandler(DirectObject):
 			"s": "pitch-up",
 			"w": "pitch-down",
 			"q": "heap-right",
-			"e": "heap-left"
+			"e": "heap-left",
+			"space": "move-forward"
 			}
 
 		# at start no key is active
