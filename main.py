@@ -64,10 +64,10 @@ from aeroplaneBackend import aeroplane
 from interface import printInstructions
 
 # check for args
-for arg in  sys.argv():
-	if arg = "--verbose" or "-v":
+for arg in  sys.argv:
+	if arg == "--verbose" or "-v":
 		verbose = 1
-	elif arg = "--quiet" or "-q":
+	elif arg == "--quiet" or "-q":
 		verbose = -1
 	else:
 		verbose = 0
