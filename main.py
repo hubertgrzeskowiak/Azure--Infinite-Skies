@@ -28,8 +28,6 @@ q - yaw left
 e - yaw right
 ESC - quit
 '''
-# no use yet..
-verbose = 1
 
 # some configuration settings
 from pandac.PandaModules import loadPrcFileData
@@ -65,6 +63,14 @@ sys.path.append("modules")
 from aeroplaneBackend import aeroplane
 from interface import printInstructions
 
+# check for args
+for arg in  sys.argv():
+	if arg = "--verbose" or "-v":
+		verbose = 1
+	elif arg = "--quiet" or "-q":
+		verbose = -1
+	else:
+		verbose = 0
 
 # basic preperation
 printInstructions(instructions)
@@ -85,9 +91,9 @@ player = planes["player"] = aeroplane("griffin")
 #pirate1.setY(20)
 #pirate1.setH(180)
 
+# now we can enable user input
 from keyHandler import keyHandler
 k = keyHandler()
-
 
 def gameloop(task):
 	for key in k.keyStates.items():
@@ -99,10 +105,10 @@ def gameloop(task):
 
 gameTask = taskMgr.add(gameloop, "gameloop")
 
-
 # this is for prettier output only
-print 80 * '-'
-print render.ls()
-print 80 * '-'
+if verbose >= 1:
+	print 80 * '-'
+	print render.ls()
+	print 80 * '-'
 
 run()
