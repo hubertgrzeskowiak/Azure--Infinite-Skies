@@ -98,33 +98,22 @@ class aeroplane():
 
 	def move(self, movement):
 
-		# todo: physical correct slackness
-
+		# TODO: physical correct slackness. this part will require some
+		# physical correct forces and acceleration functions
 
 		if movement == "roll-left":
-			self.dummy_node.setR(self.plane_model, -1 * self.roll_speed * c.getDt())
-			print 1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90
+			self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * c.getDt())
 		if movement == "roll-right":
-			self.dummy_node.setR(self.plane_model, self.roll_speed * c.getDt())
-			print 1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90
+			self.dummy_node.setR(self.dummy_node, self.roll_speed * c.getDt())
 		if movement == "pitch-up":
-			self.dummy_node.setP(self.plane_model, self.pitch_speed * c.getDt())
+			self.dummy_node.setP(self.dummy_node, self.pitch_speed * c.getDt())
 		if movement == "pitch-down":
-			self.dummy_node.setP(self.plane_model, -1 * self.pitch_speed * c.getDt())
+			self.dummy_node.setP(self.dummy_node, -1 * self.pitch_speed * c.getDt())
 		if movement == "heap-left":
-			self.dummy_node.setH(self.plane_model, -1 * self.yaw_speed * c.getDt())
+			self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * c.getDt())
 		if movement == "heap-right":
-			self.dummy_node.setH(self.plane_model, self.yaw_speed * c.getDt())
+			self.dummy_node.setH(self.dummy_node, self.yaw_speed * c.getDt())
 		if movement == "move-forward":
-			sign = [1,1,1]
-			if self.dummy_node.getHpr()[0] > 0:
-				sign[0] = -1
-			if self.dummy_node.getHpr()[0] < -90 or self.dummy_node.getHpr()[0] > 90:
-				sign[1] = -1
-			if self.dummy_node.getHpr()[1] < 0:
-				sign[2] = -1
-			self.dummy_node.setFluidPos(self.dummy_node.getPos()[0] + self.max_speed * c.getDt() * sign[0] * (1 - abs(90 - abs(self.dummy_node.getHpr()[0])) / 90), self.dummy_node.getPos()[1] + self.max_speed * c.getDt() * sign[1] * abs(90 - abs(self.dummy_node.getHpr()[0])) / 90, self.dummy_node.getPos()[2] + self.max_speed * c.getDt() * sign[2] * (1 - abs(90 - abs(self.dummy_node.getHpr()[1])) / 90))
-			if self.dummy_node.getHpr()[2] < 0:
-				self.dummy_node.setHpr(self.dummy_node.getHpr()[0] + 40 * c.getDt() * (1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90), self.dummy_node.getHpr()[1], self.dummy_node.getHpr()[2])
-			elif self.dummy_node.getHpr()[2] > 0:
-				self.dummy_node.setHpr(self.dummy_node.getHpr()[0] - 40 * c.getDt() * (1 - abs(90 - abs(self.dummy_node.getHpr()[2])) / 90), self.dummy_node.getHpr()[1], self.dummy_node.getHpr()[2])
+			# this is only temporary! we need acceleration anyway. maybe some
+			# functions with arctan?
+			self.dummy_node.setY(self.dummy_node, 10 * c.getDt())
