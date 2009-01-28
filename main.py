@@ -19,13 +19,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 '''
 
 instructions = '''\
-Azure test ground
+Azure testing ground
 a - roll left
 d - roll right
 w - pitch down
 s - pitch up
 q - yaw left
 e - yaw right
+space - move forward
 ESC - quit
 '''
 
@@ -101,6 +102,7 @@ def gameloop(task):
 			planes["player"].move(key[0])
 	#print c.getDt()
 	#print c.getLongTime()
+	base.cam.lookAt(player.dummy_node)
 	return Task.cont
 
 gameTask = taskMgr.add(gameloop, "gameloop")
