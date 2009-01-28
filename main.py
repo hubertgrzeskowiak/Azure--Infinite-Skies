@@ -40,16 +40,13 @@ loadPrcFileData("", "model-path $MAIN_DIR/models")
 #loadPrcFileData("", "want-tk #t")
 #loadPrcFileData("", "fullscreen #t")
 
-#from direct.showbase.Messenger import Messenger
-#messenger.toggleVerbose()
-
 # python standard modules
 import sys, os
 
 # panda3d modules
 import direct.directbase.DirectStart
 from direct.showbase.DirectObject import DirectObject
-#from direct.showbase.Messenger import Messenger
+from direct.showbase.Messenger import Messenger
 from direct.task import Task
 from direct.gui.DirectGui import OnscreenText
 from pandac.PandaModules import TextNode
@@ -66,9 +63,12 @@ from interface import printInstructions
 
 # check for args
 for arg in  sys.argv:
-	if arg == "--verbose" or "-v":
+	if arg == "--verbose" or arg == "-v":
 		verbose = 1
-	elif arg == "--quiet" or "-q":
+	elif arg == "--debug" or arg == "-d":
+		verbose = 2
+		messenger.toggleVerbose()
+	elif arg == "--quiet" or arg == "-q":
 		verbose = -1
 	else:
 		verbose = 0
@@ -100,9 +100,7 @@ def gameloop(task):
 	for key in k.keyStates.items():
 		if key[1] == 1:
 			planes["player"].move(key[0])
-	#print c.getDt()
-	#print c.getLongTime()
-	base.cam.lookAt(player.dummy_node)
+	#base.cam.lookAt(player.dummy_node)
 	return Task.cont
 
 gameTask = taskMgr.add(gameloop, "gameloop")
