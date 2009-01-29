@@ -59,6 +59,7 @@ os.chdir(sys.path[0])
 # custom modules
 sys.path.append("modules")
 from aeroplaneBackend import aeroplane
+from sceneryBackend import scenery
 from interface import printInstructions
 
 # check for args
@@ -83,6 +84,7 @@ base.disableMouse()
 planes = {}
 # load our plane
 player = planes["player"] = aeroplane("griffin")
+mountain = scenery('mountain', location=(-5,150,2.5), size=5)
 #base.cam.reparentTo(player.dummy_node)
 
 # load a dark one, just for testing

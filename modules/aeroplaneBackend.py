@@ -81,7 +81,7 @@ class aeroplane():
 	def loadSpecs(self, s, force=False):
 		def justLoad():
 			self.mass = specs.getint(s, 'mass')
-			self.max_speed = specs.getint(s, 'max_speed')
+			self.max_speed = .1 * specs.getint(s, 'max_speed')
 			self.roll_speed = specs.getint(s, 'roll_speed')
 			self.pitch_speed = specs.getint(s, 'pitch_speed')
 			self.yaw_speed = specs.getint(s, 'yaw_speed')
@@ -116,4 +116,6 @@ class aeroplane():
 		if movement == "move-forward":
 			# this is only temporary! we need acceleration anyway. maybe some
 			# functions with arctan?
+			# I think cosine would work if we used
+			# quaternion coordinates
 			self.dummy_node.setY(self.dummy_node, 10 * c.getDt())
