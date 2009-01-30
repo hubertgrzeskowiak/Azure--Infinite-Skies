@@ -118,4 +118,4 @@ class aeroplane():
 			# functions with arctan?
 			# I think cosine would work if we used
 			# quaternion coordinates
-			self.dummy_node.setY(self.dummy_node, 10 * c.getDt())
+			self.dummy_node.setY(self.dummy_node, -10 * c.getDt())
