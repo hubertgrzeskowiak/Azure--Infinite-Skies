@@ -67,7 +67,6 @@ class aeroplane():
 					print 'no such model:', model
 			else:
 				print 'craft already has a model. force to change'
-				return 1
 		else:
 			self.plane_model = loader.loadModel(model)
 			if self.plane_model:
