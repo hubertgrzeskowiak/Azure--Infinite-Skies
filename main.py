@@ -32,13 +32,13 @@ ESC - quit
 
 # some configuration settings
 from pandac.PandaModules import loadPrcFileData
-loadPrcFileData("", "model-path $MAIN_DIR/models")
+loadPrcFileData('', 'model-path $MAIN_DIR/models')
 # let's see how many FPS we can get maximal
-#loadPrcFileData("", "sync-video 0")
+#loadPrcFileData('', 'sync-video 0')
 # some cool control tools
-#loadPrcFileData("", "want-directtools #t")
-#loadPrcFileData("", "want-tk #t")
-#loadPrcFileData("", "fullscreen #t")
+#loadPrcFileData('', 'want-directtools #t')
+#loadPrcFileData('', 'want-tk #t')
+#loadPrcFileData('', 'fullscreen #t')
 
 # python standard modules
 import sys, os
@@ -51,25 +51,27 @@ from direct.task import Task
 from direct.gui.DirectGui import OnscreenText
 from pandac.PandaModules import TextNode
 from pandac.PandaModules import ClockObject
+from pandac.PandaModules import VBase3
 c = ClockObject.getGlobalClock()
 
-# assures that if module is called from another directory, all references still work
+# assures that if module is called from another directory, all
+# references still work
 os.chdir(sys.path[0])
 
 # custom modules
-sys.path.append("modules")
+sys.path.append('modules')
 from aeroplaneBackend import aeroplane
 from sceneryBackend import scenery
 from interface import printInstructions
 
 # check for args
 for arg in  sys.argv:
-	if arg == "--verbose" or arg == "-v":
+	if arg == ('--verbose' or '-v'):
 		verbose = 1
-	elif arg == "--debug" or arg == "-d":
+	elif arg == ('--debug' or '-d'):
 		verbose = 2
 		messenger.toggleVerbose()
-	elif arg == "--quiet" or arg == "-q":
+	elif arg == ('--quiet' or '-q'):
 		verbose = -1
 	else:
 		verbose = 0
@@ -77,37 +79,55 @@ for arg in  sys.argv:
 # basic preperation
 printInstructions(instructions)
 base.setBackgroundColor(0.0, 0.2, 0.3)
+baselens = base.cam.node().getLens().setFar(1500)
 base.camera.setHpr(0, -16, 0)
 base.camera.setPos(0, -25, 12)
 base.disableMouse()
 
-planes = {}
-# load our plane
-player = planes["player"] = aeroplane("griffin")
-mountain = scenery('mountain', location=(-5,150,2.5), size=5)
-#base.cam.reparentTo(player.dummy_node)
+# a grey raster - for testing
+from grid import grid
+g = grid()
+g.grid_node.setScale(10, 10, 10)
 
-# load a dark one, just for testing
-#planes["pirate1"] = aeroplane("griffin2")
-#pirate1 = planes["pirate1"].dummy_node
-#pirate1.setColor(0, 0, 1, 1)
-#pirate1.setY(20)
-#pirate1.setH(180)
+# load some scenery for testing the sceneryBackend
+scenery_obj = {}
+scenery_obj['panda_green'] = scenery('panda_green', 'environment', VBase3(0, 1000, 0))
+#env_node = scenery_obj['panda_green'].dummy_node
+
+
+# load our plane(s)
+planes = {}
+player = planes['player'] = aeroplane('griffin')
+
+# TODO: entire new module is needed for camera movement
+base.camera.reparentTo(player.dummy_node)
+
+# load some dark ones, just for testing
+planes['pirate1'] = aeroplane('griffin')
+pirate1 = planes['pirate1'].dummy_node
+pirate1.setColor(0, 0, 1, 1)
+pirate1.setPosHpr(-15, 20, 6, 230, 0, 0)
+
+planes['pirate2'] = aeroplane('griffin')
+pirate2 = planes['pirate2'].dummy_node
+pirate2.setColor(0, 0, 1, 1)
+pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
 
 # now we can enable user input
 from keyHandler import keyHandler
 k = keyHandler()
 
+# here comes the magic!
 def gameloop(task):
 	for key in k.keyStates.items():
 		if key[1] == 1:
-			planes["player"].move(key[0])
+			planes['player'].move(key[0])
+	# comment out the reparenting above and uncomment this to get another view
 	#base.cam.lookAt(player.dummy_node)
 	return Task.cont
 
-gameTask = taskMgr.add(gameloop, "gameloop")
+gameTask = taskMgr.add(gameloop, 'gameloop')
 
-# this is for prettier output only
 if verbose >= 1:
 	print 80 * '-'
 	print render.ls()

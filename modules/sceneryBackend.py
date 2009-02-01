@@ -1,53 +1,43 @@
 '''this module manages everthing for scenery objects'''
-'''very similar to the aeroplane class at writing of this comment 
-1-29-08
-'''
 
-from pandac.PandaModules import ClockObject
-c = ClockObject.getGlobalClock()
+from pandac.PandaModules import VBase3
+
+# container for all scenery objects
+scenery_cont = render.attachNewNode('scenery_cont')
 
 class scenery():
+	'''syntax similar to aeroplaneBackend'''
 
 	scenery_count = 0
 
-	def __init__(self, name, model_to_load=None, location=(0,0,0), size=None):
-		new_node_name = "scenery" + str(scenery.scenery_count)
-		self.dummy_node = render.attachNewNode(new_node_name)
+	def __init__(self, name, model_to_load=None, pos=VBase3(0,0,0), scale=VBase3(1,1,1)):
+		new_node_name = 'scenery' + str(scenery.scenery_count)
+		self.dummy_node = scenery_cont.attachNewNode(new_node_name)
 		self.name = name
-		self.scenery_model = None
-
-		if not model_to_load:
-			self.loadSceneModel(name)
-		elif model_to_load == 0:
+		if model_to_load == 0:
 			pass
+		elif model_to_load:
+			self.loadSceneryModel(model_to_load)
 		else:
-			self.loadSceneModel(model_to_load)
+			self.loadSceneryModel(name)
+		self.dummy_node.setPos(pos)
+		self.dummy_node.setScale(scale)
 
-		self.place(location)
-		if size != None:
-			self.scale(size)
-
-		# Maybe needs a collision variable to indicate result upon collision
-		# with it 
-
-	def loadSceneModel(self, model, force=False):
-		if self.scenery_model != None:
+	def loadSceneryModel(self, model, force=False):
+		'''loads a model for the scenery object. force if there's already one
+		loaded'''
+		if hasattr(self, 'scenery_model'):
 			if force:
 				self.scenery_model = loader.loadModel(model)
-				self.scenery_model.reparentTo(self.dummy_node)
+				if self.scenery_model != None:
+					self.scenery_model.reparentTo(self.dummy_node)
+				else:
+					print 'no such model:', model
 			else:
-				print 'scenery already has a model. force to change'
-				return 1
+				print 'scenery object already has a model. force to change'
 		else:
 			self.scenery_model = loader.loadModel(model)
-			self.scenery_model.reparentTo(self.dummy_node)
-
-	def place(self, location):
-		#sets the location of the scenery
-		self.dummy_node.setX(location[0])
-		self.dummy_node.setY(location[1])
-		self.dummy_node.setZ(location[2])
-
-	def scale(self, size):
-		#changes the size of the scenery, good to make things look random
-		self.dummy_node.setScale(size)
+			if self.scenery_model:
+				self.scenery_model.reparentTo(self.dummy_node)
+			else:
+				print 'no such model:', model

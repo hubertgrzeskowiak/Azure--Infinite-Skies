@@ -7,6 +7,8 @@ import ConfigParser
 specs = ConfigParser.SafeConfigParser()
 specs.read('etc/CraftSpecs.cfg')
 
+# container for everything flying around
+aircrafts_cont = render.attachNewNode('aircrafts_cont')
 
 class aeroplane():
 	'''standard aeroplane class.
@@ -18,14 +20,14 @@ class aeroplane():
 								specs
 
 	examples:	# load a craft called "corsair1" with model and specs "corsair"
-				pirate1 = aeroplane("corsair1", "corsair")
+				pirate1 = aeroplane('corsair1', 'corsair')
 				# load an empty craft instance (you'll have to load model and
 				# specs later in turn to see or fly it)
-				foo = aeroplane("myname", 0, 0)
+				foo = aeroplane('myname', 0, 0)
 				# for the node itself, use:
-				foo = aeroplane("bar").dummy_node
+				foo = aeroplane('bar').dummy_node
 				# if you need access to the model itself, use:
-				foo = aeroplane("bar").plane_model
+				foo = aeroplane('bar').plane_model
 	
 	info:		invisible planes are for tracking only. you should assign them
 				at least models	when they get into visible-range.
@@ -38,84 +40,79 @@ class aeroplane():
 		aeroplane.plane_count += 1
 
 		new_node_name = 'dummy_node' + str(aeroplane.plane_count)
-		self.dummy_node = render.attachNewNode(new_node_name)
-		
-		if not model_to_load:
-			self.loadPlaneModel(name)
-		elif model_to_load == 0:
+		self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
+
+		if model_to_load == 0:
 			pass
-		else:
+		elif model_to_load:
 			self.loadPlaneModel(model_to_load)
-
-		if not specs_to_load:
-			if not model_to_load:
-				self.loadSpecs(name)
-			else:
-				self.loadSpecs(model_to_load)
-		elif specs_to_load == 0:
-			pass
 		else:
-			self.loadSpecs(specs_to_load)
+			self.loadPlaneModel(name)
 
-		#self.name = name
-		#self.roll_speed = 50
-		#self.pitch_speed = 50
-		#self.yaw_speed = 50
+		if specs_to_load == 0:
+			pass
+		elif specs_to_load:
+			self.loadSpecs(specs_to_load)
+		else:
+			self.loadSpecs(name)
 
 	def loadPlaneModel(self, model, force=False):
 		'''loads model for a plane. force if there's already one loaded'''
-
-		# i heard that hasattr isn't that good. should i set the var to
-		# None in __init__ instead?
-		if hasattr(self, "plane_model"):
+		if hasattr(self, 'plane_model'):
 			if force:
 				self.plane_model = loader.loadModel(model)
-				self.plane_model.reparentTo(self.dummy_node)
+				if self.plane_model != None:
+					self.plane_model.reparentTo(self.dummy_node)
+				else:
+					print 'no such model:', model
 			else:
 				print 'craft already has a model. force to change'
 				return 1
 		else:
 			self.plane_model = loader.loadModel(model)
-			self.plane_model.reparentTo(self.dummy_node)
-	
+			if self.plane_model:
+				self.plane_model.reparentTo(self.dummy_node)
+			else:
+				print 'no such model:', model
+
 	def loadSpecs(self, s, force=False):
+		'''loads specifications for a plane. force if already loaded'''
 		def justLoad():
 			self.mass = specs.getint(s, 'mass')
-			self.max_speed = .1 * specs.getint(s, 'max_speed')
+			# 1km/h = 2.7777 m/s (1meter = 1panda unit)
+			self.max_speed = 2.7777 * specs.getint(s, 'max_speed')
 			self.roll_speed = specs.getint(s, 'roll_speed')
 			self.pitch_speed = specs.getint(s, 'pitch_speed')
 			self.yaw_speed = specs.getint(s, 'yaw_speed')
 
-		if hasattr(self, "specs_loaded"):
+		if hasattr(self, 'specs_loaded'):
 			if force:
 				justLoad()
 			else:
 				print 'craft already has specs assigned. force to change'
-				return 1
 			self.specs_loaded = True
 		else:
 			justLoad()
 
 	def move(self, movement):
+		dt = c.getDt()
 
-		# TODO: physical correct slackness. this part will require some
-		# physical correct forces and acceleration functions
+		# TODO: physical correct slackness. this part requires some physical
+		# correct forces and acceleration functions! don't touch it, as it has
+		# to be fully rewritten at all. feel free to do _that_ :)
 
-		if movement == "roll-left":
-			self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * c.getDt())
-		if movement == "roll-right":
-			self.dummy_node.setR(self.dummy_node, self.roll_speed * c.getDt())
-		if movement == "pitch-up":
-			self.dummy_node.setP(self.dummy_node, self.pitch_speed * c.getDt())
-		if movement == "pitch-down":
-			self.dummy_node.setP(self.dummy_node, -1 * self.pitch_speed * c.getDt())
-		if movement == "heap-left":
-			self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * c.getDt())
-		if movement == "heap-right":
-			self.dummy_node.setH(self.dummy_node, self.yaw_speed * c.getDt())
-		if movement == "move-forward":
-			# this is only temporary! we need acceleration anyway. maybe some
-			# functions with arctan?
-			# I think cosine would work if we used
-			# quaternion coordinates
-			self.dummy_node.setY(self.dummy_node, -10 * c.getDt())
+		if movement == 'roll-left':
+			self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * dt)
+		if movement == 'roll-right':
+			self.dummy_node.setR(self.dummy_node, self.roll_speed * dt)
+		if movement == 'pitch-up':
+			self.dummy_node.setP(self.dummy_node, self.pitch_speed * dt)
+		if movement == 'pitch-down':
+			self.dummy_node.setP(self.dummy_node, -1 * self.pitch_speed * dt)
+		if movement == 'heap-left':
+			self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * dt)
+		if movement == 'heap-right':
+			self.dummy_node.setH(self.dummy_node, self.yaw_speed * dt)
+		if movement == 'move-forward':
+			# 40pu/s = ~12,4km/h
+			self.dummy_node.setFluidY(self.dummy_node, 40 * dt)
