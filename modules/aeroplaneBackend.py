@@ -115,3 +115,10 @@ class aeroplane():
 		if movement == 'move-forward':
 			# 40pu/s = ~12,4km/h
 			self.dummy_node.setFluidY(self.dummy_node, 40 * dt)
+
+	def getBounds(self):
+		'''returns a vector describing the vehicle's size (width, length,
+		height). useful for collision detection'''
+		bounds = self.dummy_node.getTightBounds()
+		size = bounds[1] - bounds[0]
+		return size
