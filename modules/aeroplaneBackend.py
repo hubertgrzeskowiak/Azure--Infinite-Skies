@@ -16,8 +16,7 @@ class aeroplane():
 				model_to_load	-model to load on init. same as name if none
 								given. 0 = don't load a model
 				specs_to_load	-specifications to load on init. same as
-								model_to_load if none given, 0 = don't load
-								specs
+								name if none given, 0 = don't load specs
 
 	examples:	# load a craft called "corsair1" with model and specs "corsair"
 				pirate1 = aeroplane('corsair1', 'corsair')
