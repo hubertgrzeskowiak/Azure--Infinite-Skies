@@ -1,15 +1,20 @@
-This is a list of implementations planned for future revisions. Before asking what to do, take a look at these points and try to get something done. Also try to keep this page in sync with the Todo page on the wiki, please.
+This is a list of implementations planned for future revisions. Before asking
+what to do, take a look at these points and try to get something done.
+Also try to keep this page in sync with the Todo page on the wiki, please.
 
-Primary Goals:
+Next Milestone:
 -Cleanup
- *Add many exceptions (for missing files etc.)
- *Make sure the code is cross-plattform (at least Windows XP+Vista and GNU/Linux)
+ *Error Handling (partially done)
+ *File existance/content checking
 -Flying aircraft
  *Basic physics
- *Tracking camera
--Terrain/station (for better orientation and to have something to fly around :) )
+ *Tracking camera (partially done)
+-Terrain/Station (provisionally done)
 -A skybox
+-Hidable instructions
 
-Secondary Goals:
--Basic collision detection (no explosions or anything. just an event/an onscreen message)
-
+Post-Next Milestone:
+-Better key handling
+-Basic collision detection (nothing fancy. just an event/onscreen-message)
+-Some primitive GUI (speed meter, compass)
+-Onscreen message ticker
