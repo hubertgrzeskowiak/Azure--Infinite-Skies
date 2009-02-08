@@ -2,6 +2,8 @@
 
 from pandac.PandaModules import VBase3
 
+from errorHandler import *
+
 # container for all scenery objects
 scenery_cont = render.attachNewNode('scenery_cont')
 
@@ -17,9 +19,16 @@ class scenery():
 		if model_to_load == 0:
 			pass
 		elif model_to_load:
-			self.loadSceneryModel(model_to_load)
+			try:
+				self.loadSceneryModel(model_to_load)
+			except (ResourceHandleError, ResourceLoadError), e:
+				handleError(e)
 		else:
-			self.loadSceneryModel(name)
+			try:
+				self.loadSceneryModel(name)
+			except (ResourceHandleError, ResourceLoadError), e:
+				handleError(e)
+				
 		self.dummy_node.setPos(pos)
 		self.dummy_node.setScale(scale)
 
@@ -32,12 +41,12 @@ class scenery():
 				if self.scenery_model != None:
 					self.scenery_model.reparentTo(self.dummy_node)
 				else:
-					print 'no such model:', model
+					raise ResourceLoadError(model, 'no such model')
 			else:
-				print 'scenery object already has a model. force to change'
+				raise ResourceHandleError(model, 'scenery object already has a model. force to change')
 		else:
 			self.scenery_model = loader.loadModel(model)
-			if self.scenery_model:
+			if self.scenery_model != None:
 				self.scenery_model.reparentTo(self.dummy_node)
 			else:
-				print 'no such model:', model
+				raise ResourceLoadError(model, 'no such model')

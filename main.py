@@ -63,9 +63,13 @@ sys.path.append('modules')
 from aeroplaneBackend import aeroplane
 from sceneryBackend import scenery
 from interface import printInstructions
+from errorHandler import *
+import camBackend
 
 # check for args
-for arg in  sys.argv:
+verbose = 0
+
+for arg in sys.argv[1:]:
 	if arg == ('--verbose' or '-v'):
 		verbose = 1
 	elif arg == ('--debug' or '-d'):
@@ -73,8 +77,15 @@ for arg in  sys.argv:
 		messenger.toggleVerbose()
 	elif arg == ('--quiet' or '-q'):
 		verbose = -1
+	elif arg == ('--ignore' or '-i'):
+		setErrAction(IGNORE)
+	elif arg == ('--ignore-quiet' or '-iq'):
+		setErrAction(IGNORE_QUIET)
+	elif arg == ('--die' or '-d'):
+		setErrAction(DIE)
 	else:
-		verbose = 0
+		print('Unrecognized argument: %s' % arg)
+		sys.exit(1)
 
 # basic preperation
 printInstructions(instructions)
@@ -99,8 +110,9 @@ scenery_obj['panda_green'] = scenery('panda_green', 'environment', VBase3(0, 100
 planes = {}
 player = planes['player'] = aeroplane('griffin')
 
-# TODO: entire new module is needed for camera movement
-base.camera.reparentTo(player.dummy_node)
+# TODO: Work on camBackend module
+cam = camBackend.planeCamera(player.dummy_node)
+#cam.setViewMode(camBackend.DETACHED)
 
 # load some dark ones, just for testing
 planes['pirate1'] = aeroplane('griffin')
@@ -114,16 +126,20 @@ pirate2.setColor(0, 0, 1, 1)
 pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
 
 # now we can enable user input
-from keyHandler import keyHandler
-k = keyHandler()
+from keyHandler import keyHandler, controlMap
+ctlMap = controlMap()
+k = keyHandler(ctlMap)
 
 # here comes the magic!
 def gameloop(task):
-	for key in k.keyStates.items():
-		if key[1] == 1:
-			planes['player'].move(key[0])
-	# comment out the reparenting above and uncomment this to get another view
-	#base.cam.lookAt(player.dummy_node)
+	for key, state in k.keyStates.items():
+		if state == 1:
+			keyInfo = ctlMap.controls[key]
+			if keyInfo['type'] == 'move':
+				planes['player'].move(keyInfo['desc'])
+			elif keyInfo['type'] == 'cam-move':
+				cam.rotate(keyInfo['desc'])
+	cam.step()
 	return Task.cont
 
 gameTask = taskMgr.add(gameloop, 'gameloop')

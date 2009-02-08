@@ -6,33 +6,37 @@ from direct.showbase.DirectObject import DirectObject
 class keyHandler(DirectObject):
 	'''get key events and do stuff. controls are independent of set keys'''
 
-	def __init__(self):
+	def __init__(self, ctlMap):
 		'''setup control keys and event handlers'''
+		
+		self.ctlMap = ctlMap
 		
 		# non-continous
 		self.accept("escape", sys.exit)
 
-		# continous
-		self.controls = {
-			"a": "roll-left",
-			"d": "roll-right",
-			"s": "pitch-up",
-			"w": "pitch-down",
-			"q": "heap-right",
-			"e": "heap-left",
-			"space": "move-forward"
-			}
-
 		# at start no key is active
 		self.keyStates = {}
-		for i in self.controls:
-			action = self.controls[i]
-			self.keyStates[action] = 0
+		for key in self.ctlMap.controls:
+			self.keyStates[key] = 0
+			# go through keys and 'accept' them
+			self.accept(key, self.chKeyState, [key, 1])
+			self.accept(key+"-up", self.chKeyState, [key, 0])
 
-		# go through keys and 'accept' them
-		for key, action in self.controls.items():
-			self.accept(key, self.chKeyState, [action, 1])
-			self.accept(key+"-up", self.chKeyState, [action, 0])
-
-	def chKeyState(self, action, value):
-		self.keyStates[action] = value
+	def chKeyState(self, key, value):
+		print("key %s changed to %d" % (key, value))#DEBUG
+		self.keyStates[key] = value
+		
+class controlMap():
+	def __init__(self):
+		self.controls = {
+			"a": {"type":"move", "desc": "roll-left"},
+			"d": {"type":"move", "desc": "roll-right"},
+			"s": {"type":"move", "desc": "pitch-up"},
+			"w": {"type":"move", "desc": "pitch-down"},
+			"q": {"type":"move", "desc": "heap-right"},
+			"e": {"type":"move", "desc": "heap-left"},
+			"space": {"type":"move", "desc": "move-forward"},
+			"z": {"type":"cam-move", "desc": "move-left"},
+			"c": {"type":"cam-move", "desc": "move-right"},
+			"x": {"type":"cam-move", "desc": "move-origin"}
+			}

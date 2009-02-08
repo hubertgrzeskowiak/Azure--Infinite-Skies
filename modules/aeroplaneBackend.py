@@ -7,6 +7,8 @@ import ConfigParser
 specs = ConfigParser.SafeConfigParser()
 specs.read('etc/CraftSpecs.cfg')
 
+from errorHandler import *
+
 # container for everything flying around
 aircrafts_cont = render.attachNewNode('aircrafts_cont')
 
@@ -44,9 +46,15 @@ class aeroplane():
 		if model_to_load == 0:
 			pass
 		elif model_to_load:
-			self.loadPlaneModel(model_to_load)
+			try:
+				self.loadPlaneModel(model_to_load)
+			except (ResourceHandleError, ResourceLoadError), e:
+				handleError(e)
 		else:
-			self.loadPlaneModel(name)
+			try:
+				self.loadPlaneModel(name)
+			except (ResourceHandleError, ResourceLoadError), e:
+				handleError(e)
 
 		if specs_to_load == 0:
 			pass
@@ -63,15 +71,15 @@ class aeroplane():
 				if self.plane_model != None:
 					self.plane_model.reparentTo(self.dummy_node)
 				else:
-					print 'no such model:', model
+					raise ResourceLoadError(model, 'no such model')
 			else:
-				print 'craft already has a model. force to change'
+				raise ResourceHandleError(model, 'scenery object already has a model. force to change')
 		else:
 			self.plane_model = loader.loadModel(model)
 			if self.plane_model:
 				self.plane_model.reparentTo(self.dummy_node)
 			else:
-				print 'no such model:', model
+				raise ResourceLoadError(model, 'no such model')
 
 	def loadSpecs(self, s, force=False):
 		'''loads specifications for a plane. force if already loaded'''
