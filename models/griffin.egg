@@ -3,7 +3,7 @@
 <Comment> { "Egg laid by Chicken for Blender vR44" }
 
 <Texture> griffin.tex.png {
-  "/home/nemesis13/media/blender/azure/griffin/griffin.9_plane.png"
+  "griffin.tex.png"
   <Scalar> uv-name { uvtex }
   <Scalar> envtype { modulate }
 }
