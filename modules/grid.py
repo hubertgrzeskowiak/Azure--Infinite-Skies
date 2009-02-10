@@ -1,7 +1,7 @@
 from direct.directtools.DirectGeometry import LineNodePath
 from pandac.PandaModules import Vec4
 
-class grid():
+class Grid():
 	def __init__(self):
 		self.grid_node = render.attachNewNode("grid")
 

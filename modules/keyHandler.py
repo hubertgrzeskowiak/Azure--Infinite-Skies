@@ -23,7 +23,7 @@ class keyHandler(DirectObject):
 			self.accept(key+"-up", self.chKeyState, [key, 0])
 
 	def chKeyState(self, key, value):
-		print("key %s changed to %d" % (key, value))#DEBUG
+		#print("key %s changed to %d" % (key, value))
 		self.keyStates[key] = value
 		
 class controlMap():

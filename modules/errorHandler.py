@@ -1,17 +1,19 @@
 import sys
 
 # Constants used for the errAction variable
-DIE, RAISE, IGNORE, IGNORE_SILENT = range(4)
+IGNORE_ALL, IGNORE, RAISE, DIE = range(4)
 
-# DIE - Die on a thrown AzureError; 
-# RAISE - Keep the thrown AzureError raised for some other code to handle
+# IGNORE_ALL - Ignore an AzureError, and don't print AzureError messages
 # IGNORE - Ignore an AzureError, but print AzureError messages
-# IGNORE_SILENT - Ignore an AzureError, and don't print AzureError messages
+# RAISE - Keep the thrown AzureError raised for some other code to handle
+# DIE - Die on a thrown AzureError; 
 errAction = RAISE
 
 def setErrAction(actionNum):
 	global errAction
 	errAction = actionNum
+	global verbosity
+	verbosity = actionNum
 
 def handleError(error):
 	""" Handles an AzureError exception based on some configuration settings """
@@ -19,23 +21,24 @@ def handleError(error):
 	# (i.e. when the game can still more or less function).  Other, more serious
 	# errors, should be handled manually
 	
-	if errAction == DIE:
-		sys.stderr.write(error.message)
-		sys.exit(1)
+	if errAction == IGNORE_ALL:
+		pass
 	elif errAction == IGNORE:
 		sys.stderr.write(error.message)
 	elif errAction == RAISE:
 		raise error
-	elif errAction == IGNORE_SILENT:
-		pass
+	elif errAction == DIE:
+		sys.stderr.write(error.message)
+		sys.exit(1)
 	else:
-		raise ParamError("Error when raising error!  Invalid value for handleError(): %d" % errAction)
+		raise ParamError("Error when raising error! Invalid value for handleError(): %d" % errAction)
 
 class AzureError(Exception):
 	pass
 
 class ResourceLoadError(AzureError):
-	""" Should be thrown when a resource is improperly loaded or fails to load at all """
+	""" Should be thrown when a resource is improperly loaded or fails to load
+	at all """
 	
 	def __init__(self, resource="None", details="None"):
 		self.message = "Failed to load resource: %s\n\tDetails: %s" % (resource, details)
@@ -45,7 +48,8 @@ class ResourceLoadError(AzureError):
 		return self.message
 		
 class ResourceHandleError(AzureError):
-	""" Should be thrown when an attempt is made to use a resource in a way that was not intended """
+	""" Should be thrown when an attempt is made to use a resource in a way
+	that was not intended """
 	
 	def __init__(self, resource="None", details="None"):
 		self.message = "Error handling resource: %s\n\tDetails: %s" % (resource, details)
@@ -62,7 +66,3 @@ class ParamError(AzureError):
 		
 	def __str__(self):
 		return self.message
-
-
-		
-		

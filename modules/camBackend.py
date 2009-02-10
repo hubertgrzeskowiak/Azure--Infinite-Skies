@@ -1,11 +1,15 @@
+'''standard camera module, supporting multiple camera layouts'''
+
 from errorHandler import *
+from pandac.PandaModules import ClockObject
+c = ClockObject.getGlobalClock()
 
 # View mode constants
-DETACHED, FIRST_PERSON, THIRD_PERSON = range(3)
+FIRST_PERSON, COCKPIT, THIRD_PERSON, DETACHED = range(4)
 
-class planeCamera():
+class PlaneCamera():
 	def __init__(self, parent, viewMode=THIRD_PERSON):
-		self.camera = base.cam
+		self.camera = base.camera
 		self.parent = parent		
 		self.setViewMode(viewMode)
 		
@@ -14,37 +18,42 @@ class planeCamera():
 		
 	def setViewMode(self, viewMode):
 		if viewMode == FIRST_PERSON:
+			# plane specific - later on managable with emptys or config-vars.
 			self.camera.reparentTo(self.parent)
-			self.camera.setHpr(0, 0, 0)
-			self.camera.setPos(5, 0, 0)
+			self.camera.setPos(-1.6, 3.3, 1.2)
 			
-		elif viewMode == THIRD_PERSON:
+		elif viewMode == COCKPIT:
+			# plane specific - later on managable with emptys or config-vars.
+			# buggy because of solid, one-sided textures.
 			self.camera.reparentTo(self.parent)
-			self.camera.setHpr(0, -16, 0)
-			self.camera.setPos(0, -25, 12)
+			self.camera.setPosHpr(0, -1.5, 1.75, 0, 0, 0)
+
+		elif viewMode == THIRD_PERSON:
+			# should make use of aircraft bounds (see aeroplaneBackend)
+			self.camera.reparentTo(self.parent)
+			self.camera.setPosHpr(0, -25, 8, 0, -7, 0)
 			
 		elif viewMode == DETACHED:
 			self.camera.reparentTo(render)
-			self.camera.setHpr(0, -16, 0)
-			self.camera.setPos(0, -25, 12)
+			self.camera.setPos(0, 0, 20)
+			# rotation set by lookAt()
 			
 		else:
-			raise ParamError("Expecting value of 0, 1, or 2 in setViewMode()")
+			raise ParamError("Expecting value of 0, 1, 2 or 3 in setViewMode()")
 			
 		self.__viewMode = viewMode
 		
 	def step(self):
 		if self.__viewMode == DETACHED:
 			self.camera.lookAt(self.parent)
-		else:
-			pass
 			
 	def rotate(self, direction):
 		if self.__viewMode == THIRD_PERSON:
+			dt = c.getDt()
 			if direction == "move-left":
-				self.camera.setHpr(self.camera, -5, 0, 0)
+				self.camera.setH(self.camera, -5*dt)
 			elif direction == "move-right":
-				self.camera.setHpr(self.camera, 5, 0, 0)
+				self.camera.setH(self.camera, 5*dt)
 			elif direction == "move-origin":
 				self.setViewMode(THIRD_PERSON)
 			else:

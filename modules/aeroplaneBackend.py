@@ -12,7 +12,7 @@ from errorHandler import *
 # container for everything flying around
 aircrafts_cont = render.attachNewNode('aircrafts_cont')
 
-class aeroplane():
+class Aeroplane():
 	'''standard aeroplane class.
 	arguments:	name			-aircraft name
 				model_to_load	-model to load on init. same as name if none
@@ -21,14 +21,14 @@ class aeroplane():
 								name if none given, 0 = don't load specs
 
 	examples:	# load a craft called "corsair1" with model and specs "corsair"
-				pirate1 = aeroplane('corsair1', 'corsair')
+				pirate1 = Aeroplane('corsair1', 'corsair')
 				# load an empty craft instance (you'll have to load model and
 				# specs later in turn to see or fly it)
-				foo = aeroplane('myname', 0, 0)
+				foo = Aeroplane('myname', 0, 0)
 				# for the node itself, use:
-				foo = aeroplane('bar').dummy_node
+				foo = Aeroplane('bar').dummy_node
 				# if you need access to the model itself, use:
-				foo = aeroplane('bar').plane_model
+				foo = Aeroplane('bar').plane_model
 	
 	info:		invisible planes are for tracking only. you should assign them
 				at least models	when they get into visible-range.
@@ -37,10 +37,10 @@ class aeroplane():
 	plane_count = 0
 
 	def __init__(self, name, model_to_load=None, specs_to_load=None):
-		self.index = aeroplane.plane_count
-		aeroplane.plane_count += 1
+		self.index = Aeroplane.plane_count
+		Aeroplane.plane_count += 1
 
-		new_node_name = 'dummy_node' + str(aeroplane.plane_count)
+		new_node_name = 'dummy_node' + str(Aeroplane.plane_count)
 		self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
 
 		if model_to_load == 0:
@@ -73,7 +73,7 @@ class aeroplane():
 				else:
 					raise ResourceLoadError(model, 'no such model')
 			else:
-				raise ResourceHandleError(model, 'scenery object already has a model. force to change')
+				raise ResourceHandleError(model, 'aeroplane already has a model. force to change')
 		else:
 			self.plane_model = loader.loadModel(model)
 			if self.plane_model:
@@ -91,12 +91,12 @@ class aeroplane():
 			self.pitch_speed = specs.getint(s, 'pitch_speed')
 			self.yaw_speed = specs.getint(s, 'yaw_speed')
 
-		if hasattr(self, 'specs_loaded'):
+		if hasattr(self, 'specs'):
 			if force:
 				justLoad()
 			else:
 				print 'craft already has specs assigned. force to change'
-			self.specs_loaded = True
+			self.specs = s
 		else:
 			justLoad()
 
@@ -105,7 +105,7 @@ class aeroplane():
 
 		# TODO: physical correct slackness. this part requires some physical
 		# correct forces and acceleration functions! don't touch it, as it has
-		# to be fully rewritten at all. feel free to do _that_ :)
+		# to be fully rewritten anyway. feel free to do _that_ :)
 
 		if movement == 'roll-left':
 			self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * dt)
