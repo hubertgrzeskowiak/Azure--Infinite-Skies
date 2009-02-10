@@ -4,14 +4,16 @@ Also try to keep this page in sync with the Todo page on the wiki, please.
 
 Next Milestone:
 -Cleanup
- *Error Handling (partially done)
+ *Error Handling (mostly done)
  *File existance/content checking
 -Flying aircraft
  *Basic physics
  *Tracking camera (partially done)
+  -better controls
+  -live toggle
 -Terrain/Station (provisionally done)
 -A skybox
--Hidable instructions
+-Hidable instructions (optionally)
 
 Post-Next Milestone:
 -Better key handling
