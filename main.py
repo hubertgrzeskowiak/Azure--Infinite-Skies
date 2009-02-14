@@ -71,21 +71,41 @@ import camBackend
 
 # TODO: better management of arguments, especially verbosity and error
 #       sensitivity
-# TODO: use the getopt module
-setErrAction(RAISE)
-#setErrAction(QUIET)
-for arg in sys.argv[1:]:
-	print arg
-	if arg in ('--verbose', '-v'):
-		setErrAction(RAISE)
-	elif arg in ('--debug', '-d'):
-		setErrAction(DIE)
-		#messenger.toggleVerbose()
-	elif arg in ('--quiet', '-q'):
-		setErrAction(IGNORE_ALL)
-	else:
-		print('Unrecognized argument: %s' % arg)
-		sys.exit(1)
+
+from optparse import OptionParser
+
+parser = OptionParser()
+
+# constants for -v,-d and -q options are found in errorHandler module
+parser.add_option('-v','--verbose',
+				  action='store_const', const=RAISE, dest='verbose',
+				  help='print extra information')
+parser.add_option('-d','--debug',
+				  action='store_const', const=DIE, dest='verbose',
+				  help='print extra debugging information')
+parser.add_option('-q','--quiet', 
+				  action='store_const', const=IGNORE_ALL, dest='verbose',
+				  help='do not print information')
+parser.set_defaults(verbose=RAISE)
+
+(options,args) = parser.parse_args()
+
+setErrAction(options.verbose)
+
+#setErrAction(RAISE)
+##setErrAction(QUIET)
+#for arg in sys.argv[1:]:
+#	print arg
+#	if arg in ('--verbose', '-v'):
+#		setErrAction(RAISE)
+#	elif arg in ('--debug', '-d'):
+#		setErrAction(DIE)
+#		#messenger.toggleVerbose()
+#	elif arg in ('--quiet', '-q'):
+#		setErrAction(IGNORE_ALL)
+#	else:
+#		print('Unrecognized argument: %s' % arg)
+#		sys.exit(1)
 
 # basic preperation
 printInstructions(instructions)
