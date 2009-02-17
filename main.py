@@ -27,6 +27,14 @@ z/c - move cam
 x - reset cam
 
 space - move forward
+shift - brakes
+
+VIEWS
+p - first person
+o - cockpit
+i - third person
+u - detached
+
 ESC - quit
 '''
 
@@ -66,6 +74,7 @@ from sceneryBackend import scenery
 from interface import printInstructions
 from errorHandler import *
 import camBackend
+import keyHandler
 
 # check for args and set verbosity/error-sensitivity
 
@@ -171,8 +180,12 @@ def gameloop(task):
 				planes['player'].move(keyInfo['desc'])
 			elif keyInfo['type'] == 'cam-move':
 				default_cam.rotate(keyInfo['desc'])
+		# uncomment if you wany to use BUGS WHILE SWITCHING o-p,p-u
+		#the rest seem to be ok
+			#elif keyInfo['type'] == 'cam-view':
+				#default_cam.setViewMode(keyInfo['desc'])
 	#you should comment the line below to work with ghost mode
-	#planes['player'].velocity() 
+	planes['player'].velocity() 
 	default_cam.step()
 	return Task.cont
 
