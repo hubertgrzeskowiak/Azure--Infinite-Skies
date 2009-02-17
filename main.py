@@ -171,6 +171,8 @@ def gameloop(task):
 				planes['player'].move(keyInfo['desc'])
 			elif keyInfo['type'] == 'cam-move':
 				default_cam.rotate(keyInfo['desc'])
+	#you should comment the line below to work with ghost mode
+	#planes['player'].velocity() 
 	default_cam.step()
 	return Task.cont
 

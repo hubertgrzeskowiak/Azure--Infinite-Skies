@@ -6,7 +6,7 @@ c = ClockObject.getGlobalClock()
 import ConfigParser
 specs = ConfigParser.SafeConfigParser()
 specs.read('etc/CraftSpecs.cfg')
-
+from math import cos, sin, radians
 from errorHandler import *
 
 # container for everything flying around
@@ -42,7 +42,8 @@ class Aeroplane():
 
 		new_node_name = 'dummy_node' + str(Aeroplane.plane_count)
 		self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
-
+		self.thrust= 0 #added these for the physics 
+		self.counter=0 
 		if model_to_load == 0:
 			pass
 		elif model_to_load:
@@ -103,9 +104,9 @@ class Aeroplane():
 	def move(self, movement):
 		dt = c.getDt()
 
-		# TODO: physical correct slackness. this part requires some physical
-		# correct forces and acceleration functions! don't touch it, as it has
-		# to be fully rewritten anyway. feel free to do _that_ :)
+		# I haven't changed this part too much to keep it as it was so people could work on it using the ghost mode, I am posting this so we could start working on 
+		# the physics of the game, I tried different ways and this gave the best result, there are many more ways to do this maybe better ways, so feel free to 
+		# change anywhere you like, don't forgeet the comment the line calling the velocity function at the main.py
 
 		if movement == 'roll-left':
 			self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * dt)
@@ -119,9 +120,26 @@ class Aeroplane():
 			self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * dt)
 		if movement == 'heap-right':
 			self.dummy_node.setH(self.dummy_node, self.yaw_speed * dt)
-		if movement == 'move-forward':
+		if movement == 'move-forward':#if you want to want to work with physics make this a comment line
 			# 40pu/s = ~12,4km/h
-			self.dummy_node.setFluidY(self.dummy_node, 40 * dt)
+			self.dummy_node.setFluidY(self.dummy_node, 40 * dt)#make this line also a comment
+		#this is the part I added, so just erase the """.
+		"""if movement == 'move-forward' and self.thrust<100: 									
+			self.thrust +=1 #increases the thrust
+		if movement == 'brakes'and self.thrust>0:
+			self.thrust -=1 #decreases
+	def velocity(self):
+		self.k=0.01 #coefficient for the lift force, I found it by experimentation but it will be better to have an analytical solution
+		dt = c.getDt()
+		self.pitch_ang=radians(self.dummy_node.getP())#radian value of the planes orientation
+		self.roll_ang=radians(self.dummy_node.getR())
+		self.heap_ang=radians(self.dummy_node.getH())
+		self.gravity=-9.81*500 #acceleration of gravity but it was so small value so I multiplied it with 500 also found by experimenting but will change after the 						#analytical solution
+		self.ForceZ=(self.thrust*cos(self.heap_ang)+self.k*self.thrust*cos(self.roll_ang))*80000 #this force is to the z axis of the plane(not the relative axis), so 														#it does not have gravity but the thrust and the lift force, 80000 is 													#also an experimental value will change after the solution 
+		self.dummy_node.setFluidY(self.dummy_node, self.thrust*dt) #this makes the plane go forward through its own axis
+		self.dummy_node.setZ(self.dummy_node.getZ()+self.gravity*dt*dt/2)# this adds the gravity, it moves the plane at the direction of the z axis of the ground
+		self.dummy_node.setFluidZ(self.dummy_node, self.ForceZ*dt*dt/2/self.mass)#this adds the movement at the z direction of the plane
+		if self.dummy_node.getZ()<0: self.dummy_node.setZ(0)#this makes the plane not to go below"""
 
 	def getBounds(self):
 		'''returns a vector describing the vehicle's size (width, length,

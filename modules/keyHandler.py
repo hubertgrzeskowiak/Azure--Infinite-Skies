@@ -36,6 +36,7 @@ class controlMap():
 			"q": {"type":"move", "desc": "heap-right"},
 			"e": {"type":"move", "desc": "heap-left"},
 			"space": {"type":"move", "desc": "move-forward"},
+			"shift": {"type":"move", "desc": "brakes"},
 			"z": {"type":"cam-move", "desc": "move-left"},
 			"c": {"type":"cam-move", "desc": "move-right"},
 			"x": {"type":"cam-move", "desc": "move-origin"}
