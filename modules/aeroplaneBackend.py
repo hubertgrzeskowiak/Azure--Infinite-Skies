@@ -42,6 +42,8 @@ class Aeroplane():
 
 		new_node_name = 'dummy_node' + str(Aeroplane.plane_count)
 		self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
+		
+		self.usebasicphysics = False
 		self.thrust= 0 #added these for the physics 
 		self.counter=0 
 		if model_to_load == 0:
@@ -120,14 +122,15 @@ class Aeroplane():
 			self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * dt)
 		if movement == 'heap-right':
 			self.dummy_node.setH(self.dummy_node, self.yaw_speed * dt)
-		if movement == 'move-forward':#if you want to want to work with physics make this a comment line
+		if movement == 'move-forward':
 			# 40pu/s = ~12,4km/h
 			self.dummy_node.setFluidY(self.dummy_node, 40 * dt)#make this line also a comment
-		#this is the part I added, so just erase the """.
-		"""if movement == 'move-forward' and self.thrust<100: 									
-			self.thrust +=1 #increases the thrust
-		if movement == 'brakes'and self.thrust>0:
-			self.thrust -=1 #decreases
+		if movement == 'increase-thrust' and self.thrust<100: 
+			if self.usebasicphysics:
+				self.thrust +=1 #increases the thrust
+		if movement == 'decrease-thrust'and self.thrust>0:
+			if self.usebasicphysics:
+				self.thrust -=1 #decreases
 	def velocity(self):
 		self.k=0.01 #coefficient for the lift force, I found it by experimentation but it will be better to have an analytical solution
 		dt = c.getDt()
@@ -139,7 +142,7 @@ class Aeroplane():
 		self.dummy_node.setFluidY(self.dummy_node, self.thrust*dt) #this makes the plane go forward through its own axis
 		self.dummy_node.setZ(self.dummy_node.getZ()+self.gravity*dt*dt/2)# this adds the gravity, it moves the plane at the direction of the z axis of the ground
 		self.dummy_node.setFluidZ(self.dummy_node, self.ForceZ*dt*dt/2/self.mass)#this adds the movement at the z direction of the plane
-		if self.dummy_node.getZ()<0: self.dummy_node.setZ(0)#this makes the plane not to go below"""
+		if self.dummy_node.getZ()<0: self.dummy_node.setZ(0)#this makes the plane not to go below
 
 	def getBounds(self):
 		'''returns a vector describing the vehicle's size (width, length,

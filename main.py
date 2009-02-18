@@ -27,7 +27,8 @@ z/c - move cam
 x - reset cam
 
 space - move forward
-shift - brakes
++/= - increase thrust
+-   - decrease thrust
 
 VIEWS
 p - first person
@@ -50,6 +51,52 @@ loadPrcFileData('', 'model-path $MAIN_DIR/models')
 
 # python standard modules
 import sys, os
+from optparse import OptionParser
+
+# command line arguments now parsed prior to panda3d doing anything
+
+# TODO: better management of arguments, especially verbosity and error
+#       sensitivity
+
+parser = OptionParser()
+
+# constants for -v,-d and -q options are found in errorHandler module
+# so this module also needs to be loaded now.
+
+from modules.errorHandler import *
+
+# TODO: decide and implement uniform custom module loading
+
+
+parser.add_option('-v','--verbose',
+				  action='store_const', const=RAISE, dest='verbose',
+				  help='print extra information')
+parser.add_option('-d','--debug',
+				  action='store_const', const=DIE, dest='verbose',
+				  help='print extra debugging information')
+parser.add_option('-q','--quiet', 
+				  action='store_const', const=IGNORE_ALL, dest='verbose',
+				  help='do not print information')
+
+# temporary flags to test camera modes and physics
+parser.add_option('-p','--physicslevel', 
+				  action='store', type="int",dest='physicslevel',
+				  help='select physics model: 0 = off, 1 = basicphysics')
+parser.add_option('-c','--enablecameramodes', 
+				  action='store_true',dest='extracameramodes',default=False,
+				  help='allow extra camera modes to be used')
+
+parser.set_defaults(verbose=RAISE)
+parser.set_defaults(physicslevel=0)
+
+(options,args) = parser.parse_args()
+
+setErrAction(options.verbose)
+
+BASICPHYSICS = False
+if options.physicslevel==1:
+    BASICPHYSICS = True
+EXTRACAMERAMODES = options.extracameramodes
 
 # panda3d modules
 import direct.directbase.DirectStart
@@ -69,52 +116,15 @@ os.chdir(sys.path[0])
 
 # custom modules
 sys.path.append('modules')
+
 from aeroplaneBackend import Aeroplane
 from sceneryBackend import scenery
 from interface import printInstructions
-from errorHandler import *
+#from errorHandler import *
 import camBackend
 import keyHandler
 
-# check for args and set verbosity/error-sensitivity
 
-# TODO: better management of arguments, especially verbosity and error
-#       sensitivity
-
-from optparse import OptionParser
-
-parser = OptionParser()
-
-# constants for -v,-d and -q options are found in errorHandler module
-parser.add_option('-v','--verbose',
-				  action='store_const', const=RAISE, dest='verbose',
-				  help='print extra information')
-parser.add_option('-d','--debug',
-				  action='store_const', const=DIE, dest='verbose',
-				  help='print extra debugging information')
-parser.add_option('-q','--quiet', 
-				  action='store_const', const=IGNORE_ALL, dest='verbose',
-				  help='do not print information')
-parser.set_defaults(verbose=RAISE)
-
-(options,args) = parser.parse_args()
-
-setErrAction(options.verbose)
-
-#setErrAction(RAISE)
-##setErrAction(QUIET)
-#for arg in sys.argv[1:]:
-#	print arg
-#	if arg in ('--verbose', '-v'):
-#		setErrAction(RAISE)
-#	elif arg in ('--debug', '-d'):
-#		setErrAction(DIE)
-#		#messenger.toggleVerbose()
-#	elif arg in ('--quiet', '-q'):
-#		setErrAction(IGNORE_ALL)
-#	else:
-#		print('Unrecognized argument: %s' % arg)
-#		sys.exit(1)
 
 # basic preperation
 printInstructions(instructions)
@@ -147,6 +157,7 @@ render.setLight(alnp)
 # load our plane(s)
 planes = {}
 player = planes['player'] = Aeroplane('griffin')
+if BASICPHYSICS: player.usebasicphysics=True
 
 # TODO: Work on camBackend module
 default_cam = camBackend.PlaneCamera(player.dummy_node)
@@ -182,10 +193,11 @@ def gameloop(task):
 				default_cam.rotate(keyInfo['desc'])
 		# uncomment if you wany to use BUGS WHILE SWITCHING o-p,p-u
 		#the rest seem to be ok
-			#elif keyInfo['type'] == 'cam-view':
-				#default_cam.setViewMode(keyInfo['desc'])
+			elif keyInfo['type'] == 'cam-view' and EXTRACAMERAMODES:
+				default_cam.setViewMode(keyInfo['desc'])
 	#you should comment the line below to work with ghost mode
-	planes['player'].velocity() 
+	if planes['player'].usebasicphysics:
+		planes['player'].velocity() 
 	default_cam.step()
 	return Task.cont
 
