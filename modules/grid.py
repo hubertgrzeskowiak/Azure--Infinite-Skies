@@ -1,7 +1,10 @@
+"""Module for helper grids."""
+
 from direct.directtools.DirectGeometry import LineNodePath
 from pandac.PandaModules import Vec4
 
 class Grid():
+    """Generic grid class. Draws a grid in init."""
 	def __init__(self):
 		self.grid_node = render.attachNewNode("grid")
 
