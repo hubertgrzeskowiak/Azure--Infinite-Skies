@@ -1,23 +1,27 @@
-'''get key events and do stuff. controls are independent of set keys'''
+"""Module for everything about controls."""
 
 import sys
-import camBackend
+
 from direct.showbase.DirectObject import DirectObject
 
+import camBackend
+
 class keyHandler(DirectObject):
-	'''get key events and do stuff. controls are independent of set keys'''
+	"""Gets key events and does stuff."""
 
 	def __init__(self, ctlMap):
-		'''setup control keys and event handlers'''
+		"""Takes a controls map as argument and writes keys' states into a
+        callable dict."""
 		
 		self.ctlMap = ctlMap
 		
-		# non-continous
+		# non-continous keys (direct action, no state saving)
 		self.accept("escape", sys.exit)
-
-		# at start no key is active
+        
+        # continuous keys
 		self.keyStates = {}
 		for key in self.ctlMap.controls:
+		    # at start no key is active
 			self.keyStates[key] = 0
 			# go through keys and 'accept' them
 			self.accept(key, self.chKeyState, [key, 1])
@@ -28,6 +32,7 @@ class keyHandler(DirectObject):
 		self.keyStates[key] = value
 		
 class controlMap():
+    """Default controls map."""
 	def __init__(self):
 		self.controls = {
 			"a": {"type":"move", "desc": "roll-left"},
