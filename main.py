@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 '''
 
-instructions = '''\
+INSTRUCTIONS = '''\
 Azure testing ground
 a/d - roll
 w/s - pitch
@@ -69,22 +69,22 @@ from modules.errorHandler import *
 
 
 parser.add_option('-v','--verbose',
-				  action='store_const', const=RAISE, dest='verbose',
-				  help='print extra information')
+                  action='store_const', const=RAISE, dest='verbose',
+                  help='print extra information')
 parser.add_option('-d','--debug',
-				  action='store_const', const=DIE, dest='verbose',
-				  help='print extra debugging information')
+                  action='store_const', const=DIE, dest='verbose',
+                  help='print extra debugging information')
 parser.add_option('-q','--quiet', 
-				  action='store_const', const=IGNORE_ALL, dest='verbose',
-				  help='do not print information')
+                  action='store_const', const=IGNORE_ALL, dest='verbose',
+                  help='do not print information')
 
 # temporary flags to test camera modes and physics
 parser.add_option('-p','--physicslevel', 
-				  action='store', type="int",dest='physicslevel',
-				  help='select physics model: 0 = off, 1 = basicphysics')
+                  action='store', type="int",dest='physicslevel',
+                  help='select physics model: 0 = off, 1 = basicphysics')
 parser.add_option('-c','--enablecameramodes', 
-				  action='store_true',dest='extracameramodes',default=False,
-				  help='allow extra camera modes to be used')
+                  action='store_true',dest='extracameramodes',default=False,
+                  help='allow extra camera modes to be used')
 
 parser.set_defaults(verbose=RAISE)
 parser.set_defaults(physicslevel=0)
@@ -125,9 +125,8 @@ import camBackend
 import keyHandler
 
 
-
 # basic preperation
-printInstructions(instructions)
+printInstructions(INSTRUCTIONS)
 base.setBackgroundColor(0.0, 0.2, 0.3)
 base.cam.node().getLens().setFar(1500)
 base.disableMouse()
@@ -143,7 +142,7 @@ scenery_obj['panda_green'] = scenery('panda_green', 'environment', VBase3(0, 100
 #env_node = scenery_obj['panda_green'].dummy_node
 
 # some lights
-# TODO: new module(?)
+# TODO(Nemesis13): new module
 dlight = DirectionalLight('dlight')
 alight = AmbientLight('alight')
 dlnp = render.attachNewNode(dlight.upcastToPandaNode()) 
@@ -159,12 +158,6 @@ planes = {}
 player = planes['player'] = Aeroplane('griffin')
 if BASICPHYSICS: player.usebasicphysics=True
 
-# TODO: Work on camBackend module
-default_cam = camBackend.PlaneCamera(player.dummy_node)
-#default_cam.setViewMode(camBackend.FIRST_PERSON)
-#default_cam.setViewMode(camBackend.DETACHED)
-#default_cam.setViewMode(camBackend.COCKPIT)
-
 # load some dark ones, just for testing
 planes['pirate1'] = Aeroplane('griffin')
 pirate1 = planes['pirate1'].dummy_node
@@ -176,37 +169,40 @@ pirate2 = planes['pirate2'].dummy_node
 pirate2.setColor(0, 0, 1, 1)
 pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
 
+# set default camera
+default_cam = camBackend.PlaneCamera(player.dummy_node)
+#default_cam.setViewMode(camBackend.FIRST_PERSON)
+#default_cam.setViewMode(camBackend.DETACHED)
+#default_cam.setViewMode(camBackend.COCKPIT)
+
 # now we can enable user input
 from keyHandler import keyHandler, controlMap
 ctlMap = controlMap()
 k = keyHandler(ctlMap)
 
-# here comes the magic!
-# TODO: define what exactly belongs into this task and what should have own ones
+# TODO(Nemesis13): define what exactly belongs into this task and what should have own ones
 def gameloop(task):
-	for key, state in k.keyStates.items():
-		if state == 1:
-			keyInfo = ctlMap.controls[key]
-			if keyInfo['type'] == 'move':
-				planes['player'].move(keyInfo['desc'])
-			elif keyInfo['type'] == 'cam-move':
-				default_cam.rotate(keyInfo['desc'])
-		# uncomment if you wany to use BUGS WHILE SWITCHING o-p,p-u
-		#the rest seem to be ok
-			elif keyInfo['type'] == 'cam-view' and EXTRACAMERAMODES:
-				default_cam.setViewMode(keyInfo['desc'])
-	#you should comment the line below to work with ghost mode
-	if planes['player'].usebasicphysics:
-		planes['player'].velocity() 
-	default_cam.step()
-	return Task.cont
+    for key, state in k.keyStates.items():
+        if state == 1:
+            keyInfo = ctlMap.controls[key]
+            if keyInfo['type'] == 'move':
+                planes['player'].move(keyInfo['desc'])
+            elif keyInfo['type'] == 'cam-move':
+                default_cam.rotate(keyInfo['desc'])
+            elif keyInfo['type'] == 'cam-view' and EXTRACAMERAMODES:
+                default_cam.setViewMode(keyInfo['desc'])
+    #you should comment the line below to work with ghost mode
+    if planes['player'].usebasicphysics:
+        planes['player'].velocity() 
+    default_cam.step()
+    return Task.cont
 
 gameTask = taskMgr.add(gameloop, 'gameloop')
 
-# depending on verbosity level
-'''
+# uncomment to view the rendering tree after exiting game
+"""
 print 80 * '-'
 print render.ls()
 print 80 * '-'
-'''
+"""
 run()
