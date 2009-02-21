@@ -118,7 +118,7 @@ os.chdir(sys.path[0])
 sys.path.append('modules')
 
 from aeroplaneBackend import Aeroplane
-from sceneryBackend import scenery
+from sceneryBackend import Scenery
 from interface import printInstructions
 #from errorHandler import *
 import camBackend
@@ -138,7 +138,7 @@ G.grid_node.setScale(10, 10, 10)
 
 # load some scenery for testing the sceneryBackend
 scenery_obj = {}
-scenery_obj['panda_green'] = scenery('panda_green', 'environment', VBase3(0, 1000, 0))
+scenery_obj['panda_green'] = Scenery('panda_green', 'environment', VBase3(0, 1000, 0))
 #env_node = scenery_obj['panda_green'].dummy_node
 
 # some lights
