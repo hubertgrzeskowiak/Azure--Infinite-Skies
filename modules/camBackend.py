@@ -1,4 +1,4 @@
-'''standard camera module, supporting multiple camera layouts'''
+"""Camera(s) handling module"""
 
 from errorHandler import *
 from pandac.PandaModules import ClockObject
@@ -8,32 +8,40 @@ c = ClockObject.getGlobalClock()
 FIRST_PERSON, COCKPIT, THIRD_PERSON, DETACHED = range(4)
 
 class PlaneCamera():
-	def __init__(self, parent, viewMode=THIRD_PERSON):
+    """Player's plane camera management"""
+
+	def __init__(self, parent, view_mode=THIRD_PERSON):
+        """Arguments are object to which the camera should be parented to
+        and the view mode. latter defaults to THIRD_PERSON"""
+
 		self.camera = base.camera
 		self.parent = parent		
-		self.setViewMode(viewMode)
+		self.setViewMode(view_mode)
 		
 	def getViewMode(self):
-		return self.__viewMode
+        """Returns the current view mode"""
+
+		return self.__view_mode
 		
-	def setViewMode(self, viewMode):
-		if viewMode == FIRST_PERSON:
+	def setViewMode(self, view_mode):
+        """Sets camera view mode. Takes a view_mode constant as argument."""
+		if view_mode == FIRST_PERSON:
 			# plane specific - later on managable with emptys or config-vars.
 			self.camera.reparentTo(self.parent)
 			self.camera.setPos(-1.6, 3.3, 1.2)
 			
-		elif viewMode == COCKPIT:
+		elif view_mode == COCKPIT:
 			# plane specific - later on managable with emptys or config-vars.
 			# buggy because of solid, one-sided textures.
 			self.camera.reparentTo(self.parent)
 			self.camera.setPosHpr(0, -1.5, 1.75, 0, 0, 0)
 
-		elif viewMode == THIRD_PERSON:
+		elif view_mode == THIRD_PERSON:
 			# should make use of aircraft bounds (see aeroplaneBackend)
 			self.camera.reparentTo(self.parent)
 			self.camera.setPosHpr(0, -25, 8, 0, -7, 0)
 			
-		elif viewMode == DETACHED:
+		elif view_mode == DETACHED:
 			self.camera.reparentTo(render)
 			self.camera.setPos(0, 0, 20)
 			# rotation set by lookAt()
@@ -41,14 +49,18 @@ class PlaneCamera():
 		else:
 			raise ParamError("Expecting value of 0, 1, 2 or 3 in setViewMode()")
 			
-		self.__viewMode = viewMode
+		self.__view_mode = view_mode
 		
 	def step(self):
-		if self.__viewMode == DETACHED:
+        """In DETACHED camera mode, rotates the camera to look at parent
+        (player)"""
+		if self.__view_mode == DETACHED:
 			self.camera.lookAt(self.parent)
 			
 	def rotate(self, direction):
-		if self.__viewMode == THIRD_PERSON:
+        """In THIRD_PERSON camera mode, rotates camera to side. Parameter is
+        direction"""
+		if self.__view_mode == THIRD_PERSON:
 			dt = c.getDt()
 			if direction == "move-left":
 				self.camera.setH(self.camera, -5*dt)
