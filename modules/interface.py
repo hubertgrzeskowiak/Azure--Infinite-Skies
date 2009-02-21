@@ -1,5 +1,8 @@
+"""Module containing graphical user interface objects"""
+
 def printInstructions(instructions = ""):
-	'''give me some text and i'll print it at top left corner'''
+	"""Give me some text and i'll print it at the top left corner"""
+    # temporary function. used until we have some real interface
 	from direct.gui.DirectGui import OnscreenText
 	from pandac.PandaModules import TextNode
 	OnscreenText(
