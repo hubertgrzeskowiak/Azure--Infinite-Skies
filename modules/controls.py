@@ -6,7 +6,7 @@ from direct.showbase.DirectObject import DirectObject
 
 import views
 
-class keyHandler(DirectObject):
+class KeyHandler(DirectObject):
     """Gets key events and does stuff."""
 
     def __init__(self, ctlMap):
@@ -31,7 +31,7 @@ class keyHandler(DirectObject):
         #print("key %s changed to %d" % (key, value))
         self.keyStates[key] = value
         
-class controlMap():
+class ControlMap():
     """Default controls map."""
 
     def __init__(self):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 Azure: Infinite Skies
 
 Copyright (C) 2009 Hubert Grzeskowiak
@@ -16,9 +16,9 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
-INSTRUCTIONS = '''\
+INSTRUCTIONS = """\
 Azure testing ground
 a/d - roll
 w/s - pitch
@@ -37,36 +37,31 @@ i - third person
 u - detached
 
 ESC - quit
-'''
+"""
 
-# some configuration settings
+# python standard modules
+import sys
+import os
+import optparse
+
+# make sure python finds our modules
+os.chdir(sys.path[0])
+sys.path.append('modules')
+
+# some panda configuration settings
 from pandac.PandaModules import loadPrcFileData
 loadPrcFileData('', 'model-path $MAIN_DIR/models')
-# let's see how many FPS we can get maximal
-#loadPrcFileData('', 'sync-video 0')
-# some cool control tools
+#loadPrcFileData('', 'sync-video 0')  # disable framerate limitation
 #loadPrcFileData('', 'want-directtools #t')
 #loadPrcFileData('', 'want-tk #t')
 #loadPrcFileData('', 'fullscreen #t')
 
-# python standard modules
-import sys, os
-from optparse import OptionParser
 
-# command line arguments now parsed prior to panda3d doing anything
-
-# TODO: better management of arguments, especially verbosity and error
-#       sensitivity
-
-parser = OptionParser()
+# parse command line arguments
 
 # constants for -v,-d and -q options are found in errors module
-# so this module also needs to be loaded now.
-
-from modules.errors import *
-
-# TODO: decide and implement uniform custom module loading
-
+from errors import *
+parser = optparse.OptionParser()
 
 parser.add_option('-v','--verbose',
                   action='store_const', const=RAISE, dest='verbose',
@@ -94,7 +89,7 @@ parser.set_defaults(physicslevel=0)
 setErrAction(options.verbose)
 
 BASICPHYSICS = False
-if options.physicslevel==1:
+if options.physicslevel == 1:
     BASICPHYSICS = True
 EXTRACAMERAMODES = options.extracameramodes
 
@@ -107,23 +102,17 @@ from direct.gui.DirectGui import OnscreenText
 from pandac.PandaModules import TextNode
 from pandac.PandaModules import VBase3, Vec4
 from pandac.PandaModules import AmbientLight,DirectionalLight
-from pandac.PandaModules import ClockObject
-c = ClockObject.getGlobalClock()
-
-# assures that if module is called from another directory, all
-# references still work
-os.chdir(sys.path[0])
-
-# custom modules
-sys.path.append('modules')
+#from pandac.PandaModules import ClockObject
+#c = ClockObject.getGlobalClock()
 
 from aircrafts import Aeroplane
 from scenery import Scenery
 from gui import printInstructions
 #from errors import *
 import views
-#import controls
-from controls import keyHandler, controlMap
+import controls
+import grid
+
 
 # basic preperation
 printInstructions(INSTRUCTIONS)
@@ -132,11 +121,11 @@ base.cam.node().getLens().setFar(1500)
 base.disableMouse()
 
 # a grey raster - for testing
-from grid import Grid
-G = Grid()
-G.grid_node.setScale(10, 10, 10)
+G1 = grid.Grid()
+grid1 = G1.makeGrid()
+grid1.setScale(10, 10, 10)
 
-# load some scenery for testing the scenery backend module
+# load some scenery for testing the scenery module
 scenery_obj = {}
 scenery_obj['panda_green'] = Scenery('panda_green', 'environment', VBase3(0, 1000, 0))
 #env_node = scenery_obj['panda_green'].dummy_node
@@ -176,15 +165,14 @@ default_cam = views.PlaneCamera(player.dummy_node)
 #default_cam.setViewMode(views.COCKPIT)
 
 # now we can enable user input
-#from controls import keyHandler, controlMap
-ctlMap = controlMap()
-k = keyHandler(ctlMap)
+ctl_map = controls.ControlMap()
+k = controls.KeyHandler(ctl_map)
 
 # TODO(Nemesis13): define what exactly belongs into this task and what should have own ones
 def gameloop(task):
     for key, state in k.keyStates.items():
         if state == 1:
-            keyInfo = ctlMap.controls[key]
+            keyInfo = ctl_map.controls[key]
             if keyInfo['type'] == 'move':
                 planes['player'].move(keyInfo['desc'])
             elif keyInfo['type'] == 'cam-move':

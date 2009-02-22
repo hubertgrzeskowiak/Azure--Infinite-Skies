@@ -4,8 +4,14 @@ from direct.directtools.DirectGeometry import LineNodePath
 from pandac.PandaModules import Vec4
 
 class Grid():
-    """Generic grid class. Draws a grid in init."""
+    """Generic grid class."""
+
     def __init__(self):
+        pass
+
+    def makeGrid(self):
+        """Draws a grid and returns the nodepath."""
+
         self.grid_node = render.attachNewNode("grid")
 
         # size
@@ -57,3 +63,5 @@ class Grid():
             d += 1
             raster.drawLines([[l1,l2], [l3,l4]])
         raster.create()
+
+        return self.grid_node
