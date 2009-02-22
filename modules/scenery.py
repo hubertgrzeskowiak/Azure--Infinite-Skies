@@ -2,7 +2,7 @@
 
 from pandac.PandaModules import VBase3
 
-from errorHandler import *
+from errors import *
 
 # container for all scenery objects
 scenery_cont = render.attachNewNode("scenery_cont")

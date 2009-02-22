@@ -60,10 +60,10 @@ from optparse import OptionParser
 
 parser = OptionParser()
 
-# constants for -v,-d and -q options are found in errorHandler module
+# constants for -v,-d and -q options are found in errors module
 # so this module also needs to be loaded now.
 
-from modules.errorHandler import *
+from modules.errors import *
 
 # TODO: decide and implement uniform custom module loading
 
@@ -120,7 +120,7 @@ sys.path.append('modules')
 from aircrafts import Aeroplane
 from scenery import Scenery
 from interface import printInstructions
-#from errorHandler import *
+#from errors import *
 import views
 #import controls
 from controls import keyHandler, controlMap

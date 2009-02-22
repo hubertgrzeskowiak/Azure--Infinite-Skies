@@ -1,6 +1,6 @@
 """Camera(s) handling module"""
 
-from errorHandler import *
+from errors import *
 from pandac.PandaModules import ClockObject
 c = ClockObject.getGlobalClock()
 

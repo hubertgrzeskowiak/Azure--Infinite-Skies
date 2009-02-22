@@ -10,7 +10,7 @@ specs.read("etc/CraftSpecs.cfg")
 from pandac.PandaModules import ClockObject
 c = ClockObject.getGlobalClock()
 
-from errorHandler import *
+from errors import *
 
 # container for everything flying around
 aircrafts_cont = render.attachNewNode("aircrafts_cont")
