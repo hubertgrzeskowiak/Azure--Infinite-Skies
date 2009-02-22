@@ -121,7 +121,7 @@ from aeroplaneBackend import Aeroplane
 from sceneryBackend import Scenery
 from interface import printInstructions
 #from errorHandler import *
-import camBackend
+import views
 import keyHandler
 
 
@@ -170,10 +170,10 @@ pirate2.setColor(0, 0, 1, 1)
 pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
 
 # set default camera
-default_cam = camBackend.PlaneCamera(player.dummy_node)
-#default_cam.setViewMode(camBackend.FIRST_PERSON)
-#default_cam.setViewMode(camBackend.DETACHED)
-#default_cam.setViewMode(camBackend.COCKPIT)
+default_cam = views.PlaneCamera(player.dummy_node)
+#default_cam.setViewMode(views.FIRST_PERSON)
+#default_cam.setViewMode(views.DETACHED)
+#default_cam.setViewMode(views.COCKPIT)
 
 # now we can enable user input
 from keyHandler import keyHandler, controlMap

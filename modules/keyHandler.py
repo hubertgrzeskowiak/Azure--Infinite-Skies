@@ -4,7 +4,7 @@ import sys
 
 from direct.showbase.DirectObject import DirectObject
 
-import camBackend
+import views
 
 class keyHandler(DirectObject):
     """Gets key events and does stuff."""
@@ -49,8 +49,8 @@ class controlMap():
             "z": {"type":"cam-move", "desc": "move-left"},
             "c": {"type":"cam-move", "desc": "move-right"},
             "x": {"type":"cam-move", "desc": "move-origin"},
-            "p": {"type":"cam-view", "desc": camBackend.FIRST_PERSON},
-            "o": {"type":"cam-view", "desc": camBackend.COCKPIT},
-            "i": {"type":"cam-view", "desc": camBackend.THIRD_PERSON},
-            "u": {"type":"cam-view", "desc": camBackend.DETACHED}
+            "p": {"type":"cam-view", "desc": views.FIRST_PERSON},
+            "o": {"type":"cam-view", "desc": views.COCKPIT},
+            "i": {"type":"cam-view", "desc": views.THIRD_PERSON},
+            "u": {"type":"cam-view", "desc": views.DETACHED}
             }
