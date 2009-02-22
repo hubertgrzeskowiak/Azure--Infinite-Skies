@@ -37,7 +37,7 @@ class PlaneCamera():
             self.camera.setPosHpr(0, -1.5, 1.75, 0, 0, 0)
 
         elif view_mode == THIRD_PERSON:
-            # should make use of aircraft bounds (see aeroplaneBackend)
+            # should make use of aircraft bounds (see aircrafts.py)
             self.camera.reparentTo(self.parent)
             self.camera.setPosHpr(0, -25, 8, 0, -7, 0)
             

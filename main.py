@@ -117,7 +117,7 @@ os.chdir(sys.path[0])
 # custom modules
 sys.path.append('modules')
 
-from aeroplaneBackend import Aeroplane
+from aircrafts import Aeroplane
 from sceneryBackend import Scenery
 from interface import printInstructions
 #from errorHandler import *
