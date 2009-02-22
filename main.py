@@ -122,8 +122,8 @@ from scenery import Scenery
 from interface import printInstructions
 #from errorHandler import *
 import views
-import keyHandler
-
+#import controls
+from controls import keyHandler, controlMap
 
 # basic preperation
 printInstructions(INSTRUCTIONS)
@@ -176,7 +176,7 @@ default_cam = views.PlaneCamera(player.dummy_node)
 #default_cam.setViewMode(views.COCKPIT)
 
 # now we can enable user input
-from keyHandler import keyHandler, controlMap
+#from controls import keyHandler, controlMap
 ctlMap = controlMap()
 k = keyHandler(ctlMap)
 
