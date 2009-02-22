@@ -119,7 +119,7 @@ sys.path.append('modules')
 
 from aircrafts import Aeroplane
 from scenery import Scenery
-from interface import printInstructions
+from gui import printInstructions
 #from errors import *
 import views
 #import controls
