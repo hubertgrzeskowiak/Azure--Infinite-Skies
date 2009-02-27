@@ -82,16 +82,19 @@ parser.add_option('-c','--enablecameramodes',
                   help='allow extra camera modes to be used')
 
 parser.set_defaults(verbose=RAISE)
-parser.set_defaults(physicslevel=0)
+parser.set_defaults(physicslevel=1)
 
 (options,args) = parser.parse_args()
 
 setErrAction(options.verbose)
 
-BASICPHYSICS = False
+BASIC_PHYSICS = False
+FULL_PHYSICS = False
 if options.physicslevel == 1:
-    BASICPHYSICS = True
-EXTRACAMERAMODES = options.extracameramodes
+    BASIC_PHYSICS = True
+elif options.physicslevel == 2:
+    FULL_PHYSICS = True
+EXTRA_CAMERA_MODES = options.extracameramodes
 
 # panda3d modules
 import direct.directbase.DirectStart
@@ -107,7 +110,7 @@ from pandac.PandaModules import AmbientLight,DirectionalLight
 
 from aircrafts import Aeroplane
 from scenery import Scenery
-from gui import printInstructions
+from gui import printInstructions, HUD
 #from errors import *
 import views
 import controls
@@ -145,7 +148,10 @@ render.setLight(alnp)
 # load our plane(s)
 planes = {}
 player = planes['player'] = Aeroplane('griffin')
-if BASICPHYSICS: player.usebasicphysics=True
+if BASIC_PHYSICS: 
+    player.use_basic_physics=True
+elif FULL_PHYSICS: 
+    player.use_full_physics=True
 
 # load some dark ones, just for testing
 planes['pirate1'] = Aeroplane('griffin')
@@ -168,21 +174,46 @@ default_cam = views.PlaneCamera(player.dummy_node)
 ctl_map = controls.ControlMap()
 k = controls.KeyHandler(ctl_map)
 
+hud = HUD(planes['player'])
+
 # TODO(Nemesis13): define what exactly belongs into this task and what should have own ones
 def gameloop(task):
+    active_motion_controls = []
+    
     for key, state in k.keyStates.items():
         if state == 1:
             keyInfo = ctl_map.controls[key]
             if keyInfo['type'] == 'move':
                 planes['player'].move(keyInfo['desc'])
+                active_motion_controls.append(keyInfo['desc'])
             elif keyInfo['type'] == 'cam-move':
                 default_cam.rotate(keyInfo['desc'])
-            elif keyInfo['type'] == 'cam-view' and EXTRACAMERAMODES:
+            elif keyInfo['type'] == 'cam-view' and EXTRA_CAMERA_MODES:
                 default_cam.setViewMode(keyInfo['desc'])
-    #you should comment the line below to work with ghost mode
-    if planes['player'].usebasicphysics:
-        planes['player'].velocity() 
+        ## tomkis, example of released key binding
+        #if state == 0:
+        #    if key in ['a','d']:
+        #        planes['player'].reverseRoll()
+    #if len(active_motion_controls) == 0:
+    #    # don't let auto-levelling interfere with active controls
+    #    planes['player'].reverseRoll()
+    #    planes['player'].reversePitch()
+    
+    # heavily based on code by tomkis
+    if 'roll-left' in active_motion_controls:
+        if 'roll-right' in active_motion_controls:
+            planes['player'].reverseRoll()
+    if 'pitch-up' in active_motion_controls:
+        if 'pitch-down' in active_motion_controls:
+            planes['player'].reversePitch()
+             
+        
+    if planes['player'].use_basic_physics:
+        planes['player'].velocitySimple() 
+    elif planes['player'].use_full_physics:
+        planes['player'].velocityForces() 
     default_cam.step()
+    hud.update()
     return Task.cont
 
 gameTask = taskMgr.add(gameloop, 'gameloop')
