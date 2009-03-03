@@ -1,16 +1,16 @@
+"""Utilities which don't suit into any other module."""
 
 class ListInterpolator(object):
-    """defines an interpolated data type
-    """
+    """Defines an interpolated data type."""
     
-    def __init__(self, datap,lowval=None,highval=None):
-        """initialises data and optionally high and low values
-        args: datap (required), a list or tuple, each element of which should
-                                be a list or tuple with 2 values
-              lowval (optional), value to return if requesting y for x less
-                                 than the lowest given
-              highval (optional), value to return if requesting y for x greater
-                                  than the highest given
+    def __init__(self, datap, lowval=None, highval=None):
+        """arguments:
+        datap -- List or tuple. Each element of which should be a list
+                 or tuple with 2 values.
+        lowval -- (optional), value to return if requesting y for x less than
+                  the lowest given.
+        highval -- (optional), value to return if requesting y for x greater
+                   than the highest given.
         """
         self.data = list(datap)
         self.data.sort()
@@ -18,21 +18,21 @@ class ListInterpolator(object):
         self.highval = highval
     
     def setHigh(self,val):
-        """allows setting of high value default"""
+        """Set high value default."""
         self.highval = val
     def setLow(self,val):
-        """allows setting of low value default"""
+        """Set low value default."""
         self.lowval = val
     
     def __setitem__(self,x,y):
-        """allows additional values to be placed it the data with syntax like
-        values[x] = y
+        """Allows additional values to be placed it the data with syntax like
+        values[x] = y.
         """
         self.data.append([x,y])
         self.data.sort()
     
     def __getitem__(self,x):
-        """returns y values for any value of x in low_x <= x <= high_x"""
+        """Returns y values for any value of x in low_x <= x <= high_x."""
         
         if x < self.data[0][0]:
             if self.lowval is None:
@@ -43,8 +43,7 @@ class ListInterpolator(object):
                 raise ValueError
             else: return self.highval
         
-        #find the neighbouring points
-        
+        # find the neighbouring points
         for d in range(len(self.data)):
             if self.data[d][0] >= x:
                 highx,highy = self.data[d]
@@ -54,7 +53,7 @@ class ListInterpolator(object):
                     lowx,lowy = self.data[d-1]
                 break
         
-        #interpolate between the points
+        # interpolate between the points
         if lowx == highx:
             return lowy
         else:

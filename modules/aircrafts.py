@@ -36,12 +36,16 @@ class Aeroplane(object):
                     # and specs later in turn to see or fly it)
                     foo = Aeroplane("myname", 0, 0)
                     # for the node itself, use:
-                    foo = Aeroplane("bar").dummy_node
+                    foo = Aeroplane("bar").node()
                     # if you need access to the model itself, use:
                     foo = Aeroplane("bar").plane_model
     
         info:       invisible planes are for tracking only. you should assign them
-                    at least models    when they get into visible-range.
+                    at least models when they get into visible-range.
+
+                    The idea behind the node() is pretty simple: working with
+                    a virtual container prevents accidential replacement and
+                    seperates things.
         """
 
         self.index = Aeroplane.plane_count
@@ -49,9 +53,6 @@ class Aeroplane(object):
 
         new_node_name = "dummy_node" + str(Aeroplane.plane_count)
         self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
-        
-        self.use_basic_physics = False
-        self.use_full_physics = False
         
         self.thrust = 0
         self.thrust_scale = 5000
@@ -112,7 +113,7 @@ class Aeroplane(object):
             if force:
                 self.plane_model = loader.loadModel(model)
                 if self.plane_model != None:
-                    self.plane_model.reparentTo(self.dummy_node)
+                    self.plane_model.reparentTo(self.node())
                 else:
                     raise ResourceLoadError(model, "no such model")
             else:
@@ -121,7 +122,7 @@ class Aeroplane(object):
         else:
             self.plane_model = loader.loadModel(model)
             if self.plane_model:
-                self.plane_model.reparentTo(self.dummy_node)
+                self.plane_model.reparentTo(self.node())
             else:
                 raise ResourceLoadError(model, "no such model")
 
@@ -148,8 +149,7 @@ class Aeroplane(object):
     # (tomkis - two methods below -> rollback for keypressed event)
     def reverseRoll(self,offset=10.0):
         dt = c.getDt()
-        node = self.dummy_node
-        roll = node.getR()
+        roll = self.node().getR()
         
         # vary the rate depending on the angle out
         roll_factor = abs(roll/90.0)
@@ -158,25 +158,25 @@ class Aeroplane(object):
         roll_factor = sqrt(roll_factor) + 0.1
         
         if roll < -90.0 - offset:
-            node.setR(node, -1 * roll_factor * self.roll_speed * dt)
-            if node.getR() > 0: node.setR(180.0)
+            self.node().setR(node(), -1 * roll_factor * self.roll_speed * dt)
+            if self.node().getR() > 0: self.node().setR(180.0)
         elif roll < 0.0:
-            node.setR(node, roll_factor * self.roll_speed * dt)
-            if node.getR() > 0: node.setR(0.0)
+            self.node().setR(self.node(), roll_factor * self.roll_speed * dt)
+            if self.node().getR() > 0: self.node().setR(0.0)
         elif roll > 90.0 + offset:
-            node.setR(node, roll_factor * self.roll_speed * dt)
-            if node.getR() < 0: node.setR(180.0)
+            self.node().setR(self.node(), roll_factor * self.roll_speed * dt)
+            if self.node().getR() < 0: self.node().setR(180.0)
         elif roll > 0.0:
-            node.setR(node, -1 * roll_factor * self.roll_speed * dt)
-            if node.getR() < 0: node.setR(0.0)
+            self.node().setR(self.node(), -1 * roll_factor * self.roll_speed * dt)
+            if self.node().getR() < 0:
+                self.node().setR(0.0)
     
     def reversePitch(self):
         dt = c.getDt()
-        node = self.dummy_node
-        pitch = node.getP()
+        pitch = self.node().getP()
         
         # need this so that we know which direction to rotate
-        if node.getQuat().getUp()[2] < 0:
+        if self.node().getQuat().getUp()[2] < 0:
             factor = -1
         else:
             factor = 1
@@ -185,11 +185,11 @@ class Aeroplane(object):
         pitch_factor = abs(pitch/90.0) + 0.1
         
         if pitch < 0.0:
-            node.setP(node, pitch_factor * factor * self.pitch_speed * dt)
-            if node.getP() > 0: node.setP(0.0)
+            self.node().setP(self.node(), pitch_factor * factor * self.pitch_speed * dt)
+            if self.node().getP() > 0: self.node().setP(0.0)
         elif pitch > 0.0:
-            node.setP(node, pitch_factor * factor * -1 * self.pitch_speed * dt)
-            if node.getP() < 0: node.setP(0.0)
+            self.node().setP(self.node(), pitch_factor * factor * -1 * self.pitch_speed * dt)
+            if self.node().getP() < 0: self.node().setP(0.0)
     
     def move(self, movement):
         """Plane movement management."""
@@ -203,28 +203,28 @@ class Aeroplane(object):
         # TODO (gjmm): acceleration and decay of rotations from keyboard
         
         if movement == "roll-left":
-            self.dummy_node.setR(self.dummy_node, -1 * self.roll_speed * dt)
-            #a=self.dummy_node.getR()
+            self.node().setR(self.node(), -1 * self.roll_speed * dt)
+            #a=self.node().getR()
         if movement == "roll-right":
-            self.dummy_node.setR(self.dummy_node, self.roll_speed * dt)
-            #b=self.dummy_node.getR()
+            self.node().setR(self.node(), self.roll_speed * dt)
+            #b=self.node().getR()
         if movement == "pitch-up":
-            self.dummy_node.setP(self.dummy_node, self.pitch_speed * dt)
+            self.node().setP(self.node(), self.pitch_speed * dt)
         if movement == "pitch-down":
-            self.dummy_node.setP(self.dummy_node, -1 * self.pitch_speed * dt)
+            self.node().setP(self.node(), -1 * self.pitch_speed * dt)
         if movement == "heap-left":
-            self.dummy_node.setH(self.dummy_node, -1 * self.yaw_speed * dt)
+            self.node().setH(self.node(), -1 * self.yaw_speed * dt)
         if movement == "heap-right":
-            self.dummy_node.setH(self.dummy_node, self.yaw_speed * dt)
+            self.node().setH(self.node(), self.yaw_speed * dt)
         if movement == "move-forward":
             # 40 panda_units/s = ~12,4 km/h
-            self.dummy_node.setFluidY(self.dummy_node, 40 * dt)
-        if movement == "increase-thrust" and self.thrust < 100: 
-            if self.use_basic_physics or self.use_full_physics:
-                self.thrust +=1 #increases the thrust
-        if movement == "decrease-thrust"and self.thrust > 0:
-            if self.use_basic_physics or self.use_full_physics:
-                self.thrust -=1
+            self.node().setFluidY(self.node(), 40 * dt)
+
+    def chThrust(self, value):
+        if value == "add" and self.thrust < 100: 
+            self.thrust += 1
+        if value == "subtract" and self.thrust > 0:
+            self.thrust -= 1
 
     def setShortcutParameters(self):
         """pre-calculated flight parameters"""
@@ -287,7 +287,7 @@ class Aeroplane(object):
     def velocityForces(self):
         """Update position based on basic forces model"""
         
-        node = self.dummy_node
+        node = self.node()
         quat = node.getQuat()
         
         forward = quat.getForward()
@@ -333,16 +333,16 @@ class Aeroplane(object):
         self.velocity_v = new_v
         
     def velocitySimple(self):
-        """Physical forces- and movement management."""
+        """OLD ONE - Physical forces- and movement management."""
         dt = c.getDt()
 
         # coefficient for the lift force, I found it by experimentation
         # but it will be better to have an analytical solution
         self.k = 0.01
         
-        self.pitch_ang = radians(self.dummy_node.getP())
-        self.roll_ang = radians(self.dummy_node.getR())
-        self.heap_ang = radians(self.dummy_node.getH())
+        self.pitch_ang = radians(self.node().getP())
+        self.roll_ang = radians(self.node().getR())
+        self.heap_ang = radians(self.node().getH())
 
         # acceleration of gravity but it was so small value so I multiplied
         # it with 500 also found by experimenting but will change after the
@@ -356,25 +356,30 @@ class Aeroplane(object):
             self.k * self.thrust * cos(self.roll_ang)) * 80000
         
          # this makes the plane go forward through its own axis
-        self.dummy_node.setFluidY(self.dummy_node, self.thrust * dt)
+        self.node().setFluidY(self.node(), self.thrust * dt)
 
         # this adds the gravity, it moves the plane at the direction of the
         # Z axis of the ground
-        self.dummy_node.setZ(self.dummy_node.getZ() + self.gravity * dt * dt / 2)
+        self.node().setZ(self.node().getZ() + self.gravity * dt * dt / 2)
 
         # this adds the movement at the z direction of the plane
-        self.dummy_node.setFluidZ(self.dummy_node, self.ForceZ*dt*dt/2/self.mass)
+        self.node().setFluidZ(self.node(), self.ForceZ*dt*dt/2/self.mass)
 
         # this makes the plane not to go below vertical 0
-        if self.dummy_node.getZ() < 0:
-            self.dummy_node.setZ(0)
+        if self.node().getZ() < 0:
+            self.node().setZ(0)
         
         # TODO (gjmm): set velocity to real velocity
         self.velocity_v.setX(self.thrust*1.0)
 
-    def getBounds(self):
+    def bounds(self):
         """Returns a vector describing the vehicle's size (width, length,
         height). Useful for collision detection."""
-        bounds = self.dummy_node.getTightBounds()
+        bounds = self.node().getTightBounds()
         size = bounds[1] - bounds[0]
         return size
+
+    def node(self):
+        """Returns the plane's container. Please use this instead of
+        dummy_node or the actual model."""
+        return self.dummy_node

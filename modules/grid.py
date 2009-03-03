@@ -3,20 +3,26 @@
 from direct.directtools.DirectGeometry import LineNodePath
 from pandac.PandaModules import Vec4
 
+# container for all the helpers objects.
+helpers_cont = render.attachNewNode("helpers_cont")
+
 class Grid():
     """Generic grid class."""
+    # It's still ugly, but should be okay for testing, i guess.
 
-    def __init__(self):
-        pass
+    def makeGrid(self, density=100, scale=500):
+        """Draws a grid.
+        
+        Arguments:
+        density -- How many rows (both directions). Defaults to 100.
+        scale -- Short for setScale(scale, scale, 1). Default is 500.
+                 Scale of 1 means 10x10 panda units or metres.
+        """
 
-    def makeGrid(self):
-        """Draws a grid and returns the nodepath."""
+        self.grid_node = helpers_cont.attachNewNode("grid")
 
-        self.grid_node = render.attachNewNode("grid")
-
-        # size
-        X1 = Y1 = 10
-        X2 = Y2 = -10
+        X1 = Y1 = 5
+        X2 = Y2 = -5
 
         # X axis
         Xaxis = LineNodePath(self.grid_node, "Xaxis", 1, Vec4(1, 0, 0, 1))
@@ -55,13 +61,15 @@ class Grid():
         raster = LineNodePath(self.grid_node, 'raster', .2, Vec4(.5, .5, .5, 1))
 
         d = 0
-        for l in range (X1-Y2):
+        for l in range(density):
             l1 = (X2 + d, Y1,     0)
             l2 = (X2 + d, Y2,     0)
             l3 = (X2,     Y2 + d, 0)
             l4 = (X1,     Y2 + d, 0) 
-            d += 1
+
+            d += float(X1 - X2) / density
             raster.drawLines([[l1,l2], [l3,l4]])
         raster.create()
 
+        self.grid_node.setScale(scale, scale, 1)
         return self.grid_node

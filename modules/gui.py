@@ -28,11 +28,11 @@ class HUD(object):
                                      pos=(1.0, 0.85),align=TextNode.ALeft,
                                      scale=0.05)
     def update(self):
-        heading = - self.model.dummy_node.getH()
+        heading = - self.model.node().getH()
         if heading < 0.0:
             heading += 360.0
         head = '%.1f' %abs(round(heading,1))
-        alt = 'alt: %d' %int(self.model.dummy_node.getZ())
+        alt = 'alt: %d' %int(self.model.node().getZ())
         vel = 'vel: %d' %int(self.model.velocity_v.length())
         
         self.head.destroy()

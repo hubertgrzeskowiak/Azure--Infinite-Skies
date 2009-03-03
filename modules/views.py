@@ -28,7 +28,7 @@ class PlaneCamera():
         if view_mode == FIRST_PERSON:
             # plane specific - later on managable with emptys or config-vars.
             self.camera.reparentTo(self.parent)
-            self.camera.setPos(-1.6, 3.3, 1.2)
+            self.camera.setPosHpr(-1.6, 3.3, 1.2, 0, -7, 0)
             
         elif view_mode == COCKPIT:
             # plane specific - later on managable with emptys or config-vars.
