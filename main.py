@@ -169,7 +169,11 @@ def gameloop(task):
             keyInfo = ctl_map.controls[key]
             if keyInfo["type"] == "move":
                 player.move(keyInfo["desc"])
-                active_motion_controls.append(keyInfo["desc"])
+                if not options.ghost:
+                    active_motion_controls.append(keyInfo["desc"])
+            if options.ghost:
+                if keyInfo["type"] == "ghost-move":
+                    player.move(keyInfo["desc"])
             elif keyInfo["type"] == "thrust":
                 player.chThrust(keyInfo["desc"])
             elif keyInfo["type"] == "cam-move":
