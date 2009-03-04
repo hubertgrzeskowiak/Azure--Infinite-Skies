@@ -27,8 +27,8 @@ z/c - move cam
 x - reset cam
 
 space - move forward
-+ - increase thrust
-- - decrease thrust
+PageUp - increase thrust
+PageDown - decrease thrust
 
 VIEWS
 p - first person
