@@ -46,16 +46,7 @@ class Config(object):
     Cause this Object includes all options defined at the beginning and cause
     of its flexible style, it relies under special terms.
     
-    1. All attributes added to this object (with a form of a dict) must
-       have following style:
-       
-       {"optOption": value}
-       
-       Yeah you are right! All options you define must have "opt" at the
-       beginning, and then an individual name. The Value of the key could be a
-       Python type direct example: int, str etc. Classes are limited.
-       
-    2. To read the options you have simply call it as an attribute of the
+    1. To read the options you have simply call it as an attribute of the
        object. Exmaple: take the option example above and an object "Config".
        
        Config.optOption : returns the value of the key "optOption"
@@ -63,69 +54,15 @@ class Config(object):
     All attributes not beginning with "opt" stands under the normal python
     class-attribute style. So remember!"""
 
-
     def __init__(self):
-        self.attrDict = {}
-
-#------------------------------------------------------------------------------
-
-    def __attributeExist(self, attrName):
-        """Search if the attribute by name and return it if exist, otherwise 
-        return None"""
-        
-        try:
-            attr = self.attrDict[attrName]
-        except KeyError as e:
-            return None
-        else: 
-            return attr
-
-#------------------------------------------------------------------------------
-
-    def getAllAttributesAsDict(self):
-        return self.attrDict
+        pass
 
 #------------------------------------------------------------------------------
     
-    def addAttrList(self, attrDict):
+    def addAttribute(self, attrName, attrValue):
         "Gets the attribute list an add it to the given list"
         
-        for key, value in attrDict.iteritems():
-            if not key.startswith("opt"):
-                print("Warning: Option <%s> will not be add. " \
-                + "It must start with \"opt\"")
-            else:
-                self.attrDict[key] = value
-
-#------------------------------------------------------------------------------
-    
-    def __getattribute__(self, attrName):
-        "Return the attribute value in the class dict otherwise return None"
-        
-        if attrName.startswith("opt"):
-            return self.__attributeExist(attrName)
-
-        return super(Config, self).__getattribute__(attrName)
-
-#------------------------------------------------------------------------------
-
-    def __setattr__(self, attrName, attrValue):
-        "Set the given attriute, but not add it"
-        
-        if not attrName.startswith("opt"):
-            return super(Config, self).__setattr__(attrName, attrValue)
-        
-        attr = self.__attributeExist(attrName)
-        if attr is None:
-            raise AttributeNotExist("The Attribute <%s> does not exist"
-            % attrName)
-            
-        if type(attr[1]) != type(attrValue):
-            raise WrongAttributeType(
-            "The given Value for <%s> should be a %s" % (attrName,
-            type(attr[1])))
-            
-        attr[1] = attrValue
+        setattr(self, "opt" + attrName, attrValue)
 
 #------------------------------------------------------------------------------
 # Settings Abstract Class
@@ -142,6 +79,9 @@ class ConfigAbstract(object):
         self.attrDict = {}  # Config dict
         self.configPath = configPath  # Just the path to the config file
         self.configName = configName  # Just the name without file ext
+
+    def getConfigObj(self):
+        return self.config
 
     @abstractmethod
     def addConfigAttributes(self, attrDict): pass
@@ -169,8 +109,9 @@ class ConfigXML(ConfigAbstract):
     def __updateConfigObject(self):
         "Updates the config object with the attributes"
         
-        self.config.addAttrList(self.attrDict)
-
+        for key, value in self.attrDict:
+            self.config.addAttribute(key, value)
+        
 #------------------------------------------------------------------------------
 
     def __createFilename(self):
@@ -258,6 +199,10 @@ class ConfigXML(ConfigAbstract):
                         optTypedValue = int(optValue)
                     elif optType == "boolean":
                         optTypedValue = bool(optValue)
+                    elif optType == "list":
+                        optTypedValue = list(optValue)
+                    elif optType == "dict":
+                        optTypedValue = dict(optValue)
                     else:
                         raise XMLParseError("Not identified type for <%s>" \
                         % optName)
@@ -265,7 +210,7 @@ class ConfigXML(ConfigAbstract):
                     print(e)
 		        
                 # now try to add it, to the config object
-                self.attrDict["opt" + optName] = optTypedValue
+                self.attrDict[optName] = optTypedValue
         		    
         self.__updateConfigObject()
 
