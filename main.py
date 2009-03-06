@@ -27,8 +27,8 @@ z/c - move cam
 x - reset cam
 
 space - move forward
-PageUp - increase thrust
-PageDown - decrease thrust
++/= - increase thrust
+-   - decrease thrust
 
 VIEWS
 p - first person
@@ -46,42 +46,18 @@ import optparse
 
 # make sure python finds our modules
 os.chdir(sys.path[0])
-sys.path.append("modules")
+sys.path.append('modules')
 
 # some panda configuration settings
 from pandac.PandaModules import loadPrcFileData
-loadPrcFileData("", "model-path $MAIN_DIR/models")
-#loadPrcFileData("", "sync-video 0")  # disable framerate limitation
-#loadPrcFileData("", "want-directtools #t")
-#loadPrcFileData("", "want-tk #t")
-#loadPrcFileData("", "fullscreen #t")
+loadPrcFileData('', 'model-path $MAIN_DIR/models')
+#loadPrcFileData('', 'sync-video 0')  # disable framerate limitation
+#loadPrcFileData('', 'want-directtools #t')
+#loadPrcFileData('', 'want-tk #t')
+#loadPrcFileData('', 'fullscreen #t')
 
-
-# parse command line arguments
 # constants for -v,-d and -q options are found in errors module
 from errors import *
-parser = optparse.OptionParser()
-
-parser.add_option("-v","--verbose",
-                  action="store_const", const=RAISE, dest="verbose",
-                  help="print extra information")
-parser.add_option("-d","--debug",
-                  action="store_const", const=DIE, dest="verbose",
-                  help="print extra debugging information")
-parser.add_option("-q","--quiet", 
-                  action="store_const", const=IGNORE_ALL, dest="verbose",
-                  help="do not print information")
-
-parser.add_option("-g","--ghost", 
-                  action="store_true", dest="ghost", default=False,
-                  help="use ghost flying mode")
-parser.add_option("-o","--oldphysics", 
-                  action="store_true", dest="oldphysics", default=False,
-                  help="use old physics")
-
-parser.set_defaults(verbose=RAISE)
-(options,args) = parser.parse_args()
-setErrAction(options.verbose)
 
 # panda3d modules
 import direct.directbase.DirectStart
@@ -103,107 +79,203 @@ import views
 import controls
 import grid
 
+# uncomment to view the rendering tree after exiting game
+"""
+print 80 * '-'
+print render.ls()
+print 80 * '-'
+"""
 
-# basic preperation
-gui.printInstructions(INSTRUCTIONS)
-base.setBackgroundColor(0.0, 0.2, 0.3)
-base.cam.node().getLens().setFar(10000)
-#base.camLens.setFar(10000)
-base.disableMouse()
+#------------------------------------------------------------------------------
+# Azure Settings Class
+#------------------------------------------------------------------------------
 
-# a grey raster - for testing
-G1 = grid.Grid()
-G1.makeGrid()
+class AzureSettings(object):
+    """Azure Main Settings Class, which defines all settings valid for the
+    game"""
 
-# load some scenery for testing the scenery module
-#scenery_obj = {}
-#scenery_obj["panda_green"] = Scenery("panda_green", "environment", VBase3(0, 1000, 0))
+    def __init__(self):
+        self.basicPhysics = False
+        self.fullPhysics = False
+        self.extraCameraModes = None
 
-# some lights
-# TODO(Nemesis13): new module
-dlight = DirectionalLight("dlight")
-alight = AmbientLight("alight")
-dlnp = render.attachNewNode(dlight.upcastToPandaNode()) 
-alnp = render.attachNewNode(alight.upcastToPandaNode())
-dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
-alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
-dlnp.setP(-60) 
-render.setLight(dlnp)
-render.setLight(alnp)
+#------------------------------------------------------------------------------
+# Main Azure Class
+#------------------------------------------------------------------------------
 
-# load our plane(s)
-planes = {}
-player = planes["player"] = Aeroplane("griffin")
-
-# load some dark ones, just for testing
-planes["pirate1"] = Aeroplane("griffin")
-pirate1 = planes["pirate1"].node()
-pirate1.setColor(0, 0, 1, 1)
-pirate1.setPosHpr(-15, 20, 6, 230, 0, 0)
-
-planes["pirate2"] = Aeroplane("griffin")
-pirate2 = planes["pirate2"].node()
-pirate2.setColor(0, 0, 1, 1)
-pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
-
-# set default camera
-DefaultCam = views.PlaneCamera(player.node())
-#DefaultCam.setViewMode(views.FIRST_PERSON)
-#DefaultCam.setViewMode(views.DETACHED)
-#DefaultCam.setViewMode(views.COCKPIT)
-
-hud = gui.HUD(player)
-
-# now we can enable user input
-ctl_map = controls.ControlMap()
-k = controls.KeyHandler(ctl_map)
-
-
-# TODO(Nemesis13): define what exactly belongs into this task and what should
-# have own ones
-def gameloop(task):
-    active_motion_controls = []
+class Azure(object):
+    """Main Azure Class which takes all operations, being valid for the start.
+    So, the beginning of all"""
     
-    for key, state in k.keyStates.items():
-        if state == 1:
-            keyInfo = ctl_map.controls[key]
-            if keyInfo["type"] == "move":
-                player.move(keyInfo["desc"])
-                if not options.ghost:
-                    active_motion_controls.append(keyInfo["desc"])
-            if options.ghost:
-                if keyInfo["type"] == "ghost-move":
-                    player.move(keyInfo["desc"])
-            elif keyInfo["type"] == "thrust":
-                player.chThrust(keyInfo["desc"])
-            elif keyInfo["type"] == "cam-move":
-                player.move(keyInfo["desc"])
-            elif keyInfo["type"] == "cam-move":
-                DefaultCam.rotate(keyInfo["desc"])
-            elif keyInfo["type"] == "cam-view":
-                DefaultCam.setViewMode(keyInfo["desc"])
+    def __init__(self, options):
+        self.options = options
+        self.settings = AzureSettings() # Azure settings object
+        self.hud = None
+        self.planes = None
+        self.defaultCam = None
+        self.ctl_map = None
+        self.k = None
+            
+        self.initPanda3dEngine()
 
-    # I messed up something here :-/ (Nemesis#13)
-    #if active_motion_controls != []:
-    #    if any(x in active_motion_controls for x in ("roll-left", "roll-right")):
-    #        player.reverseRoll()
-    #    if any(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
-    #        player.reversePitch()
+#------------------------------------------------------------------------------
+    
+    def startGame(self):
+        "Main starting function. Beginn the loop"
+    
+        gameTask = taskMgr.add(self.gameloop, 'self.gameloop')
 
-    if not options.ghost:             
-        if options.oldphysics:
-            player.velocitySimple()
-        else:
-            player.velocityForces() 
+        run() # Main run of directstart from panda
+    
+#------------------------------------------------------------------------------
 
-    DefaultCam.step()
-    hud.update()
-    return Task.cont
+    # TODO(Nemesis13): define what exactly belongs into 
+    # this task and what should have own ones
+    def gameloop(self, task):
+        active_motion_controls = []
+        
+        for key, state in self.k.keyStates.items():
+            if state == 1:
+                keyInfo = self.ctl_map.controls[key]
+                if keyInfo["type"] == "move":
+                    self.player.move(keyInfo["desc"])
+                    if not self.options.ghost:
+                        active_motion_controls.append(keyInfo["desc"])
+                if self.options.ghost:
+                    if keyInfo["type"] == "ghost-move":
+                        self.player.move(keyInfo["desc"])
+                elif keyInfo["type"] == "thrust":
+                    self.player.chThrust(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-move":
+                    self.player.move(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-move":
+                    self.defaultCam.rotate(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-view":
+                    self.defaultCam.setViewMode(keyInfo["desc"])
 
-gameTask = taskMgr.add(gameloop, "gameloop")
+        # I messed up something here :-/ (Nemesis#13)
+        #if active_motion_controls != []:
+        #    if any(x in active_motion_controls for x in ("roll-left", "roll-right")):
+        #        player.reverseRoll()
+        #    if any(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
+        #        player.reversePitch()
 
-#print 80 * '#'
-#render.ls()
-#print 80 * '#'
+        if not self.options.ghost:             
+            if self.options.oldphysics:
+                self.player.velocitySimple()
+            else:
+                self.player.velocityForces() 
 
-run()
+        self.defaultCam.step()
+        self.hud.update()
+        return Task.cont
+        
+#------------------------------------------------------------------------------
+
+    def initPanda3dEngine(self):
+        "Inits all settings and objects for the panda 3d"
+        
+        # basic preperation
+        gui.printInstructions(INSTRUCTIONS)
+        base.setBackgroundColor(0.0, 0.2, 0.3)
+        base.cam.node().getLens().setFar(10000)
+        #base.camLens.setFar(10000)
+        base.disableMouse()
+
+        # a grey raster - for testing
+        G1 = grid.Grid()
+        G1.makeGrid()
+
+        # load some scenery for testing the scenery module
+        #scenery_obj = {}
+        #scenery_obj["panda_green"] = Scenery("panda_green", "environment", VBase3(0, 1000, 0))
+
+        # some lights
+        # TODO(Nemesis13): new module
+        dlight = DirectionalLight("dlight")
+        alight = AmbientLight("alight")
+        dlnp = render.attachNewNode(dlight.upcastToPandaNode()) 
+        alnp = render.attachNewNode(alight.upcastToPandaNode())
+        dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
+        alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
+        dlnp.setP(-60) 
+        render.setLight(dlnp)
+        render.setLight(alnp)
+
+        # load our plane(s)
+        self.planes = {}
+        self.player = self.planes["player"] = Aeroplane("griffin")
+
+        # load some dark ones, just for testing
+        self.planes["pirate1"] = Aeroplane("griffin")
+        pirate1 = self.planes["pirate1"].node()
+        pirate1.setColor(0, 0, 1, 1)
+        pirate1.setPosHpr(-15, 20, 6, 230, 0, 0)
+
+        self.planes["pirate2"] = Aeroplane("griffin")
+        pirate2 = self.planes["pirate2"].node()
+        pirate2.setColor(0, 0, 1, 1)
+        pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
+
+        # set default camera
+        self.defaultCam = views.PlaneCamera(self.player.dummy_node)
+        #default_cam.setViewMode(views.FIRST_PERSON)
+        #default_cam.setViewMode(views.DETACHED)
+        #default_cam.setViewMode(views.COCKPIT)
+
+        # now we can enable user input
+        self.ctl_map = controls.ControlMap()
+        self.k = controls.KeyHandler(self.ctl_map)
+
+        self.hud = gui.HUD(self.player)
+        
+#------------------------------------------------------------------------------
+# Global Functions
+#------------------------------------------------------------------------------
+
+def createOptionParser():
+    "Creates a the parser object an return it"
+    
+    # Create a new parser
+    parser = optparse.OptionParser()
+
+    # Add all options
+    parser.add_option("-v", "--verbose", action = "store_const", const = RAISE,             
+        dest = "verbose", help = "print extra information")
+    parser.set_defaults(verbose = RAISE)
+    
+    parser.add_option("-d","--debug", action = "store_const", const = DIE,
+        dest = "verbose", help = "print extra debugging information")
+        
+    parser.add_option("-q","--quiet", action = "store_const", 
+        const = IGNORE_ALL, dest = "verbose", 
+        help = "do not print information")
+
+    # temporary flags to test camera modes and physics
+    parser.add_option("-g","--ghost", 
+        action="store_true", dest="ghost", default=False,
+        help="use ghost flying mode")
+    parser.add_option("-o","--oldphysics", 
+        action="store_true", dest="oldphysics", default=False,
+        help="use old physics")
+
+    
+    return parser
+
+#------------------------------------------------------------------------------
+
+def main():
+    # Parse options
+    parser = createOptionParser()
+    options, args = parser.parse_args()
+    setErrAction(options.verbose)
+    
+    # Create new azure object
+    azure = Azure(options)
+    azure.startGame()
+
+#------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    main()
+
