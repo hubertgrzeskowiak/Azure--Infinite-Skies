@@ -39,14 +39,62 @@ u - detached
 ESC - quit
 """
 
+#------------------------------------------------------------------------------
 # python standard modules
+#------------------------------------------------------------------------------
+
 import sys
 import os
 import optparse
 
-# make sure python finds our modules
-os.chdir(sys.path[0])
-sys.path.append('modules')
+#------------------------------------------------------------------------------
+# Parser Function
+#------------------------------------------------------------------------------
+
+# Unfortunately, all this has to be defined before we load the Panda3D 
+#       libraries or we get the unfortunate side-effect of the screen
+#       window popping up before options are parsed.
+
+# constants for -v,-d and -q options are found in errors module
+from modules.errors import *
+
+def createOptionParser():
+    "Creates a the parser object an return it"
+    
+    # Create a new parser
+    parser = optparse.OptionParser()
+
+    # Add all options
+    parser.add_option("-v", "--verbose", action = "store_const", const = RAISE,             
+        dest = "verbose", help = "print extra information")
+    parser.set_defaults(verbose = RAISE)
+    
+    parser.add_option("-d","--debug", action = "store_const", const = DIE,
+        dest = "verbose", help = "print extra debugging information")
+        
+    parser.add_option("-q","--quiet", action = "store_const", 
+        const = IGNORE_ALL, dest = "verbose", 
+        help = "do not print information")
+
+    # temporary flags to test camera modes and physics
+    parser.add_option("-g","--ghost", 
+        action="store_true", dest="ghost", default=False,
+        help="use ghost flying mode")
+    parser.add_option("-o","--oldphysics", 
+        action="store_true", dest="oldphysics", default=False,
+        help="use old physics")
+
+    
+    return parser
+
+# Parse options
+parser = createOptionParser()
+options, args = parser.parse_args()
+setErrAction(options.verbose)
+
+#------------------------------------------------------------------------------
+# panda3d modules
+#------------------------------------------------------------------------------
 
 # some panda configuration settings
 from pandac.PandaModules import loadPrcFileData
@@ -55,9 +103,6 @@ loadPrcFileData('', 'model-path $MAIN_DIR/models')
 #loadPrcFileData('', 'want-directtools #t')
 #loadPrcFileData('', 'want-tk #t')
 #loadPrcFileData('', 'fullscreen #t')
-
-# constants for -v,-d and -q options are found in errors module
-from errors import *
 
 # panda3d modules
 import direct.directbase.DirectStart
@@ -71,13 +116,21 @@ from pandac.PandaModules import AmbientLight,DirectionalLight
 #from pandac.PandaModules import ClockObject
 #c = ClockObject.getGlobalClock()
 
-from aircrafts import Aeroplane
-from scenery import Scenery
-import gui
+#------------------------------------------------------------------------------
+# local modules
+#------------------------------------------------------------------------------
+
+## make sure python finds our modules
+#os.chdir(sys.path[0])
+#sys.path.append('modules')
+
+from modules.aircrafts import Aeroplane
+from modules.scenery import Scenery
+import modules.gui as gui
 #from errors import *
-import views
-import controls
-import grid
+import modules.views as views
+import modules.controls as controls
+import modules.grid as grid
 
 # uncomment to view the rendering tree after exiting game
 """
@@ -227,48 +280,13 @@ class Azure(object):
         self.ctl_map = controls.ControlMap()
         self.k = controls.KeyHandler(self.ctl_map)
 
-        self.hud = gui.HUD(self.player)
+        self.hud = gui.HUD(self.player,self.defaultCam)
         
 #------------------------------------------------------------------------------
-# Global Functions
-#------------------------------------------------------------------------------
-
-def createOptionParser():
-    "Creates a the parser object an return it"
-    
-    # Create a new parser
-    parser = optparse.OptionParser()
-
-    # Add all options
-    parser.add_option("-v", "--verbose", action = "store_const", const = RAISE,             
-        dest = "verbose", help = "print extra information")
-    parser.set_defaults(verbose = RAISE)
-    
-    parser.add_option("-d","--debug", action = "store_const", const = DIE,
-        dest = "verbose", help = "print extra debugging information")
-        
-    parser.add_option("-q","--quiet", action = "store_const", 
-        const = IGNORE_ALL, dest = "verbose", 
-        help = "do not print information")
-
-    # temporary flags to test camera modes and physics
-    parser.add_option("-g","--ghost", 
-        action="store_true", dest="ghost", default=False,
-        help="use ghost flying mode")
-    parser.add_option("-o","--oldphysics", 
-        action="store_true", dest="oldphysics", default=False,
-        help="use old physics")
-
-    
-    return parser
-
+# Main Function
 #------------------------------------------------------------------------------
 
 def main():
-    # Parse options
-    parser = createOptionParser()
-    options, args = parser.parse_args()
-    setErrAction(options.verbose)
     
     # Create new azure object
     azure = Azure(options)

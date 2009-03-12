@@ -54,8 +54,7 @@ class Aeroplane(object):
         new_node_name = "dummy_node" + str(Aeroplane.plane_count)
         self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
         
-        self.thrust = 0
-        self.thrust_scale = 5000
+        self.thrust = 0.0
         self.counter = 0
 
         if model_to_load == 0:
@@ -78,35 +77,14 @@ class Aeroplane(object):
         else:
             self.loadSpecs(name)
         
-        # TODO (gjmm): these are specifications and should be moved to a file
-        self.liftvsaoa = ListInterpolator([[radians(-10.0),-0.4],
-                                           [radians(-8.0),-0.45],
-                                           [radians(15.0),1.45],
-                                           [radians(18.0),1.05]],
-                                           0.0,0.0)
-        self.dragvsaoa = ListInterpolator([[radians(-10.0),-0.010],
-                                           [radians(0.0),0.006],
-                                           [radians(4.0),0.005],
-                                           [radians(8.0),0.0065],
-                                           [radians(12.0),0.012],
-                                           [radians(14.0),0.020],
-                                           [radians(16.0),0.028]],
-                                           0.03,0.1)
-        self.lift_area = 49.2
-        self.drag_area = 1.1
-        self.drag_coef = 0.044
-        self.drag_coef_x = 0.044
-        self.drag_coef_y = 10.0
-        self.drag_coef_z = 10.0
-        self.drag_area_x = 20.0
-        self.drag_area_y = 1.1
-        self.drag_area_z = 20.0
-        self.aspect_ratio = 8.0
+        # precalculated values for combinations of variables
+        self.setCalculationConstants()
         
-        self.velocity_v = Vec3(0.0,0.0,0.0)
-        self.heading_ang = 0.0
-        self.setShortcutParameters()
-    
+        # dynamic variables
+        self.velocity = Vec3(0.0,0.0,0.0)
+        self.acceleration = Vec3(0.0,0.0,0.0)
+        
+        
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
         if hasattr(self, "plane_model"):
@@ -145,50 +123,102 @@ class Aeroplane(object):
             self.specs = s
         else:
             justLoad()
-    
-    # (tomkis - two methods below -> rollback for keypressed event)
+        
+        # TODO (gjmm): these are specifications and should be moved to a file
+        
+        self.wing_area = 48.0 # m^2
+        self.wing_span = 24.0 # m
+        
+        self.drag_coef_x = 0.9
+        self.drag_coef_y = 0.1
+        self.drag_coef_z = 0.9
+        self.drag_area_x = 30.0
+        self.drag_area_y = 2.75
+        self.drag_area_z = 50.0
+        self.aspect_ratio = self.wing_span * self.wing_span /self.wing_area
+        
+        self.liftvsaoa = ListInterpolator([[radians(-10.0),-0.4],
+                                           [radians(-8.0),-0.45],
+                                           [radians(15.0),1.75],
+                                           [radians(18.0),1.05]],
+                                           0.0,0.0)
+        self.dragvsaoa = ListInterpolator([[radians(-10.0),-0.010],
+                                           [radians(0.0),0.006],
+                                           [radians(4.0),0.005],
+                                           [radians(8.0),0.0065],
+                                           [radians(12.0),0.012],
+                                           [radians(14.0),0.020],
+                                           [radians(16.0),0.028]],
+                                           0.03,0.1)
+        self.max_thrust = 5000.0
+        
+        
+        
     def reverseRoll(self,offset=10.0):
+        """Automatically levels the airplane in the roll axis
+        The offset argument allows the airplane to level to upright flight
+        when the initial roll vector is beyond 90 degrees.
+        """
+        # local copies of the relevant data
         dt = c.getDt()
         roll = self.node().getR()
         
-        # vary the rate depending on the angle out
-        roll_factor = abs(roll/90.0)
-        if roll_factor > 1:
-            roll_factor = 2 - roll_factor
-        roll_factor = sqrt(roll_factor) + 0.1
+        # This may not be strictly necessary but this causes the roll rate
+        # to decrease as the roll approaches the target angle
+        r_factor = abs(roll/90.0)
+        if r_factor > 1:
+            # we are upside down and so the factor is reversed (offset ignored)
+            r_factor = 2 - r_factor
+        # sqrt gives a decaying effect, constant allows target to be reached
+        r_factor = sqrt(r_factor) + 0.1
         
+        # Determine the quadrant and apply the appropriate rotation,
+        #       correcting if the target is overshot
         if roll < -90.0 - offset:
-            self.node().setR(node(), -1 * roll_factor * self.roll_speed * dt)
-            if self.node().getR() > 0: self.node().setR(180.0)
+            self.node().setR(node(), -1 * r_factor * self.roll_speed * dt)
+            if self.node().getR() > 0: 
+                self.node().setR(180.0)
         elif roll < 0.0:
-            self.node().setR(self.node(), roll_factor * self.roll_speed * dt)
-            if self.node().getR() > 0: self.node().setR(0.0)
+            self.node().setR(self.node(), r_factor * self.roll_speed * dt)
+            if self.node().getR() > 0: 
+                self.node().setR(0.0)
         elif roll > 90.0 + offset:
-            self.node().setR(self.node(), roll_factor * self.roll_speed * dt)
-            if self.node().getR() < 0: self.node().setR(180.0)
+            self.node().setR(self.node(), r_factor * self.roll_speed * dt)
+            if self.node().getR() < 0: 
+                self.node().setR(180.0)
         elif roll > 0.0:
-            self.node().setR(self.node(), -1 * roll_factor * self.roll_speed * dt)
+            self.node().setR(self.node(), -1 * r_factor * self.roll_speed * dt)
             if self.node().getR() < 0:
                 self.node().setR(0.0)
     
     def reversePitch(self):
+        """Automatically levels the airplane in the pitch axis"""
+        # local copies of the relevant data
         dt = c.getDt()
         pitch = self.node().getP()
         
-        # need this so that we know which direction to rotate
+        # The angular range for pitch is -90 -> 90 and so we need extra
+        # information to determine the direction to rotate:
         if self.node().getQuat().getUp()[2] < 0:
             factor = -1
         else:
             factor = 1
         
-        # vary the rate depending on the angle out
-        pitch_factor = abs(pitch/90.0) + 0.1
+        # This may not be strictly necessary but this causes the roll rate
+        # to decrease as the roll approaches the target angle
+        p_factor = abs(pitch/90.0) + 0.1
+        # sqrt gives a decaying effect, constant allows target to be reached
+        p_factor = sqrt(p_factor) + 0.1
         
+        # Determine the quadrant, helped by the 'factor' calculated above,
+        # and apply the appropriate rotation; correct if the target is overshot
         if pitch < 0.0:
-            self.node().setP(self.node(), pitch_factor * factor * self.pitch_speed * dt)
+            self.node().setP(self.node(), p_factor * factor * \
+                                                     self.pitch_speed * dt)
             if self.node().getP() > 0: self.node().setP(0.0)
         elif pitch > 0.0:
-            self.node().setP(self.node(), pitch_factor * factor * -1 * self.pitch_speed * dt)
+            self.node().setP(self.node(), -1 * p_factor * factor * \
+                                                     self.pitch_speed * dt)
             if self.node().getP() < 0: self.node().setP(0.0)
     
     def move(self, movement):
@@ -219,51 +249,69 @@ class Aeroplane(object):
         if movement == "move-forward":
             # 40 panda_units/s = ~12,4 km/h
             self.node().setFluidY(self.node(), 40 * dt)
-
+    
     def chThrust(self, value):
-        if value == "add" and self.thrust < 100: 
-            self.thrust += 1
-        if value == "subtract" and self.thrust > 0:
-            self.thrust -= 1
+        if value == "add" and self.thrust < 1.0: 
+            self.thrust += 0.01
+        if value == "subtract" and self.thrust > 0.0:
+            self.thrust -= 0.01
 
-    def setShortcutParameters(self):
-        """pre-calculated flight parameters"""
+    def setCalculationConstants(self):
+        """pre-calculate some calculation constants from the
+        flight parameters"""
         # density of air: rho = 1.2041 kg m-3
         half_rho = 0.602
-        self.lift_factor = half_rho * self.lift_area
+        self.lift_factor = half_rho * self.wing_area
         
         # could modify lift_induced_drag by a factor of 1.05 to 1.15
         self.lift_induced_drag_factor = (-1.0) * self.lift_factor / \
                                         (pi*self.aspect_ratio)
-        self.drag_factor_x = (-1.0) * half_rho * self.drag_area_x * self.drag_coef_x
-        self.drag_factor_y = (-1.0) * half_rho * self.drag_area_y * self.drag_coef_y
-        self.drag_factor_z = (-1.0) * half_rho * self.drag_area_z * self.drag_coef_z
+        self.drag_factor_x = (-1.0) * half_rho * self.drag_area_x * \
+                                                 self.drag_coef_x
+        self.drag_factor_y = (-1.0) * half_rho * self.drag_area_y * \
+                                                 self.drag_coef_y
+        self.drag_factor_z = (-1.0) * half_rho * self.drag_area_z * \
+                                                 self.drag_coef_z
         
-        gravityscale = 10.0
-        self.gravity = Vec3(0.0,0.0,(-9.81) * gravityscale * self.mass)
+        self.gravity = Vec3(0.0,0.0,(-9.81) * self.mass)
     
-    def liftForce(self,v,v_squared,right,down,forward):
+    def _wingAngleOfAttack(self,v_norm,up):
+        """ calculate the angle between the wing and the relative motion of the air """
+        
+        #projected_v = v_norm - right * v_norm.dot(right)
+        #aoa = atan2(projected_v.dot(-up), projected_v.dot(forward))
+        #return aoa
+        
+        # strangely enough, the above gets the same result as the below
+        # for these vectors it must be calculating the angle in the plane where
+        # right is the normal vector
+        
+        return v_norm.angleRad(up) - pi/2.0
+        
+    
+    def _lift(self,v_norm,v_squared,right,aoa):
         """return the lift force vector generated by the wings"""
-        # just make sure we are not modifying the external reference
-        v = v + v.zero()
-        
-        # calculate the angle of attack in radians
-        if v.normalize():
-            projected_v = v - right * v.dot(right)
-            aoa = atan2(projected_v.dot(down), projected_v.dot(forward))
-        else:
-            aoa = 0.0
-        
         # lift direction is always perpendicular to the airflow
-        lift_vector = right.cross(v)
+        lift_vector = right.cross(v_norm)
         return lift_vector * v_squared * self.lift_factor * self.liftvsaoa[aoa]
     
-    def liftInducedDragForce(self,v,v_squared):
-        """return the drag force vector resulting from production of lift"""
-        drag = v * sqrt(v_squared) * self.lift_induced_drag_factor
-        return drag
+    def _drag(self,v,v_squared,right,up,forward,aoa):
+        """return the drag force"""
+        
+        # get the induced drag coefficient
+        # Cdi = (Cl*Cl)/(pi*AR*e)
+        
+        lift_coef = self.liftvsaoa[aoa]
+        ind_drag_coef = lift_coef * lift_coef / (pi * self.aspect_ratio * 1.10)
+        
+        # and calculate the drag induced by the creation of lift
+        induced_drag =  -v * sqrt(v_squared) * self.lift_factor * ind_drag_coef
+        #induced_drag = Vec3(0.0,0.0,0.0)
+        profile_drag = self._simpleProfileDrag(v,right,up,forward)
+        
+        return induced_drag + profile_drag
     
-    def simpleProfileDragForce(self,v,right,up,forward):
+    def _simpleProfileDrag(self,v,right,up,forward):
         """return the force vector due to the shape of the aircraft"""
         speed_x = right.dot(v)
         speed_y = forward.dot(v)
@@ -279,62 +327,125 @@ class Aeroplane(object):
         if speed_z < 0.0:
             drag_z = -drag_z
         return drag_x + drag_y + drag_z
-        
-    def thrustForce(self,thrust_vector):
-        """return the force vector produced by the aircraft engines"""
-        return thrust_vector * self.thrust * self.thrust_scale
     
-    def velocityForces(self):
-        """Update position based on basic forces model"""
-        
-        node = self.node()
-        quat = node.getQuat()
-        
-        forward = quat.getForward()
-        up = quat.getUp()
-        right = quat.getRight()
-        down = -up
-        
-        v = self.velocity_v
+    def _thrust(self,thrust_vector):
+        """return the force vector produced by the aircraft engines"""
+        return thrust_vector * self.thrust * self.max_thrust
+    
+    def _force(self,v,right,up,forward):
+        """calculate the forces due to the velocity and orientation of the aircraft"""
         v_squared = v.lengthSquared()
+        v_norm = v + v.zero()
+        v_norm.normalize()
         
-        # force calculations
-        lift = self.liftForce(v,v_squared,right,down,forward)
-        lift_induced_drag = self.liftInducedDragForce(v,v_squared)
-        profile_drag = self.simpleProfileDragForce(v,right,up,forward)
-        thrust = self.thrustForce(forward)
+        aoa = self._wingAngleOfAttack(v_norm,up)
         
-        force = lift + lift_induced_drag + profile_drag + self.gravity + thrust
+        lift = self._lift(v_norm,v_squared,right,aoa)
+        drag = self._drag(v,v_squared,right,up,forward,aoa)
+        thrust = self._thrust(forward)
+        
+        force = lift + drag + self.gravity + thrust
         
         # if the plane is on the ground, the ground reacts to the downward force
         # TODO (gjmm): need to modify in order to consider reaction to objects
         #              at different altitudes.
-        if node.getZ() == 0.0:
+        if self.node().getZ() == 0.0:
             if force[2] < 0.0:
                 force.setZ(0.0)
-                
-        acceleration = force / self.mass
+        return force
+    
+    def speed(self):
+        """ returns the current velocity """
+        return self.velocity.length()
+    def altitude(self):
+        """ returns the current altitude """
+        return self.model.node().getZ()
+    
+    def velocityForces(self):
+        """Update position based on basic forces model"""
         
+        # collect together the appropriate information
+        node = self.node()
+        quat = node.getQuat()
+        
+        # directional vectors
+        forward = quat.getForward()
+        up = quat.getUp()
+        right = quat.getRight()
+        
+        # position, velocity and acceleration
+        pos = node.getPos()
+        vel = self.velocity
+        vel_squared = vel.lengthSquared()
+        acc = self.acceleration
+        
+        # and the timestep
         dt = c.getDt()
-        new_v = v + acceleration * dt
         
-        node.setX(node.getX() + new_v[0] * dt)
-        node.setY(node.getY() + new_v[1] * dt)
-        node.setZ(node.getZ() + new_v[2] * dt)
+        # The following integration schemes are left for interest.
+        #       The modified velocity Verlet is the method in use at the moment
+        
+        ## Euler integration
+        #new_acc = self._force(vel,right,up,forward) / self.mass
+        #new_pos = pos + vel * dt
+        #new_vel = vel + new_acc * dt
+        
+        ## Euler-Cromer
+        #new_acc = self._force(vel,right,up,forward) / self.mass
+        #new_vel = vel + new_acc * dt
+        #new_pos = pos + new_vel * dt
+        
+        ## Velocity Verlet
+        #new_pos = pos + vel * dt + acc * dt * dt * 0.5
+        #new_acc = self._force(vel,right,up,forward) / self.mass
+        #new_vel = vel + (acc + new_acc) * dt * 0.5
+        
+        # Modified Velocity Verlet
+        new_pos = pos + vel * dt + acc * dt * dt * 0.5
+        new_vel = vel + acc * dt * 0.5
+        new_acc = self._force(new_vel,right,up,forward) / self.mass
+        new_vel = new_vel + new_acc * dt * 0.5
+        
+        # Runge-Kutta would also be interesting but I think that needs
+        #       estimates of how right, up and forward change.. turning
+        #       forces have not been implemented yet.
+        
         
         # correcting the height on touchdown or ground impact
         # TODO (gjmm): need to modify in order to consider objects at different
         #              altitudes.
-        if node.getZ() < 0.0:
-            node.setZ(0.0)
-            new_v.setZ(0.0)
+        if new_pos.getZ() < 0.0:
+            new_pos.setZ(0.0)
+            new_vel.setZ(0.0)
         
-        # store the new velocity
-        self.velocity_v = new_v
-        
+        # store the new position, velocity and acceleration
+        node.setPos(new_pos)
+        self.velocity = new_vel
+        self.acceleration = new_acc
+    
+    def gForce(self):
+        up = self.node().getQuat().getUp()
+        acc = self.acceleration - self.gravity/self.mass
+        gf = acc.dot(up) / 9.81
+        return gf
+    
+    def lateralG(self):
+        right = self.node().getQuat().getRight()
+        acc = self.acceleration - self.gravity/self.mass
+        gf = acc.dot(right) / 9.81
+        return gf
+    
+    def axialG(self):
+        forward = self.node().getQuat().getForward()
+        acc = self.acceleration - self.gravity/self.mass
+        gf = acc.dot(forward) / 9.81
+        return gf
+    
     def velocitySimple(self):
         """OLD ONE - Physical forces- and movement management."""
         dt = c.getDt()
+        
+        l_thrust = self.thrust * self.max_speed
 
         # coefficient for the lift force, I found it by experimentation
         # but it will be better to have an analytical solution
@@ -347,30 +458,31 @@ class Aeroplane(object):
         # acceleration of gravity but it was so small value so I multiplied
         # it with 500 also found by experimenting but will change after the
         # analytical solution
-        self.gravity = -9.81 * 500
+        
+        self.gravity_scalar = -9.81 * 500
 
         # this force is to the z axis of the plane(not the relative axis),
         # so it does not have gravity but the thrust and the lift force,
         # 80000 is also an experimental value will change after the solution.
-        self.ForceZ = (self.thrust * cos(self.heap_ang) +
-            self.k * self.thrust * cos(self.roll_ang)) * 80000
+        self.ForceZ = (l_thrust * cos(self.heap_ang) +
+            self.k * l_thrust * cos(self.roll_ang)) * 80000
         
          # this makes the plane go forward through its own axis
-        self.node().setFluidY(self.node(), self.thrust * dt)
+        self.node().setFluidY(self.node(), l_thrust * dt)
 
         # this adds the gravity, it moves the plane at the direction of the
         # Z axis of the ground
-        self.node().setZ(self.node().getZ() + self.gravity * dt * dt / 2)
+        self.node().setZ(self.node().getZ() + self.gravity_scalar*dt*dt/2.0)
 
         # this adds the movement at the z direction of the plane
-        self.node().setFluidZ(self.node(), self.ForceZ*dt*dt/2/self.mass)
+        self.node().setFluidZ(self.node(), self.ForceZ*dt*dt/2.0/self.mass)
 
         # this makes the plane not to go below vertical 0
         if self.node().getZ() < 0:
             self.node().setZ(0)
         
         # TODO (gjmm): set velocity to real velocity
-        self.velocity_v.setX(self.thrust*1.0)
+        self.velocity.setX(l_thrust)
 
     def bounds(self):
         """Returns a vector describing the vehicle's size (width, length,
