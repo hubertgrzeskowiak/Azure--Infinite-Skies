@@ -175,7 +175,7 @@ class Aeroplane(object):
         # Determine the quadrant and apply the appropriate rotation,
         #       correcting if the target is overshot
         if roll < -90.0 - offset:
-            self.node().setR(node(), -1 * r_factor * self.roll_speed * dt)
+            self.node().setR(self.node(), -1 * r_factor * self.roll_speed * dt)
             if self.node().getR() > 0: 
                 self.node().setR(180.0)
         elif roll < 0.0:
