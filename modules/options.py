@@ -28,6 +28,9 @@ def createOptionParser():
     parser.add_option("-o","--oldphysics", 
         action="store_true", dest="oldphysics", default=False,
         help="use old physics")
+    parser.add_option("-a","--autolevel", 
+        action="store_true", dest="autolevel", default=False,
+        help="allow autolevel code")
 
     
     return parser

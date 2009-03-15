@@ -153,7 +153,7 @@ class Azure(object):
             if state == 1:
                 keyInfo = self.ctl_map.controls[key]
                 if keyInfo["type"] == "move":
-                    self.player.move(keyInfo["desc"])
+                    #self.player.move(keyInfo["desc"])
                     if not self.options.ghost:
                         active_motion_controls.append(keyInfo["desc"])
                 if self.options.ghost:
@@ -167,13 +167,18 @@ class Azure(object):
                     self.defaultCam.rotate(keyInfo["desc"])
                 elif keyInfo["type"] == "cam-view":
                     self.defaultCam.setViewMode(keyInfo["desc"])
-
-        # I messed up something here :-/ (Nemesis#13)
-        #if active_motion_controls != []:
-        #    if any(x in active_motion_controls for x in ("roll-left", "roll-right")):
-        #        player.reverseRoll()
-        #    if any(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
-        #        player.reversePitch()
+        
+        if self.options.autolevel and len(active_motion_controls) == 2:
+            if all(x in active_motion_controls for x in ("roll-left", "roll-right")):
+                self.player.reverseRoll()
+            elif all(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
+                self.player.reversePitch()
+            else:
+                for movement in active_motion_controls:
+                    self.player.move(movement)
+        else:
+            for movement in active_motion_controls:
+                self.player.move(movement)
 
         if not self.options.ghost:             
             if self.options.oldphysics:
