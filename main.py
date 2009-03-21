@@ -66,6 +66,7 @@ loadPrcFileData('', 'model-path $MAIN_DIR/models')
 #loadPrcFileData('', 'want-tk #t')
 #loadPrcFileData('', 'fullscreen #t')
 #loadPrcFileData('', 'show-frame-rate-meter 1')  # display framerate
+loadPrcFileData('', 'text-encoding utf8')
 
 # panda3d modules
 import direct.directbase.DirectStart

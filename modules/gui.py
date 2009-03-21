@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """Module containing graphical user interface objects"""
 
 from math import degrees, radians, pi, tan, sin, cos
 
-from direct.showbase.ShowBase import Point3, Point2, Vec3
+from direct.directtools.DirectGeometry import LineNodePath
+from direct.showbase.ShowBase import Point3, Point2, Vec3, Vec4
 from pandac.PandaModules import GeomVertexFormat,GeomVertexData
 from pandac.PandaModules import Geom,GeomNode,GeomVertexWriter,GeomLines
 from direct.gui.DirectGui import OnscreenText
@@ -11,6 +13,11 @@ from pandac.PandaModules import TransparencyAttrib
 from pandac.PandaModules import TextNode
 
 from views import DETACHED
+import codecs
+
+# this font is loaded to make sure we have unicode characaters
+# specifically we want to be able to display the greek alpha character
+unicodefont = loader.loadFont('DejaVuSansMono.ttf')
 
 PITCH_STEP = 10
 def printInstructions(instructions = ""):
@@ -29,53 +36,115 @@ class HUD(object):
     def __init__(self,model,cam,colour=(1,1,1,1)):
         """ HUD initialisation """
         
+        # keep copies of the airplane model and the camera
         self.model = model
         self.camera = cam
         
+        # store the requested colour to be used as default
         self.colour = colour
+        
         self.default_element_scale = 0.05
-        self.heading_text = self.createOnscreenText((0.0, 0.95))
-        self.altitude_text = self.createOnscreenText((1.0, 0.95),
-                                    align=TextNode.ALeft)
-        self.velocity_text = self.createOnscreenText((1.0, 0.85),
-                                    align=TextNode.ALeft)
-        self.gforce_text = self.createOnscreenText((1.0, 0.75),
-                                    align=TextNode.ALeft)
-        self.axialgforce_text = self.createOnscreenText((1.0, 0.65),
-                                    align=TextNode.ALeft)
-        self.lateralgforce_text = self.createOnscreenText((1.0, 0.55),
-                                    align=TextNode.ALeft)
         
+        # many of the elements on the hud are going to be defined
+        # relative to the centre axis (boresight) so create this
         self.centre_axis = self.createCentreMark()
-        #self.velocity_indicator = self.createOnscreenText((0.0, 0.0))
-        #self.velocity_indicator.setText(VELOCITY_INDICATOR)
-        self.velocity_indicator = OnscreenImage(image='velocityindicator.png',
-                                    pos = (0.0,0.0,0.0),scale=0.05)
-        self.velocity_indicator.reparentTo(aspect2d)
-        # Pitch lines and numbers
-        self.pitchlines = {}
-        self.pitchnumbersL = {}
-        self.pitchnumbersR = {}
         
-        for angle in range(0,179,PITCH_STEP):
-            if angle > 90: 
-                angletext = angle - 180
-            else:
-                angletext = angle
-            
-            # create a line
-            self.pitchlines[angle] = self.createPitchLine()
-            
-            # and create two numbers to display either side of the pitch line
-            self.pitchnumbersL[angle] = self.createText(str(angletext))
-            self.pitchnumbersR[angle] = self.createText(str(angletext))
-            
-            # reparent to the previously created pitchline so that the position
-            #       and orientation is described relative to the pitchline
-            self.pitchnumbersL[angle][1].reparentTo(self.pitchlines[angle])
-            self.pitchnumbersR[angle][1].reparentTo(self.pitchlines[angle])
-
+        # altitude is going to be displayed to the right of the centre axis
+        # and the climb rate is just above this
+        self.altitude_text = self.createOnscreenText((0.7, 0.0),
+                                    align=TextNode.ALeft,framecolour=colour)
+        self.climb_text = self.createOnscreenText((0.7, 0.1),scale=0.04,
+                                    align=TextNode.ALeft)
+        
+        self.altitude_text.reparentTo(self.centre_axis)
+        self.climb_text.reparentTo(self.centre_axis)
+        
+        # the velocity is displayed to the left of the centre axis
+        # angle of attack (alpha) and the gforce are displayed beneath
+        self.velocity_text = self.createOnscreenText((-0.7, 0.0),
+                                    align=TextNode.ARight,framecolour=colour)
+        self.alpha_text = self.createOnscreenText((-0.7, -0.3),
+                                    align=TextNode.ARight)
+        self.total_gforce_text = self.createOnscreenText((-0.7, -0.4),
+                                    align=TextNode.ARight)
+        
+        self.velocity_text.reparentTo(self.centre_axis)
+        self.alpha_text.reparentTo(self.centre_axis)
+        self.total_gforce_text.reparentTo(self.centre_axis)
+        
+        # the heading belongs centred at the top of the screen
+        #       no reparenting required?
+        self.heading_text = self.createOnscreenText((0.0, 0.95),
+                                    align=TextNode.ACenter,framecolour=colour)
+        
+        # create and store the pitchladder lines and numbers - positioning of 
+        #       these are dealt with as the HUD is updated
+        lines,leftnumbers,rightnumbers = self.createPitchLadder(PITCH_STEP)
+        self.pitchlines = lines
+        self.pitchnumbersL = leftnumbers
+        self.pitchnumbersR = rightnumbers
+        
+        # create or load graphic to indicate the current direction of motion
+        self.velocity_indicator = self.createVelocityIndicator()
     
+    def createVelocityIndicator(self,colour=None):
+        """ loads an image used to represent the direction of motion """
+        
+        if colour is None:
+            colour = self.colour
+        
+        # load the image, put it in aspect2d and make sure 
+        #       transparency is respected
+        vel_ind = OnscreenImage(image='velocityindicator.png',
+                                    pos = (0.0,0.0,0.0),scale=0.05,color=colour)
+        vel_ind.reparentTo(aspect2d)
+        vel_ind.setTransparency(TransparencyAttrib.MAlpha)
+        return vel_ind
+        
+    def createPitchLadder(self,anglestep,colour=None):
+        """ creates graphics in order to indicate pitch and roll """
+        if colour is None:
+            colour = self.colour
+        
+        # a set of dictionaries to store lines and values
+        pitchlines = {}
+        pitchnumbersL = {}
+        pitchnumbersR = {}
+        
+        # positions used to define the x positions to start and stop the lines
+        #       lines will be defined to be at y = 0, each line has a gap
+        #       from 0.25 to -0.25 and the zero line is longer than the others
+        zeropoints = [0.65,0.25,-0.25,-0.65]
+        otherpoints = [0.5,0.25,-0.25,-0.5]
+        
+        for angletext in range(-90,90+anglestep,anglestep):
+            # create a line
+            if angletext == 0:
+                pitchlines[angletext] = self.createPitchLine(zeropoints,
+                                                                0,colour)
+            elif angletext in [90,-90]:
+                pitchlines[angletext] = self.createPitchLine(otherpoints,
+                                                                0,colour)
+            # other lines also have a line at the end at 90 degrees to the
+            #       pitchlines to help indicate the direction to the horizon
+            elif angletext > 0:
+                pitchlines[angletext] = self.createPitchLine(otherpoints,
+                                                                -0.05,colour)
+            else:
+                pitchlines[angletext] = self.createPitchLine(otherpoints,
+                                                                0.05,colour)
+            
+            if angletext != 0:
+                # create two numbers to display either side of the pitch line
+                pitchnumbersL[angletext] = self.createText(str(angletext))
+                pitchnumbersR[angletext] = self.createText(str(angletext))
+                
+                # reparent to the previously created pitchline so the position
+                #       and orientation is described relative to the pitchline
+                pitchnumbersL[angletext][1].reparentTo(pitchlines[angletext])
+                pitchnumbersR[angletext][1].reparentTo(pitchlines[angletext])
+        return pitchlines,pitchnumbersL,pitchnumbersR
+        
     def getScreenPoint(self,vector):
         """ get the point on screen representing centre axis """
         
@@ -121,68 +190,96 @@ class HUD(object):
         #    #               things like the velocity indicator don't work
         #    #               in projected coordinates
         
+        # get the normalized veloctiy and estimate the screen point which best
+        #       describes this vector and set the indicator to this position
         v_norm = self.model.velocity * 1.0
         v_norm.normalize()
         velocity_axis = self.getScreenPoint(v_norm)
+        self.velocity_indicator.setPos(velocity_axis.getX(),0.0,
+                                       velocity_axis.getY())
         
-        self.velocity_indicator.setPos(velocity_axis.getX(),0.0,velocity_axis.getY())
-        self.velocity_indicator.setTransparency(TransparencyAttrib.MAlpha)
-
+        # for the pitch ladder we need to know where the horizon is and what
+        #       is level so we get the forward vector, set the z component to 0
+        #       and re-normalise it.
         levelforward = node.getQuat().getForward() * 1.0
         levelforward.setZ(0.0)
         levelforward.normalize()
         
         roll = node.getR()
+        pitch = node.getP()
         for angle,line in self.pitchlines.iteritems():
-            # adding a vector with the tan of the angle rotates the normalised
-            #       level vector to that angle
-            pitchedline = levelforward + Vec3(0.0,0.0,tan(radians(angle)))
-            pitchedline.normalize()
-            # calculate the appropriate screen position for this vector
-            pitched_axis = self.getScreenPoint(pitchedline)
-            
-            # now roll the line so that it is level with the horizon
-            line.setR(-roll)
-            # and move to the calculated position
-            line.setPos(pitched_axis.getX(),0.0,pitched_axis.getY())
-            
-            # finally we modify the numbers associated with the lines..
-            # the following transformations are specified relative to the lines
-            
-            # line rotation caused the numbers to rotate so we'll rotate back
-            self.pitchnumbersL[angle][1].setR(roll)
-            self.pitchnumbersR[angle][1].setR(roll)
-            # and now move them along to either side of the lines
-            self.pitchnumbersL[angle][1].setPos(-0.6,0.0,0)
-            self.pitchnumbersR[angle][1].setPos(0.6,0.0,0)
+            # although we have defined all the pitch lines, there is certainly
+            #       no reason to display them all..
+            if angle > pitch - 45 and angle < pitch + 45:
+                # adding a vector with the tan of the angle rotates the 
+                #       normalised level vector to that angle
+                pitchedline = levelforward + Vec3(0.0,0.0,tan(radians(angle)))
+                pitchedline.normalize()
+                # calculate the appropriate screen position for this vector
+                pitched_axis = self.getScreenPoint(pitchedline)
+                
+                # roll the line so that it is level with the horizon
+                line.setR(-roll)
+                # and move to the calculated position
+                line.setPos(pitched_axis.getX(),0.0,pitched_axis.getY())
+                
+                # finally we modify the numbers associated with the lines..
+                # the following transformations are specified relative to
+                # the lines
+                
+                # as we don't have numbers on the zero line..
+                if angle != 0:
+                    # line rotation caused the numbers to rotate so we'll 
+                    # rotate back
+                    self.pitchnumbersL[angle][1].setR(roll)
+                    self.pitchnumbersR[angle][1].setR(roll)
+                    # and now move them along to either side of the lines
+                    self.pitchnumbersL[angle][1].setPos(-0.6,0.0,0)
+                    self.pitchnumbersR[angle][1].setPos(0.6,0.0,0)
+            else:
+                # in all other cases we'll just make sure that the graphic
+                # is off the screen
+                line.setPos(-2,0.0,-2)
         
-        heading = - node.getH()
+        # some corrections needed for the heading for standard definition
+        heading = - round(node.getH(),0)
         if heading < 0.0:
+            # no negative angles
             heading += 360.0
-        if heading >= 359.95: heading = 0.0
         
-        head = '%.1f' %abs(round(heading,1))
-        alt = 'alt: %d' %int(node.getZ())
-        #1 m/s = 3.6 km/h
-        vel = 'vel: %d' %int(self.model.speed()*3.6)
-        g = 'G: %.1f' %round(self.model.gForce(),1)
-        ag = 'axial G: %.1f' %round(self.model.axialG(),1)
-        lg = 'lateral G: %.1f' %round(self.model.lateralG(),1)
+        # format for heading will be 000 (includes leading zeros)
+        #       abs required to avoid -00 display instead of 000
+        head = '%03.0f' %abs(heading)
+        
+        #format for climb rate always includes the sign
+        climb = '%+7.1f' %self.model.velocity.getZ()
+        alt = '%6d' %int(node.getZ())
+        
+        # velocity is converted to km/h (1 m/s = 3.6 km/h)
+        vel = '%4d' %int(self.model.speed()*3.6)
+        # alpha (angle of attack) includes a unicode greek alpha character
+        alpha = u'\u03b1: %5.1f' %round(degrees(self.model.angleOfAttack()),1)
+        tgf = 'G: % 5.1f' %round(self.model.gForceTotal(),1)
         
         self.heading_text.setText(head)
+        self.climb_text.setText(climb)
         self.altitude_text.setText(alt)
         self.velocity_text.setText(vel)
-        self.gforce_text.setText(g)
-        self.axialgforce_text.setText(ag)
-        self.lateralgforce_text.setText(lg)
+        self.total_gforce_text.setText(tgf)
+        self.alpha_text.setText(alpha)
     
     
     def createOnscreenText(self,pos=(0.0,0.0),align=TextNode.ACenter,
-                        colour=None):
+                        scale=None,colour=None,framecolour=(1,1,1,0)):
         """ slight simplification of OnscreenText object creation """
         if colour is None:
             colour = self.colour
-        return OnscreenText(style=1,fg=colour,pos=pos,align=align,scale=0.05)
+        if scale is None:
+            scale = self.default_element_scale
+        ost = OnscreenText(style=1,fg=colour,pos=pos,align=align,scale=scale,
+                           frame=framecolour)
+        ost.setFont(unicodefont)
+        return ost
     
     def createText(self,text,pos=(0.0,0.0),align=TextNode.ACenter,
                     scale=None,colour=None):
@@ -195,16 +292,57 @@ class HUD(object):
         text_node.setText(text)
         text_node.setGlyphScale(scale)
         text_node.setAlign(align)
+        text_node.setFont(unicodefont)
         text_node.setTextColor(colour[0],colour[1],colour[2],colour[3])
+        
         generated_text = text_node.generate()
         text_node_path = render2d.attachNewNode(generated_text)
         text_node_path.setPos(pos[0],0.0,pos[1])
         return text_node,text_node_path
-        
-    def createPitchLine(self,colour=None):
+    
+    def createPitchLine(self,points=[0.5,0.25,-0.25,-0.5],
+                            tick=0.00,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour
+        
+        pline = LineNodePath(aspect2d,'pitchline',1,Vec4(colour[0],colour[1],
+                                                       colour[2],colour[3]))
+        
+        plist = []
+        for p in points:
+            plist.append((p,0.0,0.0))
+        plist.insert(0,(points[0],0.0,tick))
+        plist.append((points[3],0.0,tick))
+        
+        linelist = []
+        linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
+        linelist.pop(2)
+        
+        pline.drawLines(linelist)
+        pline.create()
+        return pline
+    
+    def createPitchLineOld(self,points=[0.5,0.25,-0.25,-0.5],
+                            tick=0.00,colour=None):
+        """ create a line to hint at the pitch of the aircraft on the hud """
+        if colour is None:
+            colour = self.colour
+        
+        l = LineNodePath(aspect2d,'pitchline',4,Vec4(colour[0],colour[1],
+                                                       colour[2],colour[3]))
+        
+        plist = []
+        for p in points:
+            plist.append((p,0.0,0.0))
+        plist.insert(0,(points[0],0.0,tick))
+        plist.append((points[3],0.0,tick))
+        
+        linelist = []
+        linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
+        linelist.pop(2)
+        l.drawLines(linelist)
+        l.create()
         
         # These lines are drawn from scratch rather than using a graphic file
         
@@ -214,17 +352,20 @@ class HUD(object):
         # create vertices to add to use in creating lines
         vertexWriter=GeomVertexWriter(vdata,"vertex")
         # here we define enough positions to create two separated lines
-        vertexWriter.addData3f(0.5,0.0,0.0)
-        vertexWriter.addData3f(0.25,0.0,0.0)
-        vertexWriter.addData3f(-0.25,0.0,0.0)
-        vertexWriter.addData3f(-0.5,0.0,0.0)
+        for p in points:
+            vertexWriter.addData3f(p,0.0,0.0)
+        # and another two positions for the 'ticks' at the line ends
+        vertexWriter.addData3f(points[0],0.0,tick)
+        vertexWriter.addData3f(points[3],0.0,tick)
         
         # create the primitives
         line = GeomLines(Geom.UHStatic)
-        line.addVertices(0,1)
+        line.addVertices(4,0) # the tick part
+        line.addVertices(0,1) # part of the horizontal line
         line.closePrimitive()
         line2 = GeomLines(Geom.UHStatic)
-        line2.addVertices(2,3)
+        line2.addVertices(2,3) # other part of the horizontal line
+        line2.addVertices(3,5) # second tick
         line2.closePrimitive()
         
         # add the lines to a geom object
@@ -241,6 +382,29 @@ class HUD(object):
         return lineNP
     
     def createCentreMark(self,colour=None):
+        """ create a line to hint at the pitch of the aircraft on the hud """
+        if colour is None:
+            colour = self.colour
+        
+        cmline = LineNodePath(aspect2d,'centremark',1,Vec4(colour[0],colour[1],
+                                                       colour[2],colour[3]))
+        
+        plist = []
+        plist.append((0.15,0.0,0.0))
+        plist.append((0.10,0.0,0.0))
+        plist.append((0.05,0.0,-0.025))
+        plist.append((0.00,0.0,0.025))
+        plist.append((-0.05,0.0,-0.025))
+        plist.append((-0.10,0.0,0.0))
+        plist.append((-0.15,0.0,0.0))
+        
+        linelist = []
+        linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
+        cmline.drawLines(linelist)
+        cmline.create()
+        return cmline
+    
+    def createCentreMarkOld(self,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour

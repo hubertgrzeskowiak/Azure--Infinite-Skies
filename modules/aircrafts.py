@@ -84,6 +84,7 @@ class Aeroplane(object):
         self.velocity = Vec3(0.0,0.0,0.0)
         self.acceleration = Vec3(0.0,0.0,0.0)
         
+        self.angle_of_attack = 0.0
         
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
@@ -339,10 +340,10 @@ class Aeroplane(object):
         v_norm.normalize()
         
         aoa = self._wingAngleOfAttack(v_norm,up)
-        
         lift = self._lift(v_norm,v_squared,right,aoa)
         drag = self._drag(v,v_squared,right,up,forward,aoa)
         thrust = self._thrust(forward)
+        self.angle_of_attack = aoa
         
         force = lift + drag + self.gravity + thrust
         
@@ -422,7 +423,11 @@ class Aeroplane(object):
         node.setPos(new_pos)
         self.velocity = new_vel
         self.acceleration = new_acc
-    
+    def angleOfAttack(self):
+        return self.angle_of_attack
+    def gForceTotal(self):
+        acc = self.acceleration - self.gravity/self.mass
+        return acc.length()/9.81
     def gForce(self):
         up = self.node().getQuat().getUp()
         acc = self.acceleration - self.gravity/self.mass
