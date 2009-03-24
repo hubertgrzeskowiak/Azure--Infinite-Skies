@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# config.py -- Gives an Interface for configurations
-
-"""
-The usage of this module is not as complex as you may think. Look in this
+"""The usage of this module is not as complex as you may think. Look in this
 module for the ConfigXXX class, with a format like XML or YAML (for exmaple
 ConfigXML) for xml configfile. give the right parameters and after
 readAllConfigs(), you can read the configs from the class configxml.config.
@@ -14,11 +10,13 @@ confObj = conf.config
 
 confObj.<option>
 
-Read the description from the Config class too, for how to get options's
+Read the description from the Config class too, for how to get options'
 values. This is limited.
 """
-
+#-----------------------------------------------------------------------------
 # Imports
+#-----------------------------------------------------------------------------
+
 from xml.etree.cElementTree import *
 from os.path import join, isdir
 from abc import ABCMeta, abstractmethod
@@ -27,9 +25,9 @@ from abc import ABCMeta, abstractmethod
 # Exception Classes
 #------------------------------------------------------------------------------
 
-class AttributeNotExist(Exception): pass
-class WrongAttributeType(Exception): pass
-class PathNotExist(Exception): pass
+#class AttributeNotFound(Exception): pass
+#class WrongAttributeType(Exception): pass
+class PathNotFound(Exception): pass
 class XMLParseError(Exception): pass
 
 #------------------------------------------------------------------------------
@@ -37,32 +35,27 @@ class XMLParseError(Exception): pass
 #------------------------------------------------------------------------------
 
 class Config(object):
-    """The class is teh given object with the needed attributes, it should be
+    """The class is the given object with the needed attributes, it should be
     as most dynamic as it could be.
     
     FIRST OF ALL: YOU WON'T CREATE AN INSTANCE BY YOURESELFE OF THIS CLASS
     you will just get one!
     
-    Cause this Object includes all options defined at the beginning and cause
-    of its flexible style, it relies under special terms.
+    Because this Object includes all options defined at the beginning and
+    because of its flexible style, it relies under special terms.
     
-    1. To read the options you have simply call it as an attribute of the
-       object. Exmaple: take the option example above and an object "Config".
-       
-       Config.optOption : returns the value of the key "optOption"
-       
-    All attributes not beginning with "opt" stands under the normal python
-    class-attribute style. So remember!"""
+    To read the options you have to simply call them as an attribute of the
+    Config object.
 
-    def __init__(self):
-        pass
+    All attributes not beginning with "opt" are normal python class
+    attributes!
+    """
 
-#------------------------------------------------------------------------------
-    
-    def addAttribute(self, attrName, attrValue):
-        "Gets the attribute list an add it to the given list"
+    def addAttribute(self, attr_name, attr_value):
+        """Use this to set attributes. Arguments are attribute name and its
+        value to set."""
         
-        setattr(self, "opt" + attrName, attrValue)
+        setattr(self, "opt" + attr_name, attr_value)
 
 #------------------------------------------------------------------------------
 # Settings Abstract Class
@@ -74,17 +67,21 @@ class ConfigAbstract(object):
     __metaclass__ = ABCMeta
     
     
-    def __init__(self, configPath, configName):
+    def __init__(self, config_path, config_name):
+        """Arguments:
+        config_path -- path to the configuration file
+        config_name -- the file's name (without extension)
+        """
         self.config = Config()  # Create a new config object
-        self.attrDict = {}  # Config dict
-        self.configPath = configPath  # Just the path to the config file
-        self.configName = configName  # Just the name without file ext
+        self.attributes = {}
+        self.config_path = config_path
+        self.config_name = config_name
 
     def getConfigObj(self):
         return self.config
 
     @abstractmethod
-    def addConfigAttributes(self, attrDict): pass
+    def addConfigAttributes(self, attributes): pass
     
     @abstractmethod
     def readAllConfigs(self): pass
@@ -98,33 +95,27 @@ class ConfigAbstract(object):
 
 class ConfigXML(ConfigAbstract):
     
-    def __init__(self, configPath, configName):
-        super(ConfigXML, self).__init__(configPath, configName)
+    def __init__(self, config path, config_name):
+        super(ConfigXML, self).__init__(config_path, config_name)
         
-        self.fullFilename = None
+        self.full_filename = None
         self.__createFilename()
         
-#------------------------------------------------------------------------------
-
     def __updateConfigObject(self):
-        "Updates the config object with the attributes"
+        "Updates the config object with the attributes."
         
-        for key, value in self.attrDict:
+        for key, value in self.attributes:
             self.config.addAttribute(key, value)
         
-#------------------------------------------------------------------------------
-
     def __createFilename(self):
         "Just creates the filenname"
     
         # Test for valid dir
-        if not isdir(self.configPath):
-            raise PathNotExist("The path %s does not exist" % self.configPath)
+        if not isdir(self.config_path):
+            raise PathNotFound("The path %s does not exist." % self.config_path)
         
-        self.fullFilename = join(self.configPath, self.configName + ".xml")
+        self.full_filename = join(self.config_path, self.config_name + ".xml")
 
-#------------------------------------------------------------------------------
-    
     def __indent(self, elem, level = 0):
         "Makes from xml.etree.cElementTree.Element object looking nice"
     	
@@ -144,22 +135,20 @@ class ConfigXML(ConfigAbstract):
 
 #------------------------------------------------------------------------------
 
-    def addConfigAttributes(self, attrDict):
+    def addConfigAttributes(self, attributes):
         "Adds all config attributes to the actual dict"
         
-        for key, value in attrDict.iteritems():
+        for key, value in attributes.iteritems():
             if not key.startswith("opt"):
                 key = "opt" + key
                 
-            self.attrDict[key] = value
+            self.attributes[key] = value
         
-#------------------------------------------------------------------------------
-
     def readAllConfigs(self):
-        "Reads all configurations from the config file"
+        "Reads all configurations from the config file."
 		
-        with open(self.fullFilename, "rb") as cFile:
-            xmlFile = parse(cFile)
+        with open(self.full_filename, "rb") as config_file:
+            xmlFile = parse(config_file)
 			
             rootE = xmlFile.getroot()
 			
@@ -218,6 +207,5 @@ class ConfigXML(ConfigAbstract):
 
     def writeAllConfigs(self):
         "Write all configurations to the file"
+        # TODO
         pass
-        
-

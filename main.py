@@ -27,8 +27,8 @@ z/c - move cam
 x - reset cam
 
 space - move forward
-+/= - increase thrust
--   - decrease thrust
+PageUp - increase thrust
+PageDown - decrease thrust
 
 VIEWS
 p - first person
@@ -54,9 +54,7 @@ import os
 # quick diversion to process the command line options.
 # options are processed on loading the module
 # must be loaded before direct.directbase.DirectStart
-import modules.options as opts
-# options will be stored in opts.options
-
+from modules import options
 
 # some panda configuration settings
 from pandac.PandaModules import loadPrcFileData
@@ -92,16 +90,9 @@ from modules.aircrafts import Aeroplane
 from modules.scenery import Scenery
 import modules.gui as gui
 #from errors import *
-import modules.views as views
-import modules.controls as controls
-import modules.grid as grid
-
-# uncomment to view the rendering tree after exiting game
-"""
-print 80 * '-'
-print render.ls()
-print 80 * '-'
-"""
+from modules import views
+from modules import controls
+from modules import grid
 
 #------------------------------------------------------------------------------
 # Azure Settings Class
@@ -121,16 +112,17 @@ class AzureSettings(object):
 #------------------------------------------------------------------------------
 
 class Azure(object):
-    """Main Azure Class which takes all operations, being valid for the start.
-    So, the beginning of all"""
+    """Main class called by the top level main function (see below)."""
     
     def __init__(self, options):
+        """Only argument is the options object from the same named module."""
+
         self.options = options
         self.settings = AzureSettings() # Azure settings object
         self.hud = None
         self.planes = None
         self.defaultCam = None
-        self.ctl_map = None
+        self.ControlsMap = None
         self.k = None
             
         self.initPanda3dEngine()
@@ -138,64 +130,17 @@ class Azure(object):
 #------------------------------------------------------------------------------
     
     def startGame(self):
-        "Main starting function. Beginn the loop"
+        """Main starting function. Begin the loop."""
     
-        gameTask = taskMgr.add(self.gameloop, 'self.gameloop')
+        gameTask = taskMgr.add(self.gameloop, 'gameloop')
 
-        run() # Main run of directstart from panda
+        # start all the panda3D internal tasks (from DirectStart)
+        run()
     
-#------------------------------------------------------------------------------
-
-    # TODO(Nemesis13): define what exactly belongs into 
-    # this task and what should have own ones
-    def gameloop(self, task):
-        active_motion_controls = []
-        
-        for key, state in self.k.keyStates.items():
-            if state == 1:
-                keyInfo = self.ctl_map.controls[key]
-                if keyInfo["type"] == "move":
-                    #self.player.move(keyInfo["desc"])
-                    if not self.options.ghost:
-                        active_motion_controls.append(keyInfo["desc"])
-                if self.options.ghost:
-                    if keyInfo["type"] == "ghost-move":
-                        self.player.move(keyInfo["desc"])
-                elif keyInfo["type"] == "thrust":
-                    self.player.chThrust(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-move":
-                    self.player.move(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-move":
-                    self.defaultCam.rotate(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-view":
-                    self.defaultCam.setViewMode(keyInfo["desc"])
-        
-        if self.options.autolevel and len(active_motion_controls) == 2:
-            if all(x in active_motion_controls for x in ("roll-left", "roll-right")):
-                self.player.reverseRoll()
-            elif all(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
-                self.player.reversePitch()
-            else:
-                for movement in active_motion_controls:
-                    self.player.move(movement)
-        else:
-            for movement in active_motion_controls:
-                self.player.move(movement)
-
-        if not self.options.ghost:             
-            if self.options.oldphysics:
-                self.player.velocitySimple()
-            else:
-                self.player.velocityForces() 
-
-        self.defaultCam.step()
-        self.hud.update()
-        return Task.cont
-        
 #------------------------------------------------------------------------------
 
     def initPanda3dEngine(self):
-        "Inits all settings and objects for the panda 3d"
+        """Inits all settings and objects for Panda3D."""
         
         # basic preperation
         gui.printInstructions(INSTRUCTIONS)
@@ -246,10 +191,60 @@ class Azure(object):
         #default_cam.setViewMode(views.COCKPIT)
 
         # now we can enable user input
-        self.ctl_map = controls.ControlMap()
-        self.k = controls.KeyHandler(self.ctl_map)
+        self.ControlsMap = controls.ControlsMap()
+        self.k = controls.KeyHandler(self.ControlsMap)
 
-        self.hud = gui.HUD(self.player,self.defaultCam)
+        self.hud = gui.HUD(self.player, self.defaultCam)
+        
+#------------------------------------------------------------------------------
+
+    # TODO(Nemesis13): define what exactly belongs into
+    # this task and what should have own ones
+    def gameloop(self, task):
+        """This task is run every frame."""
+
+        active_motion_controls = []
+        
+        for key, state in self.k.keyStates.items():
+            if state == 1:
+                keyInfo = self.ControlsMap.controls[key]
+                if keyInfo["type"] == "move":
+                    #self.player.move(keyInfo["desc"])
+                    if not self.options.ghost:
+                        active_motion_controls.append(keyInfo["desc"])
+                if self.options.ghost:
+                    if keyInfo["type"] == "ghost-move":
+                        self.player.move(keyInfo["desc"])
+                elif keyInfo["type"] == "thrust":
+                    self.player.chThrust(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-move":
+                    self.player.move(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-move":
+                    self.defaultCam.rotate(keyInfo["desc"])
+                elif keyInfo["type"] == "cam-view":
+                    self.defaultCam.setViewMode(keyInfo["desc"])
+        
+        if self.options.autolevel and len(active_motion_controls) == 2:
+            if all(x in active_motion_controls for x in ("roll-left", "roll-right")):
+                self.player.reverseRoll()
+            elif all(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
+                self.player.reversePitch()
+            else:
+                for movement in active_motion_controls:
+                    self.player.move(movement)
+        else:
+            for movement in active_motion_controls:
+                self.player.move(movement)
+
+        if not self.options.ghost:             
+            if self.options.oldphysics:
+                self.player.velocitySimple()
+            else:
+                self.player.velocityForces() 
+
+        self.defaultCam.step()
+        self.hud.update()
+        return Task.cont
         
 #------------------------------------------------------------------------------
 # Main Function
@@ -258,11 +253,8 @@ class Azure(object):
 def main():
     
     # Create new azure object
-    azure = Azure(opts.options)
+    azure = Azure(options.options)
     azure.startGame()
-
-#------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()
-

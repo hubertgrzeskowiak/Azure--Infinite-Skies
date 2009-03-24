@@ -2,9 +2,10 @@
 
 import sys
 
+# The DirectObject allows us to recieve key events.
 from direct.showbase.DirectObject import DirectObject
 
-import views
+from modules import views
 
 class KeyHandler(DirectObject):
     """Gets key events and does stuff."""
@@ -31,7 +32,7 @@ class KeyHandler(DirectObject):
         #print("key %s changed to %d" % (key, value))
         self.keyStates[key] = value
         
-class ControlMap():
+class ControlsMap():
     """Default controls map."""
 
     def __init__(self):
