@@ -71,6 +71,7 @@ import direct.directbase.DirectStart
 from direct.showbase.DirectObject import DirectObject
 #from direct.showbase.Messenger import Messenger
 from direct.task import Task
+from direct.directtools.DirectGrid import DirectGrid
 #from direct.gui.DirectGui import OnscreenText
 #from pandac.PandaModules import TextNode
 from pandac.PandaModules import VBase3, Vec4
@@ -92,7 +93,6 @@ import modules.gui as gui
 #from errors import *
 from modules import views
 from modules import controls
-from modules import grid
 
 #------------------------------------------------------------------------------
 # Azure Settings Class
@@ -150,8 +150,7 @@ class Azure(object):
         base.disableMouse()
 
         # a grey raster - for testing
-        G1 = grid.Grid()
-        G1.makeGrid()
+        DG = DirectGrid(2000, 20, parent=render)
 
         # load some scenery for testing the scenery module
         #scenery_obj = {}
