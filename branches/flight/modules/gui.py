@@ -192,8 +192,7 @@ class HUD(object):
         
         # get the normalized veloctiy and estimate the screen point which best
         #       describes this vector and set the indicator to this position
-        v_norm = self.model.velocity * 1.0
-        v_norm.normalize()
+        v_norm = self.model.fdm.dyn_vars.v_norm * 1.0
         velocity_axis = self.getScreenPoint(v_norm)
         self.velocity_indicator.setPos(velocity_axis.getX(),0.0,
                                        velocity_axis.getY())
@@ -252,7 +251,7 @@ class HUD(object):
         head = '%03.0f' %abs(heading)
         
         #format for climb rate always includes the sign
-        climb = '%+7.1f' %self.model.velocity.getZ()
+        climb = '%+7.1f' %self.model.fdm.dyn_vars.v.getZ()
         alt = '%6d' %int(node.getZ())
         
         # velocity is converted to km/h (1 m/s = 3.6 km/h)
