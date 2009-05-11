@@ -14,6 +14,16 @@ from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
 from errors import *
 from utils import ListInterpolator
 
+DEF_CONTROLS = {'pitch-up':False,
+                'pitch-down':False,
+                'pitch-autolevel':False,
+                'roll-left':False,
+                'roll-right':False,
+                'roll-autolevel':False,
+                'heap-left':False,
+                'heap-right':False,
+               }
+
 # container for everything flying around
 aircrafts_cont = render.attachNewNode("aircrafts_cont")
 
@@ -47,7 +57,7 @@ class Aeroplane(object):
                     a virtual container prevents accidential replacement and
                     seperates things.
         """
-
+        
         self.index = Aeroplane.plane_count
         Aeroplane.plane_count += 1
 
@@ -221,6 +231,18 @@ class Aeroplane(object):
             self.node().setP(self.node(), -1 * p_factor * factor * \
                                                      self.pitch_speed * dt)
             if self.node().getP() < 0: self.node().setP(0.0)
+    
+    def applyControls(self,controls):
+        """ management of keyboard movement requests """
+        cntrls = {}
+        cntrls.update(DEF_CONTROLS)
+        cntrls.update(controls)
+        
+        dt = c.getDt()
+        
+        [self.move(control) for control, state in cntrls.iteritems() if state]
+        if cntrls["pitch-autolevel"]: self.reversePitch()
+        if cntrls["roll-autolevel"]: self.reverseRoll()
     
     def move(self, movement):
         """Plane movement management."""

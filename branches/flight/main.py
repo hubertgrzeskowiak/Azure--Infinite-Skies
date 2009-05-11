@@ -203,6 +203,7 @@ class Azure(object):
         """This task is run every frame."""
 
         active_motion_controls = []
+        control_actions = {}
         
         for key, state in self.k.keyStates.items():
             if state == 1:
@@ -211,6 +212,7 @@ class Azure(object):
                     #self.player.move(keyInfo["desc"])
                     if not self.options.ghost:
                         active_motion_controls.append(keyInfo["desc"])
+                        control_actions[keyInfo["desc"]]=True
                 if self.options.ghost:
                     if keyInfo["type"] == "ghost-move":
                         self.player.move(keyInfo["desc"])
@@ -225,17 +227,20 @@ class Azure(object):
         
         if self.options.autolevel and len(active_motion_controls) == 2:
             if all(x in active_motion_controls for x in ("roll-left", "roll-right")):
-                self.player.reverseRoll()
+                #self.player.reverseRoll()
+                control_actions["roll-left"]=False
+                control_actions["roll-right"]=False
+                control_actions["roll-autolevel"]=True
             elif all(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
-                self.player.reversePitch()
-            else:
-                for movement in active_motion_controls:
-                    self.player.move(movement)
-        else:
-            for movement in active_motion_controls:
-                self.player.move(movement)
-
-        if not self.options.ghost:             
+                #self.player.reversePitch()
+                control_actions["pitch-down"]=False
+                control_actions["pitch-up"]=False
+                control_actions["pitch-autolevel"]=True
+        
+        # let the player deal with it's own controls
+        self.player.applyControls(control_actions)
+        
+        if not self.options.ghost:
             if self.options.oldphysics:
                 self.player.velocitySimple()
             else:
