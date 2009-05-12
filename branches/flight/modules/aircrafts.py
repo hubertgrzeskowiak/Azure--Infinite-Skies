@@ -11,6 +11,7 @@ from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
 from errors import *
 from utils import ListInterpolator
 from flight import FlightDynamicsModel
+from flight import RotationalFlightDynamicsModel
 
 DEF_CONTROLS = {'pitch-up':False,
                 'pitch-down':False,
@@ -61,7 +62,7 @@ class Aeroplane(object):
                     seperates things.
         """
         
-        self.fdm = FlightDynamicsModel()
+        self.fdm = RotationalFlightDynamicsModel()
         
         self.index = Aeroplane.plane_count
         Aeroplane.plane_count += 1
@@ -242,7 +243,7 @@ class Aeroplane(object):
         cntrls = {}
         cntrls.update(DEF_CONTROLS)
         cntrls.update(controls)
-        [self.move(ctrl) for ctrl,v in cntrls.iteritems() if v]
+        #[self.move(ctrl) for ctrl,v in cntrls.iteritems() if v]
         
         dt = c.getDt()
         
@@ -344,7 +345,7 @@ class Aeroplane(object):
         self.fdm.dyn_vars.setPVA(new_p,new_v,new_a)
         self.fdm.dyn_vars.setAngularPVA(new_ang_p,new_ang_v,new_ang_a)
         
-        self.fdm.dyn_vars.exportToPandaNode(node)
+        self.fdm.dyn_vars.exportToPandaNode(node,dt)
     
     def angleOfAttack(self):
         return self.fdm.dyn_vars.alpha
