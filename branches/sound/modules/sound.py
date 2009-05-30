@@ -19,6 +19,7 @@ def play3DSound(filename, emitter, loop=True):
     sound.setLoop(loop)
     sound.play()
     audio3d.attachSoundToObject(sound, emitter)
+    return sound
 
 
 class Jukebox(object):
