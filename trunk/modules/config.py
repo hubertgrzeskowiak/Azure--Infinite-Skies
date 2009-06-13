@@ -1,18 +1,16 @@
+#!/usr/bin/env python2.6
+
 """The usage of this module is not as complex as you may think. Look in this
 module for the ConfigXXX class, with a format like XML or YAML (for exmaple
 ConfigXML) for xml configfile. give the right parameters and after
 readAllConfigs(), you can read the configs from the class configxml.config.
 For Exmaple:
-
-conf = ConfigXML("/home/user", "azure")
-conf.readAllConfigs()
-confObj = conf.config
-
-confObj.<option>
+    Go to the End of the File, to see an Example.
 
 Read the description from the Config class too, for how to get options'
 values. This is limited.
 """
+
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
@@ -54,7 +52,7 @@ class Config(object):
     def addAttribute(self, attr_name, attr_value):
         """Use this to set attributes. Arguments are attribute name and its
         value to set."""
-        
+
         setattr(self, "opt" + attr_name, attr_value)
 
 #------------------------------------------------------------------------------
@@ -95,7 +93,7 @@ class ConfigAbstract(object):
 
 class ConfigXML(ConfigAbstract):
     
-    def __init__(self, config path, config_name):
+    def __init__(self, config_path, config_name):
         super(ConfigXML, self).__init__(config_path, config_name)
         
         self.full_filename = None
@@ -103,8 +101,7 @@ class ConfigXML(ConfigAbstract):
         
     def __updateConfigObject(self):
         "Updates the config object with the attributes."
-        
-        for key, value in self.attributes:
+        for key, value in self.attributes.iteritems():
             self.config.addAttribute(key, value)
         
     def __createFilename(self):
@@ -139,11 +136,10 @@ class ConfigXML(ConfigAbstract):
         "Adds all config attributes to the actual dict"
         
         for key, value in attributes.iteritems():
-            if not key.startswith("opt"):
-                key = "opt" + key
-                
             self.attributes[key] = value
         
+#------------------------------------------------------------------------------
+
     def readAllConfigs(self):
         "Reads all configurations from the config file."
 		
@@ -180,14 +176,18 @@ class ConfigXML(ConfigAbstract):
                 optValue = element.text.strip()
 			    
                 try:
+                    optTypedValue = None     
+           
                     # Test which type optValue has to be and convert it
-                    optTypedValue = None
                     if optType == "string":
                         optTypedValue = str(optValue)
                     elif optType == "integer":
                         optTypedValue = int(optValue)
                     elif optType == "boolean":
-                        optTypedValue = bool(optValue)
+                            if optValue in "True":
+                                optTypedValue = True
+                            else:
+                                optTypedValue = False
                     elif optType == "list":
                         optTypedValue = list(optValue)
                     elif optType == "dict":
@@ -199,7 +199,7 @@ class ConfigXML(ConfigAbstract):
                     print(e)
 		        
                 # now try to add it, to the config object
-                self.attrDict[optName] = optTypedValue
+                self.attributes[optName] = optTypedValue
         		    
         self.__updateConfigObject()
 
@@ -209,3 +209,29 @@ class ConfigXML(ConfigAbstract):
         "Write all configurations to the file"
         # TODO
         pass
+
+#------------------------------------------------------------------------------
+# For Test Purpose
+#------------------------------------------------------------------------------
+
+def main():
+    """ Main function for testing. 
+    Azure.xml -------
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <settings version="1.0">
+        <fullscreen type="boolean">True</fullscreen>
+        <xsize type="integer">800</xsize>
+        <ysize type="integer">600</ysize>
+    </settings>
+    """
+    conf = ConfigXML("/home/cerebrosus", "azure")
+    conf.readAllConfigs()
+
+    print conf.getConfigObj().optfullscreen
+    print conf.getConfigObj().optxsize
+    print conf.getConfigObj().optysize
+
+#------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+	main()
