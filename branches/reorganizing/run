@@ -5,7 +5,6 @@ if __name__ == "__main__":
 
     from azure.main import Azure
     from azure import options
-    import options
 
     game = Azure(options.options)
     game.startGame()

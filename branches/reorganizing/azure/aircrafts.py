@@ -110,7 +110,7 @@ class Aeroplane(object):
                 raise ResourceHandleError(
                     model, "aeroplane already has a model. force to change")
         else:
-            self.plane_model = loader.loadModel(model)
+            self.plane_model = loader.loadModel("planes/" + model + "/" + model)
             if self.plane_model:
                 self.plane_model.reparentTo(self.node())
             else:

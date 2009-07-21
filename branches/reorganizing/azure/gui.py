@@ -38,7 +38,7 @@ class HUD(object):
 
         # this font is loaded to make sure we have unicode characaters
         # specifically we want to be able to display the greek alpha character
-        unicodefont = loader.loadFont("DejaVuSansMono.ttf")
+        self.unicodefont = loader.loadFont("fonts/DejaVuSansMono.ttf")
         
         # keep copies of the airplane model and the camera
         self.model = model
@@ -282,7 +282,7 @@ class HUD(object):
             scale = self.default_element_scale
         ost = OnscreenText(style=1,fg=colour,pos=pos,align=align,scale=scale,
                            frame=framecolour)
-        ost.setFont(unicodefont)
+        ost.setFont(self.unicodefont)
         return ost
     
     def createText(self,text,pos=(0.0,0.0),align=TextNode.ACenter,
@@ -296,7 +296,7 @@ class HUD(object):
         text_node.setText(text)
         text_node.setGlyphScale(scale)
         text_node.setAlign(align)
-        text_node.setFont(unicodefont)
+        text_node.setFont(self.unicodefont)
         text_node.setTextColor(colour[0],colour[1],colour[2],colour[3])
         
         generated_text = text_node.generate()

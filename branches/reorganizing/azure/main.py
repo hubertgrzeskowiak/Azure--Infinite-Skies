@@ -73,7 +73,7 @@ from scenery import Scenery
 #------------------------------------------------------------------------------
 
 # will be moved to xml files
-loadPrcFileData('', 'model-path $MAIN_DIR/../res')
+loadPrcFileData('', 'model-path $MAIN_DIR/assets')
 #loadPrcFileData('', 'sync-video 0')  # disable framerate limitation
 #loadPrcFileData('', 'want-directtools #t')
 #loadPrcFileData('', 'want-tk #t')
@@ -90,7 +90,6 @@ class Azure(object):
     
     def __init__(self, options):
         """Only argument is the options object from the same named module."""
-        print "azure init"
 
         self.options = options
         self.hud = None
@@ -103,8 +102,7 @@ class Azure(object):
 
     def startGame(self):
         """Main starting function. Begin the loop."""
-        print "azure startGame"
-    
+
         gameTask = taskMgr.add(self.gameloop, 'gameloop')
 
         # start all the panda3D internal tasks (from DirectStart)
