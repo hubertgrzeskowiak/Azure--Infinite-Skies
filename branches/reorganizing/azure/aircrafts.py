@@ -1,34 +1,30 @@
 """this module manages everthing around loading, setting and moving
 aircrafts"""
 
-#------------------------------------------------------------------------------
-# Imports
-#------------------------------------------------------------------------------
-
 from math import cos, sin, radians, atan2, sqrt, pi
 
 import ConfigParser
+specs = ConfigParser.SafeConfigParser()
+specs.read("etc/CraftSpecs.cfg")
+
 from pandac.PandaModules import ClockObject
+c = ClockObject.getGlobalClock()
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
 
 from errors import *
 from utils import ListInterpolator
+#import sound
 
 # container for everything flying around
-
-specs = ConfigParser.SafeConfigParser()
-specs.read("../etc/CraftSpecs.cfg")
+aircrafts_cont = render.attachNewNode("aircrafts_cont")
 
 class Aeroplane(object):
     """Standard aeroplane class."""
     
-    aircrafts_cont = render.attachNewNode("aircrafts_cont")
-
     plane_count = 0
 
-    c = ClockObject.getGlobalClock()
-
-    def __init__(self, name, model_to_load=None, specs_to_load=None):
+    def __init__(self, name, model_to_load=None, specs_to_load=None,
+            soundfile=None):
         """arguments:
         name -- aircraft name
         model_to_load -- model to load on init. same as name if none given.
@@ -82,6 +78,15 @@ class Aeroplane(object):
             self.loadSpecs(specs_to_load)
         else:
             self.loadSpecs(name)
+
+        """
+        if soundfile == 0:
+            pass
+        elif soundfile:
+            self.assignSound(soundfile)
+        else:
+            self.assignSound(name)
+        """
         
         # precalculated values for combinations of variables
         self.setCalculationConstants()
@@ -96,7 +101,7 @@ class Aeroplane(object):
         """Loads model for a plane. Force if there's already one loaded."""
         if hasattr(self, "plane_model"):
             if force:
-                self.plane_model = loader.loadModel("planes/" + model + "/" + model)
+                self.plane_model = loader.loadModel(model)
                 if self.plane_model != None:
                     self.plane_model.reparentTo(self.node())
                 else:
@@ -105,7 +110,7 @@ class Aeroplane(object):
                 raise ResourceHandleError(
                     model, "aeroplane already has a model. force to change")
         else:
-            self.plane_model = loader.loadModel("planes/" + model + "/" + model)
+            self.plane_model = loader.loadModel(model)
             if self.plane_model:
                 self.plane_model.reparentTo(self.node())
             else:
@@ -160,14 +165,17 @@ class Aeroplane(object):
         self.max_thrust = 5000.0
         
         
-        
+    def assignSound(self, soundfile):
+        plane_sound = sound.Sound(soundfile, True, self.node())
+        #return plane_sound
+
     def reverseRoll(self,offset=10.0):
         """Automatically levels the airplane in the roll axis
         The offset argument allows the airplane to level to upright flight
         when the initial roll vector is beyond 90 degrees.
         """
         # local copies of the relevant data
-        dt = Aeroplane.c.getDt()
+        dt = c.getDt()
         roll = self.node().getR()
         
         # This may not be strictly necessary but this causes the roll rate
@@ -201,7 +209,7 @@ class Aeroplane(object):
     def reversePitch(self):
         """Automatically levels the airplane in the pitch axis"""
         # local copies of the relevant data
-        dt = Aeroplane.c.getDt()
+        dt = c.getDt()
         pitch = self.node().getP()
         
         # The angular range for pitch is -90 -> 90 and so we need extra
@@ -231,7 +239,7 @@ class Aeroplane(object):
     def move(self, movement):
         """Plane movement management."""
 
-        dt = Aeroplane.c.getDt()
+        dt = c.getDt()
         
         # TODO (gjmm): modify the controls so that appropriately directed 
         #              rudder and elevator activated simultaneously gives a 
@@ -387,7 +395,7 @@ class Aeroplane(object):
         acc = self.acceleration
         
         # and the timestep
-        dt = Aeroplane.c.getDt()
+        dt = c.getDt()
         
         # The following integration schemes are left for interest.
         #       The modified velocity Verlet is the method in use at the moment
@@ -454,7 +462,7 @@ class Aeroplane(object):
     
     def velocitySimple(self):
         """OLD ONE - Physical forces- and movement management."""
-        dt = Aeroplane.c.getDt()
+        dt = c.getDt()
         
         l_thrust = self.thrust * self.max_speed
 

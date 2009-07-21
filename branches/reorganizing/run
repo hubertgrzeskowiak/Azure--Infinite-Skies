@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+
+if __name__ == "__main__":
+
+    from azure.main import Azure
+    from azure import options
+    import options
+
+    game = Azure(options.options)
+    game.startGame()
+
+else:
+    print "this is the starter, not a module!"
