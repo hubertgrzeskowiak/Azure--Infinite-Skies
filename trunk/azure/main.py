@@ -66,7 +66,7 @@ import gui
 import views
 import controls
 from aircrafts import Aeroplane
-from scenery import Scenery
+from scenery import Scenery, setSky
 
 #------------------------------------------------------------------------------
 # Settings
@@ -126,6 +126,9 @@ class Azure(object):
         # load some scenery for testing the scenery module
         #scenery_obj = {}
         #scenery_obj["panda_green"] = Scenery("panda_green", "environment", VBase3(0, 1000, 0))
+
+        # set up a nice skybox
+        setSky("bluesky")
 
         # some lights
         # TODO(Nemesis13): new module
