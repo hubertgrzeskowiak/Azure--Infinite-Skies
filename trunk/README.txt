@@ -1,6 +1,6 @@
 Azure: Infinite Skies
 
-Copyright (C) 2009 Hubert Grzeskowiak
+Copyright (C) 2009 Azure Developers
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
