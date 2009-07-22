@@ -134,11 +134,12 @@ class Azure(object):
         # TODO(Nemesis13): new module
         dlight = DirectionalLight("dlight")
         alight = AmbientLight("alight")
-        dlnp = render.attachNewNode(dlight.upcastToPandaNode()) 
-        alnp = render.attachNewNode(alight.upcastToPandaNode())
+        dlnp = render.attachNewNode(dlight)
+        alnp = render.attachNewNode(alight)
         dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
         alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
-        dlnp.setP(-60) 
+        dlnp.setY(30)
+        dlnp.setP(-60)
         render.setLight(dlnp)
         render.setLight(alnp)
 
