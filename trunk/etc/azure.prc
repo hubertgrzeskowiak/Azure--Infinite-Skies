@@ -11,7 +11,7 @@
 window-title Azure: Infinite Skies
 win-origin 50 50
 win-size 800 600
-fullscreen true
+fullscreen false
 
 
 # paths
