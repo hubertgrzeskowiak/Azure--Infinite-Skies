@@ -39,6 +39,9 @@ u - detached
 ESC - quit
 """
 
+configfiles=["/etc/azure.prc", "etc/azure.prc"]
+
+
 #------------------------------------------------------------------------------
 # Imports
 #------------------------------------------------------------------------------
@@ -47,19 +50,17 @@ import sys
 import os
 
 from direct.showbase.ShowBase import ShowBase
-# init panda's hi-level backend (declares some builtins)
-ShowBase()
 from pandac.PandaModules import loadPrcFileData
 from direct.showbase.DirectObject import DirectObject
-#from direct.showbase.Messenger import Messenger
 from direct.task import Task
 from direct.directtools.DirectGrid import DirectGrid
-#from direct.gui.DirectGui import OnscreenText
-#from pandac.PandaModules import TextNode
+from pandac.PandaModules import loadPrcFile
 from pandac.PandaModules import VBase3, Vec4
 from pandac.PandaModules import AmbientLight,DirectionalLight
-#from pandac.PandaModules import ClockObject
-#c = ClockObject.getGlobalClock()
+
+for prc in configfiles:
+    loadPrcFile(prc)
+ShowBase()
 
 import options
 import gui
@@ -67,19 +68,6 @@ import views
 import controls
 from aircrafts import Aeroplane
 from scenery import Scenery, setSky
-
-#------------------------------------------------------------------------------
-# Settings
-#------------------------------------------------------------------------------
-
-# will be moved to xml files
-loadPrcFileData('', 'model-path $MAIN_DIR/assets')
-#loadPrcFileData('', 'sync-video 0')  # disable framerate limitation
-#loadPrcFileData('', 'want-directtools #t')
-#loadPrcFileData('', 'want-tk #t')
-#loadPrcFileData('', 'fullscreen #t')
-#loadPrcFileData('', 'show-frame-rate-meter 1')  # display framerate
-
 
 #------------------------------------------------------------------------------
 # Main Azure Class
@@ -159,7 +147,7 @@ class Azure(object):
         pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
 
         # set default camera
-        self.defaultCam = views.PlaneCamera(self.player.dummy_node)
+        self.defaultCam = views.PlaneCamera(self.player.node())
         #default_cam.setViewMode(views.FIRST_PERSON)
         #default_cam.setViewMode(views.DETACHED)
         #default_cam.setViewMode(views.COCKPIT)
