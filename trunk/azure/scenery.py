@@ -4,24 +4,32 @@ from pandac.PandaModules import VBase3
 from pandac.PandaModules import CardMaker
 from pandac.PandaModules import GeomNode
 from pandac.PandaModules import NodePath
-from pandac.PandaModules import CompassEffect
 
 from errors import *
 
-# container for all scenery objects
-scenery_cont = render.attachNewNode("scenery_cont")
 
-class Scenery():
+class Scenery(object):
     """Standard scenery class."""
 
-    scenery_count = 0
+    _scenery_count = 0
 
-    def __init__(self, name, model_to_load=None, pos=VBase3(0,0,0), scale=VBase3(1,1,1)):
+    def __init__(self, name, model_to_load=None, pos=VBase3(0,0,0),
+            scale=VBase3(1,1,1)):
         """Arguments are model to load, position (default is parent's origin)
         and scale (default is 1)"""
-        new_node_name = "Scenery" + str(Scenery.scenery_count)
-        self.dummy_node = scenery_cont.attachNewNode(new_node_name)
+
+        if not hasattr(Scenery, "_scenery"):
+            assert render
+            _scenery = render.attachNewNode("scenery")
+
+        self._id = Scenery._scenery_count
+        Scenery._scenery_count += 1
+
+        new_node_name = "Scenery" + str(Scenery._scenery_count)
+        self._dummy_node = Scenery._scenery.attachNewNode(new_node_name)
+        del new_node_name
         self.name = name
+
         if model_to_load == 0:
             pass
         elif model_to_load:
@@ -57,10 +65,15 @@ class Scenery():
                 self.scenery_model.reparentTo(self.node())
             else:
                 raise ResourceLoadError(model, 'no such model')
+
+    def id(self):
+        """Every scenery object has its own unique ID."""
+        return self._id
+
     def node(self):
         """Returns a container class, which you should use instead of
         dummy_mode or the model itself."""
-        return self.dummy_node
+        return self._dummy_node
 
 
 def setSky(directory, ext=".jpg"):
@@ -102,7 +115,7 @@ def setSky(directory, ext=".jpg"):
 
     sky.flattenStrong()
     sky.setScale(10, 10, 10)
-    sky.setEffect(CompassEffect.make(render))
+    sky.setCompass()
     sky.setBin('background', 0)
     sky.setDepthTest(False)
     sky.setDepthWrite(False)
