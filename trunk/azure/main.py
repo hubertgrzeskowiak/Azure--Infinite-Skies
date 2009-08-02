@@ -58,10 +58,6 @@ from pandac.PandaModules import loadPrcFile
 from pandac.PandaModules import VBase3, Vec4
 from pandac.PandaModules import AmbientLight,DirectionalLight
 
-for prc in configfiles:
-    loadPrcFile(prc)
-ShowBase()
-
 import options
 import gui
 import views
@@ -101,6 +97,9 @@ class Azure(object):
     def initPanda3dEngine(self):
         """Inits all settings and objects for Panda3D."""
         
+        for prc in configfiles:
+            loadPrcFile(prc)
+        ShowBase()
         # basic preperation
         gui.printInstructions(INSTRUCTIONS)
         base.setBackgroundColor(0.0, 0.2, 0.3)
