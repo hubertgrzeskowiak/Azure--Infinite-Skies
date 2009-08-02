@@ -8,20 +8,18 @@ specs = ConfigParser.SafeConfigParser()
 specs.read("etc/CraftSpecs.cfg")
 
 from pandac.PandaModules import ClockObject
-c = ClockObject.getGlobalClock()
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
 
 from errors import *
 from utils import ListInterpolator
 #import sound
 
-# container for everything flying around
-aircrafts_cont = render.attachNewNode("aircrafts_cont")
+_c = ClockObject.getGlobalClock()
 
 class Aeroplane(object):
     """Standard aeroplane class."""
-    
-    plane_count = 0
+
+    _plane_count = 0
 
     def __init__(self, name, model_to_load=None, specs_to_load=None,
             soundfile=None):
@@ -31,6 +29,7 @@ class Aeroplane(object):
                          0 = don't load a model
         specs_to_load -- specifications to load on init. same as name if none
                          given. 0 = don't load specs
+        soundfile -- engine sound file (not yet implemented)
 
         examples:   # load a plane called "corsair1" with model and specs "corsair"
                     pirate1 = Aeroplane("corsair1", "corsair")
@@ -38,9 +37,11 @@ class Aeroplane(object):
                     # and specs later in turn to see or fly it)
                     foo = Aeroplane("myname", 0, 0)
                     # for the node itself, use:
-                    foo = Aeroplane("bar").node()
+                    foo = Aeroplane("bar")
+                    airplane = foo.node()
                     # if you need access to the model itself, use:
-                    foo = Aeroplane("bar").plane_model
+                    foo = Aeroplane("bar")
+                    model = foo.node().getChild(0)
     
         info:       invisible planes are for tracking only. you should assign them
                     at least models when they get into visible-range.
@@ -50,14 +51,18 @@ class Aeroplane(object):
                     seperates things.
         """
 
-        self.index = Aeroplane.plane_count
-        Aeroplane.plane_count += 1
+        if not hasattr(Aeroplane, "_aircrafts"):
+            assert render
+            Aeroplane._aircrafts = render.attachNewNode("aircrafts")
+        self._id = Aeroplane._plane_count
+        Aeroplane._plane_count += 1
 
-        new_node_name = "dummy_node" + str(Aeroplane.plane_count)
-        self.dummy_node = aircrafts_cont.attachNewNode(new_node_name)
+        new_node_name = "aeroplane" + str(Aeroplane._plane_count)
+        self._dummy_node = Aeroplane._aircrafts.attachNewNode(new_node_name)
+        del new_node_name
+        self.name = name
         
         self.thrust = 0.0
-        self.counter = 0
 
         if model_to_load == 0:
             pass
@@ -165,9 +170,9 @@ class Aeroplane(object):
         self.max_thrust = 5000.0
         
         
-    def assignSound(self, soundfile):
-        plane_sound = sound.Sound(soundfile, True, self.node())
-        #return plane_sound
+    #def assignSound(self, soundfile):
+    #    plane_sound = sound.Sound(soundfile, True, self.node())
+    #    return plane_sound
 
     def reverseRoll(self,offset=10.0):
         """Automatically levels the airplane in the roll axis
@@ -175,7 +180,7 @@ class Aeroplane(object):
         when the initial roll vector is beyond 90 degrees.
         """
         # local copies of the relevant data
-        dt = c.getDt()
+        dt = _c.getDt()
         roll = self.node().getR()
         
         # This may not be strictly necessary but this causes the roll rate
@@ -209,7 +214,7 @@ class Aeroplane(object):
     def reversePitch(self):
         """Automatically levels the airplane in the pitch axis"""
         # local copies of the relevant data
-        dt = c.getDt()
+        dt = _c.getDt()
         pitch = self.node().getP()
         
         # The angular range for pitch is -90 -> 90 and so we need extra
@@ -239,7 +244,7 @@ class Aeroplane(object):
     def move(self, movement):
         """Plane movement management."""
 
-        dt = c.getDt()
+        dt = _c.getDt()
         
         # TODO (gjmm): modify the controls so that appropriately directed 
         #              rudder and elevator activated simultaneously gives a 
@@ -395,7 +400,7 @@ class Aeroplane(object):
         acc = self.acceleration
         
         # and the timestep
-        dt = c.getDt()
+        dt = _c.getDt()
         
         # The following integration schemes are left for interest.
         #       The modified velocity Verlet is the method in use at the moment
@@ -462,7 +467,7 @@ class Aeroplane(object):
     
     def velocitySimple(self):
         """OLD ONE - Physical forces- and movement management."""
-        dt = c.getDt()
+        dt = _c.getDt()
         
         l_thrust = self.thrust * self.max_speed
 
@@ -503,14 +508,10 @@ class Aeroplane(object):
         # TODO (gjmm): set velocity to real velocity
         self.velocity.setX(l_thrust)
 
-    def bounds(self):
-        """Returns a vector describing the vehicle's size (width, length,
-        height). Useful for collision detection."""
-        bounds = self.node().getTightBounds()
-        size = bounds[1] - bounds[0]
-        return size
+    def id(self):
+        """Every plane has its own unique ID."""
+        return self._id
 
     def node(self):
-        """Returns the plane's container. Please use this instead of
-        dummy_node or the actual model."""
-        return self.dummy_node
+        """Returns the plane's dummy node (empty node it's parented to)."""
+        return self._dummy_node
