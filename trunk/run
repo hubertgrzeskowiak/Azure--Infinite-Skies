@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""
-Azure: Infinite Skies
+
+"""Azure: Infinite Skies
 
 Copyright (c) 2009 Azure Developers
 
@@ -21,10 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 if __name__ == "__main__":
 
     from azure.main import Azure
-    from azure import options
-
-    game = Azure(options.options)
-    game.startGame()
+    Azure()
 
 else:
     print "this is the starter, not a module!"

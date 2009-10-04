@@ -1,20 +1,17 @@
-"""this module manages everthing around loading, setting and moving
-aircrafts"""
+"""This module manages everthing around loading, setting up and moving
+aircrafts."""
 
 from math import cos, sin, radians, atan2, sqrt, pi
-
 import ConfigParser
-specs = ConfigParser.SafeConfigParser()
-specs.read("etc/CraftSpecs.cfg")
-
 from pandac.PandaModules import ClockObject
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
-
 from errors import *
 from utils import ListInterpolator
 #import sound
 
 _c = ClockObject.getGlobalClock()
+specs = ConfigParser.SafeConfigParser()
+specs.read("etc/CraftSpecs.cfg")
 
 class Aeroplane(object):
     """Standard aeroplane class."""

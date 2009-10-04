@@ -68,29 +68,32 @@ want-pstats false
 sync-video false
 show-frame-rate-meter true
 on-screen-debug-enabled true
-notify-output azure-log.txt
+#notify-output azure-log.txt
 
-# notifier verbosity levels: spam, debug, info, warning, error
-notify-level info
-default-directnotify-level                  info
-notify-level-BufferViewer                   error
-notify-level-BulletinBoard                  error
-notify-level-ClassicFSM 			        error
-notify-level-DirectScrolledList             error
-notify-level-DirectScrolledListItem         error
-notify-level-EventManager                   error
-notify-level-ExceptionVarDump               error
-notify-level-FunctionInterval               error
-notify-level-GarbageReport                  error
-notify-level-InputState                     error
-notify-level-JobManager                     error
-notify-level-LerpFunctionInterval           error
-notify-level-LerpFunctionNoStateInterval    error
-notify-level-Loader                         error
-notify-level-Messenger                      error
-notify-level-MetaInterval                   error
-notify-level-ShowBase                       error
-notify-level-State                          error
-notify-level-TaskManager                    error
+# notifier verbosity levels: (spam), debug, info, warning, error, (fatal)
+# the ones in brackets are only available for C++ modules (not direct)
+default-directnotify-level                  error
+notify-level                                fatal
+#notify-level-util                           fatal
+#notify-level-ShowBase                       error
+#notify-level-BufferViewer                   error
+#notify-level-BulletinBoard                  error
+#notify-level-ClassicFSM 			         error
+#notify-level-DirectScrolledList             error
+#notify-level-DirectScrolledListItem         error
+#notify-level-EventManager                   error
+#notify-level-ExceptionVarDump               error
+#notify-level-FunctionInterval               error
+#notify-level-GarbageReport                  error
+#notify-level-InputState                     error
+#notify-level-JobManager                     error
+#notify-level-LerpFunctionInterval           error
+#notify-level-LerpFunctionNoStateInterval    error
+#notify-level-Loader                         error
+#notify-level-Messenger                      error
+#notify-level-MetaInterval                   error
+#notify-level-State                          error
+#notify-level-TaskManager                    error
+#notify-level-azure-camera                   warning
 
 # vim:set sw=4 ts=4 sts=4 et sta:

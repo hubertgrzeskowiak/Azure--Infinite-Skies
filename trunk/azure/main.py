@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-"""
-Azure: Infinite Skies
+"""Azure: Infinite Skies
 
 Copyright (c) 2009 Azure Developers
 
@@ -39,183 +37,39 @@ u - detached
 ESC - quit
 """
 
-configfiles=["/etc/azure.prc", "etc/azure.prc"]
-
-
-#------------------------------------------------------------------------------
-# Imports
-#------------------------------------------------------------------------------
-
 import sys
 import os
+# Here panda will look for files with the ending .prc and load them as config.
+# The config file will be loaded as soon as you touch a panda module.
+p = ""
+for i in os.getenv("PANDA_PRC_PATH").split(":"):
+    p = i + ":"+ p
+os.putenv("PANDA_PRC_PATH", p+"/etc/azure/:~/.azure/")
+del p
 
-from direct.showbase.ShowBase import ShowBase
-from pandac.PandaModules import loadPrcFileData
-from direct.showbase.DirectObject import DirectObject
-from direct.task import Task
-from direct.directtools.DirectGrid import DirectGrid
-from pandac.PandaModules import loadPrcFile
-from pandac.PandaModules import VBase3, Vec4
-from pandac.PandaModules import AmbientLight,DirectionalLight
+try:
+    from direct.showbase.ShowBase import ShowBase
+    from direct.task import Task
+except ImportError:
+    print "It seems you haven't got Panda3D installed properly."
+    sys.exit(1)
 
-import options
-import gui
-import views
-import controls
-from aircrafts import Aeroplane
-from scenery import Scenery, setSky
-
-#------------------------------------------------------------------------------
-# Main Azure Class
-#------------------------------------------------------------------------------
 
 class Azure(object):
     """Main class called by the top level main function (see below)."""
     
-    def __init__(self, options):
+    def __init__(self):
         """Only argument is the options object from the same named module."""
 
-        self.options = options
-        self.hud = None
-        self.planes = None
-        self.defaultCam = None
-        self.ControlsMap = None
-        self.k = None
-            
-        self.initPanda3dEngine()
-
-    def startGame(self):
-        """Main starting function. Begin the loop."""
-
-        gameTask = taskMgr.add(self.gameloop, 'gameloop')
-
-        # start all the panda3D internal tasks (from DirectStart)
-        run()
-    
-#------------------------------------------------------------------------------
-
-    def initPanda3dEngine(self):
-        """Inits all settings and objects for Panda3D."""
-        
-        for prc in configfiles:
-            loadPrcFile(prc)
         ShowBase()
-        # basic preperation
-        gui.printInstructions(INSTRUCTIONS)
-        base.setBackgroundColor(0.0, 0.2, 0.3)
-        base.cam.node().getLens().setFar(10000)
-        #base.camLens.setFar(10000)
         base.disableMouse()
 
-        # a grey raster - for testing
-        DG = DirectGrid(2000, 20, parent=render)
+        from scenarios import TestEnvironment
+        TestEnvironment()
 
-        # load some scenery for testing the scenery module
-        #scenery_obj = {}
-        #scenery_obj["panda_green"] = Scenery("panda_green", "environment", VBase3(0, 1000, 0))
-
-        # set up a nice skybox
-        setSky("bluesky")
-
-        # some lights
-        # TODO(Nemesis13): new module
-        dlight = DirectionalLight("dlight")
-        alight = AmbientLight("alight")
-        dlnp = render.attachNewNode(dlight)
-        alnp = render.attachNewNode(alight)
-        dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
-        alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
-        dlnp.setY(30)
-        dlnp.setP(-60)
-        render.setLight(dlnp)
-        render.setLight(alnp)
-
-        # load our plane(s)
-        self.planes = {}
-        self.player = self.planes["player"] = Aeroplane("griffin")
-
-        # load some dark ones, just for testing
-        self.planes["pirate1"] = Aeroplane("griffin")
-        pirate1 = self.planes["pirate1"].node()
-        pirate1.setColor(0, 0, 1, 1)
-        pirate1.setPosHpr(-15, 20, 6, 230, 0, 0)
-
-        self.planes["pirate2"] = Aeroplane("griffin")
-        pirate2 = self.planes["pirate2"].node()
-        pirate2.setColor(0, 0, 1, 1)
-        pirate2.setPosHpr(18, -30, 6, 20, 0, 0)
-
-        # set default camera
-        self.defaultCam = views.PlaneCamera(self.player.node())
-        #default_cam.setViewMode(views.FIRST_PERSON)
-        #default_cam.setViewMode(views.DETACHED)
-        #default_cam.setViewMode(views.COCKPIT)
-
-        # now we can enable user input
-        self.ControlsMap = controls.ControlsMap()
-        self.k = controls.KeyHandler(self.ControlsMap)
-
-        self.hud = gui.HUD(self.player, self.defaultCam)
-        
-#------------------------------------------------------------------------------
-
-    # TODO(Nemesis13): define what exactly belongs into
-    # this task and what should have own ones
-    def gameloop(self, task):
-        """This task is run every frame."""
-
-        active_motion_controls = []
-        
-        for key, state in self.k.keyStates.items():
-            if state == 1:
-                keyInfo = self.ControlsMap.controls[key]
-                if keyInfo["type"] == "move":
-                    #self.player.move(keyInfo["desc"])
-                    if not self.options.ghost:
-                        active_motion_controls.append(keyInfo["desc"])
-                if self.options.ghost:
-                    if keyInfo["type"] == "ghost-move":
-                        self.player.move(keyInfo["desc"])
-                elif keyInfo["type"] == "thrust":
-                    self.player.chThrust(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-move":
-                    self.player.move(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-move":
-                    self.defaultCam.rotate(keyInfo["desc"])
-                elif keyInfo["type"] == "cam-view":
-                    self.defaultCam.setViewMode(keyInfo["desc"])
-        
-        if self.options.autolevel and len(active_motion_controls) == 2:
-            if all(x in active_motion_controls for x in ("roll-left", "roll-right")):
-                self.player.reverseRoll()
-            elif all(x in active_motion_controls for x in ("pitch-down", "pitch-up")):
-                self.player.reversePitch()
-            else:
-                for movement in active_motion_controls:
-                    self.player.move(movement)
-        else:
-            for movement in active_motion_controls:
-                self.player.move(movement)
-
-        if not self.options.ghost:             
-            if self.options.oldphysics:
-                self.player.velocitySimple()
-            else:
-                self.player.velocityForces() 
-
-        self.defaultCam.step()
-        self.hud.update()
-        return Task.cont
-        
-#------------------------------------------------------------------------------
-# Main Function
-#------------------------------------------------------------------------------
-
-def main():
-    
-    # Create new azure object
-    azure = Azure(options.options)
-    azure.startGame()
+        run()
 
 if __name__ == "__main__":
-    main()
+    # issue with line ~53 where we set up PANDA_PRC_PATH
+    print "Don't run this module directly! Use the run script instead!"
+    sys.exit(2)

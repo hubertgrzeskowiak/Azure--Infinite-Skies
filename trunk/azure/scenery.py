@@ -124,6 +124,19 @@ def setSky(directory, ext=".jpg"):
 
     geom = sky.getChild(0).node()
     geom.setName("cube")
+
+
     # doesn't work yet. no idea why
+
+    #from pandac.PandaModules import MultitexReducer as MR
+    #MR.scan(sky)
+    #MR.flatten()
+
     #geom.unify(1, False)
     #print geom.getNumGeoms()
+
+    #def myprint(arg):
+    #    print arg
+    #base.accept("f1", myprint, [sky])
+    #base.accept("f2", myprint, [sky.getChildren()])
+    #base.accept("f3", render.ls)
