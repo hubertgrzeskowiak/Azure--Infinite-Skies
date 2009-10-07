@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Azure: Infinite Skies
 
 Copyright (c) 2009 Azure Developers
@@ -41,18 +43,21 @@ import sys
 import os
 # Here panda will look for files with the ending .prc and load them as config.
 # The config file will be loaded as soon as you touch a panda module.
-p = ""
-for i in os.getenv("PANDA_PRC_PATH").split(":"):
-    p = i + ":"+ p
-os.putenv("PANDA_PRC_PATH", p+"/etc/azure/:~/.azure/")
-del p
+#os.putenv("PANDA_PRC_PATH", "./etc/:../etc/:/etc/azure/:~/.azure/")
 
+# NOT WORKING! don't ask me why..
+os.environ["PRC_PATH"] = 'etc/:../etc/:/etc/azure/'
+os.environ["PANDA_PRC_PATH"] = 'etc/:../etc/:/etc/azure/'
+# TEMPORARY WORKAROUND:
 try:
-    from direct.showbase.ShowBase import ShowBase
-    from direct.task import Task
+    from pandac.PandaModules import loadPrcFile
 except ImportError:
     print "It seems you haven't got Panda3D installed properly."
     sys.exit(1)
+loadPrcFile("etc/azure.prc")
+
+from direct.showbase.ShowBase import ShowBase
+from direct.task import Task
 
 
 class Azure(object):
@@ -61,15 +66,22 @@ class Azure(object):
     def __init__(self):
         """Only argument is the options object from the same named module."""
 
+        print "initialising ShowBase"
         ShowBase()
         base.disableMouse()
 
-        from scenarios import TestEnvironment
-        TestEnvironment()
 
+        print 20*"#"
+        print "config path(s):"
+        print cpMgr.getSearchPath()
+        print 20*"#"
+        print "importing TestEnvironment"
+        from scenarios import TestEnvironment
+        print "initialising TestEnvironment"
+        TestEnvironment()
+        
         run()
 
 if __name__ == "__main__":
-    # issue with line ~53 where we set up PANDA_PRC_PATH
     print "Don't run this module directly! Use the run script instead!"
     sys.exit(2)
