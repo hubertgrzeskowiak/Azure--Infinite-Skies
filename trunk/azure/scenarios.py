@@ -45,6 +45,7 @@ class TestEnvironment(Sandbox):
     """Draw some test grid and stuff."""
     def __init__(self):
         self.grid = DirectGrid(2000, 20, parent=render)
+        self.grid.setZ(-0.0001)
         setSky("bluesky")
 
         # lights
