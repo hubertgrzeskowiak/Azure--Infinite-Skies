@@ -17,9 +17,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 ------------------------------------------------------------------------------
 
-IMPORTANT:
+DEPENDENCIES:
 this game depends on python 2.6 [1] and panda3d 1.5.4 [2]
 
+
+HOW TO RUN:
+On GNU/Linux or other Unix/-like systems, run the 'run' file like ./run ,
+On Windows, you may alternatively double-click on the run.bat (or execute it in
+a terminal).
+
+
+LINKS:
 don't forget to visit our project page on SF [3] for news and our wiki [4]
 
 [1] http://python.org
