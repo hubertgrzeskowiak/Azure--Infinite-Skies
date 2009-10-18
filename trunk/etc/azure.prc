@@ -29,10 +29,17 @@ use-movietexture true
 compressed-textures true
 driver-compress-textures true
 model-cache-textures true
+# antialiasing
+framebuffer-multisample true
+multisamples 2
+#multisamples 4
+#multisamples 8
 # default camera clipping
 default-far 100000
 # scale textures while loading (lower for more performance)
 texture-scale 1
+azure-bloom-filter false
+azure-cartoon-ink false
 
 
 # audio
