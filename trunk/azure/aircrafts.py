@@ -58,7 +58,7 @@ class Aeroplane(object):
         self._dummy_node = Aeroplane._aircrafts.attachNewNode(new_node_name)
         del new_node_name
         self.name = name
-        
+
         self.thrust = 0.0
 
         if model_to_load == 0:
@@ -89,16 +89,16 @@ class Aeroplane(object):
         else:
             self.assignSound(name)
         """
-        
+
         # precalculated values for combinations of variables
         self.setCalculationConstants()
-        
+
         # dynamic variables
         self.velocity = Vec3(0.0,0.0,0.0)
         self.acceleration = Vec3(0.0,0.0,0.0)
-        
+
         self.angle_of_attack = 0.0
-        
+
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
         if hasattr(self, "plane_model"):
