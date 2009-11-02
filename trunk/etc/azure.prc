@@ -79,28 +79,30 @@ on-screen-debug-enabled true
 
 # notifier verbosity levels: (spam), debug, info, warning, error, (fatal)
 # the ones in brackets are only available for C++ modules (not direct)
-default-directnotify-level                  error
-notify-level                                fatal
+default-directnotify-level                  warning
+notify-level                                warning
 #notify-level-util                           fatal
-#notify-level-ShowBase                       error
-#notify-level-BufferViewer                   error
-#notify-level-BulletinBoard                  error
-#notify-level-ClassicFSM 			         error
-#notify-level-DirectScrolledList             error
-#notify-level-DirectScrolledListItem         error
-#notify-level-EventManager                   error
-#notify-level-ExceptionVarDump               error
-#notify-level-FunctionInterval               error
-#notify-level-GarbageReport                  error
-#notify-level-InputState                     error
-#notify-level-JobManager                     error
-#notify-level-LerpFunctionInterval           error
-#notify-level-LerpFunctionNoStateInterval    error
-#notify-level-Loader                         error
-#notify-level-Messenger                      error
-#notify-level-MetaInterval                   error
-#notify-level-State                          error
-#notify-level-TaskManager                    error
-#notify-level-azure-camera                   warning
+#notify-level-ShowBase                       debug
+#notify-level-BufferViewer                   debug
+#notify-level-BulletinBoard                  debug
+#notify-level-FSM                            debug
+#notify-level-DirectScrolledList             debug
+#notify-level-DirectScrolledListItem         debug
+#notify-level-EventManager                   debug
+#notify-level-ExceptionVarDump               debug
+#notify-level-FunctionInterval               debug
+#notify-level-GarbageReport                  debug
+#notify-level-InputState                     debug
+#notify-level-JobManager                     debug
+#notify-level-LerpFunctionInterval           debug
+#notify-level-LerpFunctionNoStateInterval    debug
+#notify-level-Loader                         debug
+#notify-level-Messenger                      debug
+#notify-level-MetaInterval                   debug
+#notify-level-State                          debug
+#notify-level-TaskManager                    debug
+#notify-level-azure-camera                   debug
+#notify-level-azure-controls                 debug
 
+# ignore the next line. it's only for my editor ;)
 # vim:set sw=4 ts=4 sts=4 et sta:
