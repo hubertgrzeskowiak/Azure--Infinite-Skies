@@ -45,19 +45,19 @@ class TestEnvironment(Sandbox):
     """Draw some test grid and stuff."""
     def __init__(self):
         self.grid = DirectGrid(2000, 20, parent=render)
-        self.grid.setZ(-0.0001)
+        self.grid.setZ(-0.001)
         setSky("bluesky")
 
         # lights
         dlight = DirectionalLight("dlight")
         dlnp = render.attachNewNode(dlight)
-        dlight.setColor(Vec4(1.0, 0.9, 0.8, 1)) 
+        dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
         dlnp.setY(30)
         dlnp.setP(-60)
         render.setLight(dlnp)
 
         alight = AmbientLight("alight")
-        alight.setColor(Vec4(0.6, 0.6, 0.8, 1)) 
+        alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
         alnp = render.attachNewNode(alight)
         render.setLight(alnp)
 
@@ -67,14 +67,14 @@ class TestEnvironment(Sandbox):
 
         # load some others
         pirate1 = Aeroplane("griffin2")
-        pirate1.node().setPosHpr(-15, 20, 6, 230, 0, 0)
+        pirate1.node().setPosHpr(-15, -20, 12, -10, -10, 20)
 
         pirate2 = Aeroplane("griffin2")
-        pirate2.node().setPosHpr(18, -30, 6, 20, 0, 0)
+        pirate2.node().setPosHpr(18, -30, 6, 5, -5, -5)
 
         # set default camera
-        self.default_cam = views.PlaneCamera(base.player.node())
-        #self.hud = gui.HUD(base.player, self.default_cam)
+        #self.default_cam = views.PlaneCamera(base.player.node())
+        #self.hud = gui.HUD(base.player.node(), base.camera)
         #self.hud.update()
 
         cm = ControlManager() 
