@@ -58,11 +58,12 @@ class PlaneCamera(FSM):
 
 
         # Set up the default camera
-        #self.setCameraMode("ThirdPerson")
+        self.setCameraMode("ThirdPerson")
         #self.request("ThirdPerson")
         base.accept("1", self.request, ["ThirdPerson"])
         base.accept("2", self.request, ["FirstPerson"])
         base.accept("3", self.request, ["Cockpit"])
+        base.accept("4", self.request, ["Detached"])
 
     def createCamNodes(self):
         """Creates a few empty nodes around a plane which the camera might be
@@ -219,10 +220,11 @@ class PlaneCamera(FSM):
     def enterDetached(self):
         """Lets the camera view the plane from far away."""
         self.camera.wrtReparentTo(render)
-        taskMgr.add(__detachedCam, "detached camera transforms")
+        taskMgr.add(self.__detachedCam, "detached camera transforms")
 
     def exitDetached(self):
-        taskMgr.remove(__detachedCam)
+        taskMgr.remove("detached camera transforms")
+        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
 
     def __detachedCam(self, task):
         """Updates camera position and rotation."""
