@@ -24,8 +24,8 @@
   "./normalmap.tex.png"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
-  <Scalar> minfilter { NEAREST }
-  <Scalar> magfilter { NEAREST }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
   <Scalar> wrap { CLAMP }
 }
 <Texture> "Griffin Glass_01_diffusemap" {
@@ -40,8 +40,8 @@
   "./normalmap.tex.png"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
-  <Scalar> minfilter { NEAREST }
-  <Scalar> magfilter { NEAREST }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
   <Scalar> wrap { CLAMP }
 }
 <Texture> "Griffin Main_01_diffusemap" {
@@ -107656,39 +107656,6 @@
       <Ref> { Griffin }
     }
   }
-}
-<Group> "camera Cockpit" {
-  <Transform> {
-    <Matrix4> {
-      1.000000 0.000000 0.000000 0.000000
-      0.000000 1.000000 0.000000 0.000000
-      0.000000 0.000000 1.000000 0.000000
-      0.000000 -0.816043 0.921723 1.000000
-    }
-  }
-  <ObjectType> { model }
-}
-<Group> "camera ThirdPerson" {
-  <Transform> {
-    <Matrix4> {
-      1.000000 0.000000 0.000000 0.000000
-      -0.000000 0.992174 -0.124865 0.000000
-      -0.000000 0.124865 0.992174 0.000000
-      0.000000 -30.000002 9.999999 1.000000
-    }
-  }
-  <ObjectType> { model }
-}
-<Group> "camera FirstPerson" {
-  <Transform> {
-    <Matrix4> {
-      1.000000 0.000000 0.000000 0.000000
-      0.000000 1.000000 0.000000 0.000000
-      0.000000 0.000000 1.000000 0.000000
-      0.000000 4.797931 0.318467 1.000000
-    }
-  }
-  <ObjectType> { model }
 }
 <Table> {
   <Bundle> "Open Cabin" {
