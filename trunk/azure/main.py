@@ -54,7 +54,7 @@ class Azure(object):
 
         print "initialising ShowBase"
         ShowBase()
-        base.disableMouse()
+        #base.disableMouse()
 
         from scenarios import TestEnvironment
         TestEnvironment()

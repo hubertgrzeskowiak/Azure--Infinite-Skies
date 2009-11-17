@@ -64,6 +64,8 @@ class PlaneCamera(FSM):
         base.accept("2", self.request, ["FirstPerson"])
         base.accept("3", self.request, ["Cockpit"])
         base.accept("4", self.request, ["Detached"])
+        base.accept("5", self.request, ["Off"])
+        base.accept("6", self.request, ["something weird that shouldnt occur"])
 
     def createCamNodes(self):
         """Creates a few empty nodes around a plane which the camera might be
@@ -122,7 +124,7 @@ class PlaneCamera(FSM):
 
     def updateCamArray(self, cameramodes=None):
         """Set the cameras which next and previous will switch to. Expects a
-        list or tuple. Defaults to all found cameras."""
+        list or tuple. Defaults to all available cameras."""
         a = []
         if not cameramodes:
             for c in self.__cameras.getChildren():
@@ -159,10 +161,13 @@ class PlaneCamera(FSM):
                         "camera is there and enter can't find it...")
 
 
+
     def defaultFilter(self, request, args):
         """Executed by the FSM every time an undefined state is requested."""
         assert self.notifier.debug("Requested %s with args: %s"
                                    % (request, args))
+        if request == "Off":
+            return (request,) + args
         if request == "Next":
             return self.requestNext(args)
         if request == "Prev":
@@ -175,9 +180,11 @@ class PlaneCamera(FSM):
         assert self.notifier.info("Sorry, no %s camera found." % request)
         return None
 
-    def filterOff(self, request, args):
-        """Override the default filter which allows all states from Off."""
-        return self.defaultFilter(request, args)
+
+    def enterOff(self, *args):
+        """Clean up everything by reparenting the camera to the plane."""
+        self.camera.reparentTo(self.parent.node())
+        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
 
     def requestNext(self, *args):
         """Request the 'next' state in the predefined state array."""
@@ -220,17 +227,42 @@ class PlaneCamera(FSM):
     def enterDetached(self):
         """Lets the camera view the plane from far away."""
         self.camera.wrtReparentTo(render)
-        taskMgr.add(self.__detachedCam, "detached camera transforms")
+        taskMgr.add(self.__detachedCam, "detached camera")
 
     def exitDetached(self):
-        taskMgr.remove("detached camera transforms")
-        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
+        taskMgr.remove("detached camera")
 
     def __detachedCam(self, task):
-        """Updates camera position and rotation."""
+        """Updates camera position and rotation for Detached camera."""
         try:
             self.camera.lookAt(self.parent.node())
         except:
             assert self.notifier.warning("Error on detached cam task. Exit.")
             return Task.done
+        return Task.cont
+
+    def enterThirdPerson(self, *args):
+        """Lets the camera view the plane from far away."""
+        target_cam = self.__cameras.find("camera ThirdPerson")
+        if target_cam:
+            try:
+                self.camera.reparentTo(target_cam)
+            except:
+                self.notifier.warning(
+                        "Ok, now this really shouldn't happen! Filter said the"
+                        "camera is there and enter can't find it...")
+
+        taskMgr.add(self.__thirdPersonCam, "third person camera")
+
+    def exitThirdPerson(self, *args):
+        taskMgr.remove("third person camera")
+
+    def __thirdPersonCam(self, task):
+        """Updates camera position and rotation for ThirdPerson camera."""
+        speed = self.parent.speed()
+        camnode = self.__cameras.find("camera ThirdPerson")
+        par = self.parent.node()
+
+        camnode.lookAt(par, (0, (20 + speed/2), 0))
+        camnode.setY(-30 - speed/10)
         return Task.cont

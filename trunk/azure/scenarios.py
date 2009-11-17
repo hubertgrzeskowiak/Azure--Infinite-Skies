@@ -49,17 +49,18 @@ class TestEnvironment(Sandbox):
         setSky("bluesky")
 
         # lights
-        dlight = DirectionalLight("dlight")
-        dlnp = render.attachNewNode(dlight)
-        dlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
-        dlnp.setY(30)
-        dlnp.setP(-60)
-        render.setLight(dlnp)
+        sunlight = DirectionalLight("sun")
+        sunlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
+        sunnp = render.attachNewNode(sunlight)
+        sunnp.setP(-60)
+        render.setLight(sunnp)
 
         alight = AmbientLight("alight")
         alight.setColor(Vec4(0.6, 0.6, 0.8, 1))
         alnp = render.attachNewNode(alight)
         render.setLight(alnp)
+
+        render.setShaderAuto(True)
 
         # load our plane(s)
         self.planes = {}
@@ -77,5 +78,4 @@ class TestEnvironment(Sandbox):
         #self.hud = gui.HUD(base.player.node(), base.camera)
         #self.hud.update()
 
-        cm = ControlManager() 
-        cm.request("Fly")
+        ControlManager().request("Fly")
