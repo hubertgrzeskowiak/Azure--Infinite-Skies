@@ -52,7 +52,7 @@ class PlaneCamera(FSM):
             raise BaseMissing
 
         self.__cameras = self.parent.node().find("cameras")
-        if not self.__cameras:
+        if self.__cameras.isEmpty():
             self.createCamNodes()
         self.updateCamArray()
 
