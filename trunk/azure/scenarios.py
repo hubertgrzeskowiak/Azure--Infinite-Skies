@@ -74,8 +74,7 @@ class TestEnvironment(Sandbox):
         pirate2.node().setPosHpr(18, -30, 6, 5, -5, -5)
 
         # set default camera
-        #self.default_cam = views.PlaneCamera(base.player.node())
-        #self.hud = gui.HUD(base.player.node(), base.camera)
-        #self.hud.update()
+        base.player.hud = gui.HUD(base.player, base.camera)
+        base.player.hud.update()
 
         ControlManager().request("Fly")

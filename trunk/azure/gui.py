@@ -17,7 +17,7 @@ from direct.gui.DirectGui import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
 
 from views import DETACHED
-
+from views import PlaneCamera
 
 PITCH_STEP = 10
 def printInstructions(instructions = ""):
@@ -35,7 +35,7 @@ class HUD(object):
     """ Head Up Display """
     def __init__(self,model,cam,colour=(1,1,1,1)):
         """ HUD initialisation """
-
+        self.plane_camera = PlaneCamera(base.player)
         # this font is loaded to make sure we have unicode characaters
         # specifically we want to be able to display the greek alpha character
         self.unicodefont = loader.loadFont("fonts/DejaVuSansMono.ttf")
@@ -172,12 +172,12 @@ class HUD(object):
     def staticElementUpdate(self):
         """ update static parts of the HUD display """
         
-        if self.camera.getViewMode() == DETACHED:
-            centre_axis = Point2(0.0,0.0)
-        else:            
-            node = self.model.node()
-            forward = node.getQuat().getForward()
-            centre_axis = self.getScreenPoint(forward)
+        #if self.plane_camera.getCameraMode() == 'Detached':
+        #    centre_axis = Point2(0.0,0.0)
+        #else:            
+        node = self.model.node()
+        forward = node.getQuat().getForward()
+        centre_axis = self.getScreenPoint(forward)
         self.centre_axis.setPos(centre_axis.getX(),0.0,centre_axis.getY())
     
     def update(self):
@@ -189,7 +189,7 @@ class HUD(object):
         
         node = self.model.node()
         
-        #if self.camera.getViewMode() == DETACHED:
+        #if self.plane_camera.getCameraMode() == 'Detached':
         #    # TODO (gjmm): work out meaningful alternatives for views where
         #    #               things like the velocity indicator don't work
         #    #               in projected coordinates
