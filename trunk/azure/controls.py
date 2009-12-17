@@ -1,6 +1,7 @@
 """Module for everything about controls."""
 
 import sys
+from ConfigParser import SafeConfigParser
 
 from direct.showbase.DirectObject import DirectObject
 from direct.fsm.FSM import FSM
@@ -8,88 +9,128 @@ from direct.task import Task
 from direct.directnotify.DirectNotify import DirectNotify
 
 from views import PlaneCamera
+from errors import AzureError
 
 
-class KeyHandler(DirectObject):
-    """Gets key events and does stuff."""
+notify = DirectNotify().newCategory("azure-control")
+
+class ControlState(DirectObject):
+    """Specific control state classes should inherit from this.
+    Every derived class is expected to have a list of keybindings and tasks."""
+    conf_parser = SafeConfigParser()
+    conf_parser.read("etc/keybindings.ini")
+
+    @classmethod
+    def reloadKeybindings(cls, filenames="etc/keybindings.ini"):
+        """Read the keybindings file again. Existing instances won't update
+        until you call loadKeybindings() on them."""
+        cls.conf_parser.read(filenames)
 
     def __init__(self):
-        self.key_states = {}
-        self.notify = DirectNotify().newCategory("azure-control")
+        self.name = self.__class__.__name__
+        self.keymap = {}
+        self.requested_actions = set()
+        self.tasks = ()
+        self.active = False
 
-    def chKeyState(self, key, value):
-        #print("key %s changed to %d" % (key, value))
-        self.key_states[key] = value
+    def loadKeybindings(self):
+        """Overrides the builtin keymap with those found in the
+        keybindings file."""
+        try:
+            keys_from_file = ControlState.conf_parser.items(self.name)
+            for a in self.keymap:
+                for action, key in keys_from_file:
+                    if a == action:
+                        self.keymap[a] = key
+        except "NoSectionError":
+            notify.warning("Keybindings for section $s not found. "
+                           "Using built-in bindings" % self.name)
 
-    def mountControlmap(self, controlmap):
-        """Mount a controlmap dict."""
-        self.controlmap = controlmap
+    def activate(self):
+        notify.info("Activating %s" % self.name)
+        if self.keymap != ():
+            self.loadKeybindings()
+            for action, key in self.keymap.items():
+                self.accept(key, self.requested_actions.add, [action])
+                self.accept(key+"-up", self.requested_actions.discard, [action])
+        for task in self.tasks:
+            self.addTask(task, task.__name__)
+        self.active = True
 
-        self.plane_camera = PlaneCamera(base.player)
-        #self.plane_camera.request("ThirdPerson")
-        # non-continous keys (direct action, no state saving)
-        self.accept("escape", sys.exit)
-        self.accept("c", self.plane_camera.requestNext)
-        self.accept("shift-c", self.plane_camera.requestPrev)
+    def deactivate(self):
+        notify.info("Deactivating %s" % self.name)
+        self.ignoreAll()
+        self.requested_actions.clear()
+        for task in self.tasks:
+            self.removeTask(task)
+        self.active = False
 
-        # continuous keys
-        for key in self.controlmap:
-            # at start no key is active
-            self.key_states[key] = 0
-            # go through keys and 'accept' them
-            self.accept(key, self.chKeyState, [key, 1])
-            self.accept(key+"-up", self.chKeyState, [key, 0])
+#-----------------------------------------------------------------------------
 
-
-class Controlmaps(object):
-    """Some control maps."""
-
-    flight = {
-        "a": ("move", "roll-left"),
-        "d": ("move", "roll-right"),
-        "s": ("move", "pitch-up"),
-        "w": ("move", "pitch-down"),
-        "q": ("move", "heap-right"),
-        "e": ("move", "heap-left"),
-        "page_up": ("thrust", "add"),
-        "page_down": ("thrust", "subtract"),
-        #"c" : ("camera", "next")
-        #"p": ("cam-view", views.FIRST_PERSON),
-        #"o": ("cam-view", views.COCKPIT),
-        #"i": ("cam-view", views.THIRD_PERSON),
-        #"u": ("cam-view", views.DETACHED)
-        }
-
-
-class ControlManager(FSM):
-    """A finite state machine which determines current controls and player
-    status."""
+class PlaneFlight(ControlState):
+    """A control state for flying a plane."""
     def __init__(self):
-        FSM.__init__(self, "Control Manager for player")
-        self.k = KeyHandler()
+        ControlState.__init__(self)
+        self.keymap = {"move.roll-left":        "a",
+                       "move.roll-right":       "d",
+                       "move.pitch-up":         "s",
+                       "move.pitch-down":       "w",
+                       "move.heap-left":        "q",
+                       "move.heap-right":       "e",
+                       "thrust.add":            "page_up",
+                       "thrust.subtract":       "page_down",
+                       "camera.Next":           "c",
+                       "camera.Prev":           "shift-c",
+                       "camera.ThirdPerson":    "1",
+                       "camera.FirstPerson":    "2",
+                       "camera.Cockpit":        "3",
+                       "camera.Detached":       "4"
+                      }
+        self.tasks = (self.flyTask,)
 
-    def enterFly(self):
-        self.k.mountControlmap(Controlmaps.flight)
-        self.fly_task = taskMgr.add(self.__flyTask, "flyTask")
-
-    def exitFly(self):
-        pass
-        #TODO: implement this..
-
-
-    def __flyTask(self, task):
+    def flyTask(self, task):
         """Move the plane acording to pressed keys."""
-        for key, state in self.k.key_states.items():
-            if state == 1:
-                # key_info is a tuple of an action and a value (both strings)
-                key_info = Controlmaps.flight[key]
-                if key_info[0] == "move":
-                    base.player.move(key_info[1])
-                elif key_info[0] == "thrust":
-                    base.player.chThrust(key_info[1])
+        actions_done = set()
+        for action in self.requested_actions:
+            a = action.split(".")[0]
+            if a == "move":
+                base.player.move(action.split(".")[1])
+            if a == "thrust":
+                base.player.chThrust(action.split(".")[1])
+            if a == "camera":
+                base.player_camera.setCameraMode(action.split(".")[1])
+                actions_done.add(action)
+        self.requested_actions -= actions_done
 
         #base.player.reverseRoll()
         #base.player.reversePitch()
         base.player.velocityForces()
         base.player.hud.update()
         return Task.cont
+
+
+class GameMenu(ControlState):
+    """A control state for in-game menus (e.g. pause menu)."""
+    def __init__(self):
+        ControlState.__init__(self)
+        self.keymap = {"back":      "escape",
+                       "activate":  "enter",
+                       "go_up":     "arrow_up",
+                       "go_down":   "arrow_down"
+                      }
+        self.tasks = (self.menuControl,)
+
+    def menuControl(self):
+        pass
+
+
+class Sequence(ControlState):
+    """Control state for ingame sequences."""
+    def __init__(self):
+        ControlState.__init__(self)
+        keymap = {"skip": "escape"}
+        self.tasks = (self.skipSequence,)
+
+    def skipSequence(self):
+        pass
+

@@ -7,7 +7,7 @@ from aircrafts import Aeroplane
 from scenery import Scenery, setSky
 import gui
 import views
-from controls import ControlManager
+import controls
 
 
 class Scenario(object):
@@ -60,11 +60,12 @@ class TestEnvironment(Sandbox):
         alnp = render.attachNewNode(alight)
         render.setLight(alnp)
 
-        render.setShaderAuto(True)
+        #render.setShaderAuto(True)
 
         # load our plane(s)
-        self.planes = {}
-        base.player = self.planes["player"] = Aeroplane("griffin2")
+        base.player = Aeroplane("griffin2")
+        base.player_camera = views.PlaneCamera(base.player)
+        self.control = controls.PlaneFlight()
 
         # load some others
         pirate1 = Aeroplane("griffin2")
@@ -76,5 +77,4 @@ class TestEnvironment(Sandbox):
         # set default camera
         base.player.hud = gui.HUD(base.player, base.camera)
         base.player.hud.update()
-
-        ControlManager().request("Fly")
+        self.control.activate()
