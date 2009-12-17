@@ -50,10 +50,12 @@ class Azure(object):
     """Main class called by the top level main function (see below)."""
 
     def __init__(self):
-        """Only argument is the options object from the same named module."""
 
+        # This basically sets up our rendering node-tree, some builtins and
+        # the master loop (which iterates each frame).
         ShowBase()
-        #base.disableMouse()
+        # Turn off Panda3D's standard camera handling.
+        base.disableMouse()
 
         from scenarios import TestEnvironment
         TestEnvironment()
