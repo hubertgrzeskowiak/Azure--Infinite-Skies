@@ -8,13 +8,13 @@ from errors import *
 def createOptionParser():
     """Creates a parser object and returns it. To call any options' values look
     for this object's attributes."""
-    
+
     # Create a new parser
     parser = optparse.OptionParser()
 
     # Add all options
 
-    parser.add_option("-g","--ghost", 
+    parser.add_option("-g","--ghost",
         action="store_true", dest="ghost", default=False,
         help="use ghost flying mode")
 

@@ -79,7 +79,7 @@ class Jukebox(object):
         if nr is not None:
             if nr not in range(0, len(self.__playlist)):
                 raise OutOfRange("given track number is not in playlist")
-                nr = 0    
+                nr = 0
             if nr != self.__cur:
                 time = 0.0
         else:
@@ -120,7 +120,7 @@ class Jukebox(object):
 
     def check(self, playlist=None):
         """Check a playlist for being valid.
-        
+
         Argument:
         playlist - list of filenames. the mounted one by default."""
         if playlist is None:
@@ -149,5 +149,5 @@ class Jukebox(object):
             if self.__song.length() - self.__song.getTime() <= self.crossfade:
                 # TODO: fading/crossfade effect
                 self.next()
-            
+
         return Task.cont

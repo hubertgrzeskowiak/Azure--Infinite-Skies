@@ -42,7 +42,7 @@ class Scenery(object):
                 self.loadSceneryModel(name)
             except (ResourceHandleError, ResourceLoadError), e:
                 handleError(e)
-                
+
         self.node().setPos(pos)
         self.node().setScale(scale)
 

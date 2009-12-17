@@ -39,30 +39,30 @@ class HUD(object):
         # this font is loaded to make sure we have unicode characaters
         # specifically we want to be able to display the greek alpha character
         self.unicodefont = loader.loadFont("fonts/DejaVuSansMono.ttf")
-        
+
         # keep copies of the airplane model and the camera
         self.model = model
         self.camera = cam
-        
+
         # store the requested colour to be used as default
         self.colour = colour
-        
+
         self.default_element_scale = 0.05
-        
+
         # many of the elements on the hud are going to be defined
         # relative to the centre axis (boresight) so create this
         self.centre_axis = self.createCentreMark()
-        
+
         # altitude is going to be displayed to the right of the centre axis
         # and the climb rate is just above this
         self.altitude_text = self.createOnscreenText((0.7, 0.0),
                                     align=TextNode.ALeft,framecolour=colour)
         self.climb_text = self.createOnscreenText((0.7, 0.1),scale=0.04,
                                     align=TextNode.ALeft)
-        
+
         self.altitude_text.reparentTo(self.centre_axis)
         self.climb_text.reparentTo(self.centre_axis)
-        
+
         # the velocity is displayed to the left of the centre axis
         # angle of attack (alpha) and the gforce are displayed beneath
         self.velocity_text = self.createOnscreenText((-0.7, 0.0),
@@ -71,32 +71,32 @@ class HUD(object):
                                     align=TextNode.ARight)
         self.total_gforce_text = self.createOnscreenText((-0.7, -0.4),
                                     align=TextNode.ARight)
-        
+
         self.velocity_text.reparentTo(self.centre_axis)
         self.alpha_text.reparentTo(self.centre_axis)
         self.total_gforce_text.reparentTo(self.centre_axis)
-        
+
         # the heading belongs centred at the top of the screen
         #       no reparenting required?
         self.heading_text = self.createOnscreenText((0.0, 0.95),
                                     align=TextNode.ACenter,framecolour=colour)
-        
+
         # create and store the pitchladder lines and numbers - positioning of 
         #       these are dealt with as the HUD is updated
         lines,leftnumbers,rightnumbers = self.createPitchLadder(PITCH_STEP)
         self.pitchlines = lines
         self.pitchnumbersL = leftnumbers
         self.pitchnumbersR = rightnumbers
-        
+
         # create or load graphic to indicate the current direction of motion
         self.velocity_indicator = self.createVelocityIndicator()
-    
+
     def createVelocityIndicator(self,colour=None):
         """ loads an image used to represent the direction of motion """
-        
+
         if colour is None:
             colour = self.colour
-        
+
         # load the image, put it in aspect2d and make sure 
         #       transparency is respected
         vel_ind = OnscreenImage(image="gui/velocityindicator.png",
@@ -104,23 +104,23 @@ class HUD(object):
         vel_ind.reparentTo(aspect2d)
         vel_ind.setTransparency(TransparencyAttrib.MAlpha)
         return vel_ind
-        
+
     def createPitchLadder(self,anglestep,colour=None):
         """ creates graphics in order to indicate pitch and roll """
         if colour is None:
             colour = self.colour
-        
+
         # a set of dictionaries to store lines and values
         pitchlines = {}
         pitchnumbersL = {}
         pitchnumbersR = {}
-        
+
         # positions used to define the x positions to start and stop the lines
         #       lines will be defined to be at y = 0, each line has a gap
         #       from 0.25 to -0.25 and the zero line is longer than the others
         zeropoints = [0.65,0.25,-0.25,-0.65]
         otherpoints = [0.5,0.25,-0.25,-0.5]
-        
+
         for angletext in range(-90,90+anglestep,anglestep):
             # create a line
             if angletext == 0:
@@ -148,30 +148,30 @@ class HUD(object):
                 pitchnumbersL[angletext][1].reparentTo(pitchlines[angletext])
                 pitchnumbersR[angletext][1].reparentTo(pitchlines[angletext])
         return pitchlines,pitchnumbersL,pitchnumbersR
-        
+
     def getScreenPoint(self,vector):
         """ get the point on screen representing centre axis """
-        
+
         # need the node of the airplane in order to determine position
         #       and forward direction
         node = self.model.node()
         target_point = Point3(node.getPos() + vector * 10000)
-        
+
         # in order to convert the target_point to the screen position
         #       need to convert the coordinates to the top level node
         world_node = node.getTop()
         converted_point = base.cam.getRelativePoint(world_node,target_point)
-        
+
         # create a point to store the result in and project the point
         #       onto the lens
         returned_point = Point2(0.0,0.0)
         base.cam.node().getLens().project(converted_point,returned_point)
-        
+
         return returned_point
-    
+
     def staticElementUpdate(self):
         """ update static parts of the HUD display """
-        
+
         #if self.plane_camera.getCameraMode() == 'Detached':
         #    centre_axis = Point2(0.0,0.0)
         #else:            
@@ -179,21 +179,21 @@ class HUD(object):
         forward = node.getQuat().getForward()
         centre_axis = self.getScreenPoint(forward)
         self.centre_axis.setPos(centre_axis.getX(),0.0,centre_axis.getY())
-    
+
     def update(self):
         """ update the HUD display """
-        
+
         # TODO (gjmm): any static enements should only change when the camera
         #               type changes so move this to save work
         self.staticElementUpdate()
-        
+
         node = self.model.node()
-        
+
         #if self.plane_camera.getCameraMode() == 'Detached':
         #    # TODO (gjmm): work out meaningful alternatives for views where
         #    #               things like the velocity indicator don't work
         #    #               in projected coordinates
-        
+
         # get the normalized veloctiy and estimate the screen point which best
         #       describes this vector and set the indicator to this position
         v_norm = self.model.velocity * 1.0
@@ -201,14 +201,14 @@ class HUD(object):
         velocity_axis = self.getScreenPoint(v_norm)
         self.velocity_indicator.setPos(velocity_axis.getX(),0.0,
                                        velocity_axis.getY())
-        
+
         # for the pitch ladder we need to know where the horizon is and what
         #       is level so we get the forward vector, set the z component to 0
         #       and re-normalise it.
         levelforward = node.getQuat().getForward() * 1.0
         levelforward.setZ(0.0)
         levelforward.normalize()
-        
+
         roll = node.getR()
         pitch = node.getP()
         for angle,line in self.pitchlines.iteritems():
@@ -244,35 +244,35 @@ class HUD(object):
                 # in all other cases we'll just make sure that the graphic
                 # is off the screen
                 line.setPos(-2,0.0,-2)
-        
+
         # some corrections needed for the heading for standard definition
         heading = - round(node.getH(),0)
         if heading < 0.0:
             # no negative angles
             heading += 360.0
-        
+
         # format for heading will be 000 (includes leading zeros)
         #       abs required to avoid -00 display instead of 000
         head = '%03.0f' %abs(heading)
-        
+
         #format for climb rate always includes the sign
         climb = '%+7.1f' %self.model.velocity.getZ()
         alt = '%6d' %int(node.getZ())
-        
+
         # velocity is converted to km/h (1 m/s = 3.6 km/h)
         vel = '%4d' %int(self.model.speed()*3.6)
         # alpha (angle of attack) includes a unicode greek alpha character
         alpha = u'\u03b1: %5.1f' %round(degrees(self.model.angleOfAttack()),1)
         tgf = 'G: % 5.1f' %round(self.model.gForceTotal(),1)
-        
+
         self.heading_text.setText(head)
         self.climb_text.setText(climb)
         self.altitude_text.setText(alt)
         self.velocity_text.setText(vel)
         self.total_gforce_text.setText(tgf)
         self.alpha_text.setText(alpha)
-    
-    
+
+
     def createOnscreenText(self,pos=(0.0,0.0),align=TextNode.ACenter,
                         scale=None,colour=None,framecolour=(1,1,1,0)):
         """ slight simplification of OnscreenText object creation """
@@ -284,75 +284,75 @@ class HUD(object):
                            frame=framecolour)
         ost.setFont(self.unicodefont)
         return ost
-    
+
     def createText(self,text,pos=(0.0,0.0),align=TextNode.ACenter,
                     scale=None,colour=None):
         if colour is None:
             colour = self.colour
         if scale is None:
             scale = self.default_element_scale
-        
+
         text_node = TextNode('text')
         text_node.setText(text)
         text_node.setGlyphScale(scale)
         text_node.setAlign(align)
         text_node.setFont(self.unicodefont)
         text_node.setTextColor(colour[0],colour[1],colour[2],colour[3])
-        
+
         generated_text = text_node.generate()
         text_node_path = render2d.attachNewNode(generated_text)
         text_node_path.setPos(pos[0],0.0,pos[1])
         return text_node,text_node_path
-    
+
     def createPitchLine(self,points=[0.5,0.25,-0.25,-0.5],
                             tick=0.00,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour
-        
+
         pline = LineNodePath(aspect2d,'pitchline',1,Vec4(colour[0],colour[1],
                                                        colour[2],colour[3]))
-        
+
         plist = []
         for p in points:
             plist.append((p,0.0,0.0))
         plist.insert(0,(points[0],0.0,tick))
         plist.append((points[3],0.0,tick))
-        
+
         linelist = []
         linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
         linelist.pop(2)
-        
+
         pline.drawLines(linelist)
         pline.create()
         return pline
-    
+
     def createPitchLineOld(self,points=[0.5,0.25,-0.25,-0.5],
                             tick=0.00,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour
-        
+
         l = LineNodePath(aspect2d,'pitchline',4,Vec4(colour[0],colour[1],
                                                        colour[2],colour[3]))
-        
+
         plist = []
         for p in points:
             plist.append((p,0.0,0.0))
         plist.insert(0,(points[0],0.0,tick))
         plist.append((points[3],0.0,tick))
-        
+
         linelist = []
         linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
         linelist.pop(2)
         l.drawLines(linelist)
         l.create()
-        
+
         # These lines are drawn from scratch rather than using a graphic file
-        
+
         format = GeomVertexFormat.getV3()
         vdata = GeomVertexData("vertices",format,Geom.UHStatic)
-        
+
         # create vertices to add to use in creating lines
         vertexWriter=GeomVertexWriter(vdata,"vertex")
         # here we define enough positions to create two separated lines
@@ -361,7 +361,7 @@ class HUD(object):
         # and another two positions for the 'ticks' at the line ends
         vertexWriter.addData3f(points[0],0.0,tick)
         vertexWriter.addData3f(points[3],0.0,tick)
-        
+
         # create the primitives
         line = GeomLines(Geom.UHStatic)
         line.addVertices(4,0) # the tick part
@@ -371,28 +371,28 @@ class HUD(object):
         line2.addVertices(2,3) # other part of the horizontal line
         line2.addVertices(3,5) # second tick
         line2.closePrimitive()
-        
+
         # add the lines to a geom object
         lineGeom = Geom(vdata)
         lineGeom.addPrimitive(line)
         lineGeom.addPrimitive(line2)
-        
+
         # create the node..
         lineGN=GeomNode("splitline")
         lineGN.addGeom(lineGeom)
-        
+
         # and parent the node to aspect2d
         lineNP = aspect2d.attachNewNode(lineGN)
         return lineNP
-    
+
     def createCentreMark(self,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour
-        
+
         cmline = LineNodePath(aspect2d,'centremark',1,Vec4(colour[0],colour[1],
                                                        colour[2],colour[3]))
-        
+
         plist = []
         plist.append((0.15,0.0,0.0))
         plist.append((0.10,0.0,0.0))
@@ -401,23 +401,23 @@ class HUD(object):
         plist.append((-0.05,0.0,-0.025))
         plist.append((-0.10,0.0,0.0))
         plist.append((-0.15,0.0,0.0))
-        
+
         linelist = []
         linelist = [[plist[p],plist[p+1]] for p in range(len(plist)-1)]
         cmline.drawLines(linelist)
         cmline.create()
         return cmline
-    
+
     def createCentreMarkOld(self,colour=None):
         """ create a line to hint at the pitch of the aircraft on the hud """
         if colour is None:
             colour = self.colour
-        
+
         # These lines are drawn from scratch rather than using a graphic file
-        
+
         format = GeomVertexFormat.getV3()
         vdata = GeomVertexData("vertices",format,Geom.UHStatic)
-        
+
         # create vertices to add to use in creating lines
         vertexWriter=GeomVertexWriter(vdata,"vertex")
         # essentially I am trying to create a line that gives an idea of
@@ -432,7 +432,7 @@ class HUD(object):
         vertexWriter.addData3f(-0.05,0.0,-0.025)
         vertexWriter.addData3f(-0.10,0.0,0.0)
         vertexWriter.addData3f(-0.15,0.0,0.0)
-        
+
         # create the primitives
         line = GeomLines(Geom.UHStatic)
         line.addVertices(0,1)
@@ -442,15 +442,15 @@ class HUD(object):
         line.addVertices(4,5)
         line.addVertices(5,6)
         line.closePrimitive()
-        
+
         # add the lines to a geom object
         lineGeom = Geom(vdata)
         lineGeom.addPrimitive(line)
-        
+
         # create the node..
         lineGN=GeomNode("centremark")
         lineGN.addGeom(lineGeom)
-        
+
         # and parent the node to aspect2d
         lineNP = aspect2d.attachNewNode(lineGN)
         return lineNP
