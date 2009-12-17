@@ -52,7 +52,6 @@ class Azure(object):
     def __init__(self):
         """Only argument is the options object from the same named module."""
 
-        print "initialising ShowBase"
         ShowBase()
         #base.disableMouse()
 
