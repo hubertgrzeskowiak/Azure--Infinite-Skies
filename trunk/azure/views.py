@@ -56,16 +56,8 @@ class PlaneCamera(FSM):
             self.createCamNodes()
         self.updateCamArray()
 
-
         # Set up the default camera
         self.setCameraMode("ThirdPerson")
-        #self.request("ThirdPerson")
-        base.accept("1", self.request, ["ThirdPerson"])
-        base.accept("2", self.request, ["FirstPerson"])
-        base.accept("3", self.request, ["Cockpit"])
-        base.accept("4", self.request, ["Detached"])
-        base.accept("5", self.request, ["Off"])
-        base.accept("6", self.request, ["something weird that shouldnt occur"])
 
     def createCamNodes(self):
         """Creates a few empty nodes around a plane which the camera might be
