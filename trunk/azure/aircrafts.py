@@ -259,10 +259,10 @@ class Aeroplane(object):
             self.node().setP(self.node(), self.pitch_speed * dt)
         if movement == "pitch-down":
             self.node().setP(self.node(), -1 * self.pitch_speed * dt)
-        if movement == "heap-left":
-            self.node().setH(self.node(), -1 * self.yaw_speed * dt)
-        if movement == "heap-right":
+        if movement == "heading-left":
             self.node().setH(self.node(), self.yaw_speed * dt)
+        if movement == "heading-right":
+            self.node().setH(self.node(), -1 * self.yaw_speed * dt)
         if movement == "move-forward":
             # 40 panda_units/s = ~12,4 km/h
             self.node().setFluidY(self.node(), 40 * dt)
@@ -474,7 +474,7 @@ class Aeroplane(object):
 
         self.pitch_ang = radians(self.node().getP())
         self.roll_ang = radians(self.node().getR())
-        self.heap_ang = radians(self.node().getH())
+        self.heading_ang = radians(self.node().getH())
 
         # acceleration of gravity but it was so small value so I multiplied
         # it with 500 also found by experimenting but will change after the
@@ -485,7 +485,7 @@ class Aeroplane(object):
         # this force is to the z axis of the plane(not the relative axis),
         # so it does not have gravity but the thrust and the lift force,
         # 80000 is also an experimental value will change after the solution.
-        self.ForceZ = (l_thrust * cos(self.heap_ang) +
+        self.ForceZ = (l_thrust * cos(self.heading_ang) +
             self.k * l_thrust * cos(self.roll_ang)) * 80000
 
          # this makes the plane go forward through its own axis
