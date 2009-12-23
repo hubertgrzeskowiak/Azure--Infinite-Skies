@@ -87,7 +87,8 @@ class Aeroplane(object):
         base.physicsMgr.attachPhysicalNode(self.actor_node)
         #self._dummy_node.reparentTo(self.anp)
         Node.reparentTo(Aeroplane._aircrafts)
-
+        self.physics_object = self.actor_node.getPhysicsObject()
+        
         if specs_to_load == 0:
             pass
         elif specs_to_load:
@@ -526,3 +527,31 @@ class Aeroplane(object):
     def node(self):
         """Returns the plane's dummy node (empty node it's parented to)."""
         return self._dummy_node
+    
+    def velocity(self):
+        """ return the current velocity """
+        return self.physics_object.getVelocity()
+    
+    def position(self):
+        """ return the current position """
+        return self.physics_object.getPosition()
+    
+    def quat(self):
+        """ return the current quaternion representation of the attitude """
+        return self.physics_object.getOrientation()
+    
+    def info(self):
+        velocity = self.velocity()
+        position = self.position()
+        quat = self.quat()
+        heading,pitch,roll = quat.getHpr()
+        return dict(velocity = velocity,
+                    speed = velocity.length(),
+                    climb_rate = velocity.getZ(),
+                    position = position,
+                    height = position.getZ(),
+                    quat = quat,
+                    heading = heading,
+                    pitch = pitch,
+                    roll = roll)
+    
