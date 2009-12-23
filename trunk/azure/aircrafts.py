@@ -4,6 +4,7 @@ aircrafts."""
 from math import cos, sin, radians, atan2, sqrt, pi
 import ConfigParser
 from pandac.PandaModules import ClockObject
+from pandac.PandaModules import PandaNode, NodePath, ActorNode, ForceNode, LinearVectorForce
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
 from errors import *
 from utils import ListInterpolator
@@ -55,6 +56,8 @@ class Aeroplane(object):
         Aeroplane._plane_count += 1
 
         new_node_name = "aeroplane" + str(Aeroplane._plane_count)
+        new_physics_node_name = "%s-physics" % new_node_name
+        
         self._dummy_node = Aeroplane._aircrafts.attachNewNode(new_node_name)
         del new_node_name
         self.name = name
@@ -73,6 +76,17 @@ class Aeroplane(object):
                 self.loadPlaneModel(name)
             except (ResourceHandleError, ResourceLoadError), e:
                 handleError(e)
+        
+        # add new objects associated with the physics
+        Node=NodePath(PandaNode(new_physics_node_name))
+        Node.reparentTo(render)
+
+        self.plane_model.reparentTo(self._dummy_node)
+        self.actor_node=ActorNode("plane-physics")
+        self.anp=Node.attachNewNode(self.actor_node)
+        base.physicsMgr.attachPhysicalNode(self.actor_node)
+        #self._dummy_node.reparentTo(self.anp)
+        Node.reparentTo(Aeroplane._aircrafts)
 
         if specs_to_load == 0:
             pass
