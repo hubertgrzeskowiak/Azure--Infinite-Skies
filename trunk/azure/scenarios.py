@@ -61,7 +61,10 @@ class TestEnvironment(Sandbox):
         render.setLight(alnp)
 
         #render.setShaderAuto(True)
-
+        
+        # initialise physics engine
+        base.enableParticles()
+        
         # load our plane(s)
         base.player = Aeroplane("griffin2")
         base.player_camera = views.PlaneCamera(base.player)
