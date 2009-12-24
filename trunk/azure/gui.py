@@ -42,6 +42,7 @@ class HUD(object):
 
         # keep copies of the airplane model and the camera
         self.model = model
+        self.physics_node = model.node().getParent()
         self.camera = cam
 
         # store the requested colour to be used as default
@@ -151,11 +152,13 @@ class HUD(object):
 
     def getScreenPoint(self,vector):
         """ get the point on screen representing centre axis """
-
+        physical_object = self.model.actor_node.getPhysicsObject()
+        position = physical_object.getPosition()
+        
         # need the node of the airplane in order to determine position
         #       and forward direction
         node = self.model.node()
-        target_point = Point3(node.getPos() + vector * 10000)
+        target_point = Point3(position + vector * 10000)
 
         # in order to convert the target_point to the screen position
         #       need to convert the coordinates to the top level node
@@ -169,48 +172,34 @@ class HUD(object):
 
         return returned_point
 
-    def staticElementUpdate(self):
+    def staticElementUpdate(self,forward):
         """ update static parts of the HUD display """
-
-        #if self.plane_camera.getCameraMode() == 'Detached':
-        #    centre_axis = Point2(0.0,0.0)
-        #else:            
-        node = self.model.node()
-        forward = node.getQuat().getForward()
         centre_axis = self.getScreenPoint(forward)
         self.centre_axis.setPos(centre_axis.getX(),0.0,centre_axis.getY())
 
     def update(self):
         """ update the HUD display """
-
-        # TODO (gjmm): any static enements should only change when the camera
-        #               type changes so move this to save work
-        self.staticElementUpdate()
-
-        node = self.model.node()
-
-        #if self.plane_camera.getCameraMode() == 'Detached':
-        #    # TODO (gjmm): work out meaningful alternatives for views where
-        #    #               things like the velocity indicator don't work
-        #    #               in projected coordinates
-
-        # get the normalized veloctiy and estimate the screen point which best
-        #       describes this vector and set the indicator to this position
-        v_norm = self.model.velocity * 1.0
-        v_norm.normalize()
-        velocity_axis = self.getScreenPoint(v_norm)
-        self.velocity_indicator.setPos(velocity_axis.getX(),0.0,
-                                       velocity_axis.getY())
+        velocity = self.model.velocity()
+        normalized_velocity = velocity * 1.0
+        normalized_velocity.normalize()
+        
+        quat = self.model.quat()
+        forward = quat.getForward()
+        
+        self.staticElementUpdate(forward)
+        
+        # estimate the screen point which best describes the velocity vector
+        velocity_axis = self.getScreenPoint(normalized_velocity)
+        self.velocity_indicator.setPos(velocity_axis.getX(),0.0,velocity_axis.getY())
 
         # for the pitch ladder we need to know where the horizon is and what
         #       is level so we get the forward vector, set the z component to 0
         #       and re-normalise it.
-        levelforward = node.getQuat().getForward() * 1.0
+        levelforward = forward * 1.0
         levelforward.setZ(0.0)
         levelforward.normalize()
 
-        roll = node.getR()
-        pitch = node.getP()
+        heading,pitch,roll = quat.getHpr()
         for angle,line in self.pitchlines.iteritems():
             # although we have defined all the pitch lines, there is certainly
             #       no reason to display them all..
@@ -246,7 +235,7 @@ class HUD(object):
                 line.setPos(-2,0.0,-2)
 
         # some corrections needed for the heading for standard definition
-        heading = - round(node.getH(),0)
+        heading = - round(heading,0)
         if heading < 0.0:
             # no negative angles
             heading += 360.0
@@ -256,8 +245,8 @@ class HUD(object):
         head = '%03.0f' %abs(heading)
 
         #format for climb rate always includes the sign
-        climb = '%+7.1f' %self.model.velocity.getZ()
-        alt = '%6d' %int(node.getZ())
+        climb = '%+7.1f' %velocity.getZ()
+        alt = '%6d' %int(self.model.altitude())
 
         # velocity is converted to km/h (1 m/s = 3.6 km/h)
         vel = '%4d' %int(self.model.speed()*3.6)

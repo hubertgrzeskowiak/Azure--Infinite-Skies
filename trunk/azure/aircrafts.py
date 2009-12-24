@@ -85,7 +85,7 @@ class Aeroplane(object):
         self.actor_node=ActorNode("plane-physics")
         self.anp=Node.attachNewNode(self.actor_node)
         base.physicsMgr.attachPhysicalNode(self.actor_node)
-        #self._dummy_node.reparentTo(self.anp)
+        self._dummy_node.reparentTo(self.anp)
         Node.reparentTo(Aeroplane._aircrafts)
         self.physics_object = self.actor_node.getPhysicsObject()
         
@@ -109,7 +109,6 @@ class Aeroplane(object):
         self.setCalculationConstants()
 
         # dynamic variables
-        self.velocity = Vec3(0.0,0.0,0.0)
         self.acceleration = Vec3(0.0,0.0,0.0)
 
         self.angle_of_attack = 0.0
@@ -180,6 +179,7 @@ class Aeroplane(object):
                                            [radians(16.0),0.028]],
                                            0.03,0.1)
         self.max_thrust = 5000.0
+        self.actor_node.getPhysicsObject().setMass(self.mass)
 
 
     #def assignSound(self, soundfile):
@@ -263,24 +263,25 @@ class Aeroplane(object):
         #              coordinated turn?
 
         # TODO (gjmm): acceleration and decay of rotations from keyboard
-
+        node = NodePath(self.actor_node)
+        
         if movement == "roll-left":
-            self.node().setR(self.node(), -1 * self.roll_speed * dt)
+            node.setR(node, -1 * self.roll_speed * dt)
             #a=self.node().getR()
         if movement == "roll-right":
-            self.node().setR(self.node(), self.roll_speed * dt)
+            node.setR(node, self.roll_speed * dt)
             #b=self.node().getR()
         if movement == "pitch-up":
-            self.node().setP(self.node(), self.pitch_speed * dt)
+            node.setP(node, self.pitch_speed * dt)
         if movement == "pitch-down":
-            self.node().setP(self.node(), -1 * self.pitch_speed * dt)
+            node.setP(node, -1 * self.pitch_speed * dt)
         if movement == "heading-left":
-            self.node().setH(self.node(), self.yaw_speed * dt)
+            node.setH(node, self.yaw_speed * dt)
         if movement == "heading-right":
-            self.node().setH(self.node(), -1 * self.yaw_speed * dt)
-        if movement == "move-forward":
-            # 40 panda_units/s = ~12,4 km/h
-            self.node().setFluidY(self.node(), 40 * dt)
+            node.setH(node, -1 * self.yaw_speed * dt)
+        #if movement == "move-forward":
+        #    # 40 panda_units/s = ~12,4 km/h
+        #    node.setFluidY(node, 40 * dt)
 
     def chThrust(self, value):
         if value == "add" and self.thrust < 1.0:
@@ -364,7 +365,7 @@ class Aeroplane(object):
         """return the force vector produced by the aircraft engines"""
         return thrust_vector * self.thrust * self.max_thrust
 
-    def _force(self,v,right,up,forward):
+    def _force(self,p,v,right,up,forward):
         """calculate the forces due to the velocity and orientation of the aircraft"""
         v_squared = v.lengthSquared()
         v_norm = v + v.zero()
@@ -381,79 +382,14 @@ class Aeroplane(object):
         # if the plane is on the ground, the ground reacts to the downward force
         # TODO (gjmm): need to modify in order to consider reaction to objects
         #              at different altitudes.
-        if self.node().getZ() == 0.0:
+        if p.getZ() == 0.0:
             if force[2] < 0.0:
                 force.setZ(0.0)
-        return force
+        lvf = LinearVectorForce(force)
+        lvf.setMassDependent(1)
+        return lvf
 
-    def speed(self):
-        """ returns the current velocity """
-        return self.velocity.length()
-    def altitude(self):
-        """ returns the current altitude """
-        return self.model.node().getZ()
-
-    def velocityForces(self):
-        """Update position based on basic forces model"""
-
-        # collect together the appropriate information
-        node = self.node()
-        quat = node.getQuat()
-
-        # directional vectors
-        forward = quat.getForward()
-        up = quat.getUp()
-        right = quat.getRight()
-
-        # position, velocity and acceleration
-        pos = node.getPos()
-        vel = self.velocity
-        vel_squared = vel.lengthSquared()
-        acc = self.acceleration
-
-        # and the timestep
-        dt = _c.getDt()
-
-        # The following integration schemes are left for interest.
-        #       The modified velocity Verlet is the method in use at the moment
-
-        ## Euler integration
-        #new_acc = self._force(vel,right,up,forward) / self.mass
-        #new_pos = pos + vel * dt
-        #new_vel = vel + new_acc * dt
-
-        ## Euler-Cromer
-        #new_acc = self._force(vel,right,up,forward) / self.mass
-        #new_vel = vel + new_acc * dt
-        #new_pos = pos + new_vel * dt
-
-        ## Velocity Verlet
-        #new_pos = pos + vel * dt + acc * dt * dt * 0.5
-        #new_acc = self._force(vel,right,up,forward) / self.mass
-        #new_vel = vel + (acc + new_acc) * dt * 0.5
-
-        # Modified Velocity Verlet
-        new_pos = pos + vel * dt + acc * dt * dt * 0.5
-        new_vel = vel + acc * dt * 0.5
-        new_acc = self._force(new_vel,right,up,forward) / self.mass
-        new_vel = new_vel + new_acc * dt * 0.5
-
-        # Runge-Kutta would also be interesting but I think that needs
-        #       estimates of how right, up and forward change.. turning
-        #       forces have not been implemented yet.
-
-
-        # correcting the height on touchdown or ground impact
-        # TODO (gjmm): need to modify in order to consider objects at different
-        #              altitudes.
-        if new_pos.getZ() < 0.0:
-            new_pos.setZ(0.0)
-            new_vel.setZ(0.0)
-
-        # store the new position, velocity and acceleration
-        node.setPos(new_pos)
-        self.velocity = new_vel
-        self.acceleration = new_acc
+    
     def angleOfAttack(self):
         return self.angle_of_attack
     def gForceTotal(self):
@@ -476,50 +412,7 @@ class Aeroplane(object):
         acc = self.acceleration - self.gravity/self.mass
         gf = acc.dot(forward) / 9.81
         return gf
-
-    def velocitySimple(self):
-        """OLD ONE - Physical forces- and movement management."""
-        dt = _c.getDt()
-
-        l_thrust = self.thrust * self.max_speed
-
-        # coefficient for the lift force, I found it by experimentation
-        # but it will be better to have an analytical solution
-        self.k = 0.01
-
-        self.pitch_ang = radians(self.node().getP())
-        self.roll_ang = radians(self.node().getR())
-        self.heading_ang = radians(self.node().getH())
-
-        # acceleration of gravity but it was so small value so I multiplied
-        # it with 500 also found by experimenting but will change after the
-        # analytical solution
-
-        self.gravity_scalar = -9.81 * 500
-
-        # this force is to the z axis of the plane(not the relative axis),
-        # so it does not have gravity but the thrust and the lift force,
-        # 80000 is also an experimental value will change after the solution.
-        self.ForceZ = (l_thrust * cos(self.heading_ang) +
-            self.k * l_thrust * cos(self.roll_ang)) * 80000
-
-         # this makes the plane go forward through its own axis
-        self.node().setFluidY(self.node(), l_thrust * dt)
-
-        # this adds the gravity, it moves the plane at the direction of the
-        # Z axis of the ground
-        self.node().setZ(self.node().getZ() + self.gravity_scalar*dt*dt/2.0)
-
-        # this adds the movement at the z direction of the plane
-        self.node().setFluidZ(self.node(), self.ForceZ*dt*dt/2.0/self.mass)
-
-        # this makes the plane not to go below vertical 0
-        if self.node().getZ() < 0:
-            self.node().setZ(0)
-
-        # TODO (gjmm): set velocity to real velocity
-        self.velocity.setX(l_thrust)
-
+    
     def id(self):
         """Every plane has its own unique ID."""
         return self._id
@@ -532,9 +425,17 @@ class Aeroplane(object):
         """ return the current velocity """
         return self.physics_object.getVelocity()
     
+    def speed(self):
+        """ returns the current velocity """
+        return self.velocity().length()
+        
     def position(self):
         """ return the current position """
         return self.physics_object.getPosition()
+    
+    def altitude(self):
+        """ returns the current altitude """
+        return self.position().getZ()
     
     def quat(self):
         """ return the current quaternion representation of the attitude """
@@ -555,3 +456,27 @@ class Aeroplane(object):
                     pitch = pitch,
                     roll = roll)
     
+    def runDynamics(self):
+        """ update position and velocity based on aerodynamic forces """
+        
+        physical_object = self.physics_object
+        actor_physical = self.actor_node.getPhysical(0)
+        actor_physical.clearLinearForces()
+        
+        quat = self.quat()
+        position = self.position()
+        velocity = self.velocity()
+        
+        forward = quat.getForward()
+        up = quat.getUp()
+        right = quat.getRight()
+        
+        all_lvf = self._force(position,velocity,right,up,forward)
+        forceNode=ForceNode('aeroplane-forces')
+        forceNode.addForce(all_lvf)
+        actor_physical.addLinearForce(all_lvf)
+        if position.getZ() < 0:
+            position.setZ(0)
+            velocity.setZ(0)
+            physical_object.setPosition(position)
+            physical_object.setVelocity(velocity)
