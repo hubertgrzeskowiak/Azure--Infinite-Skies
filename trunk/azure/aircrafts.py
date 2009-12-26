@@ -4,8 +4,11 @@ aircrafts."""
 from math import cos, sin, radians, atan2, sqrt, pi
 import ConfigParser
 from pandac.PandaModules import ClockObject
-from pandac.PandaModules import PandaNode, NodePath, ActorNode, ForceNode, LinearVectorForce
-from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3
+from pandac.PandaModules import PandaNode, NodePath, ActorNode
+from pandac.PandaModules import ForceNode, AngularVectorForce, LinearVectorForce
+from pandac.PandaModules import AngularEulerIntegrator
+
+from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
 from errors import *
 from utils import ListInterpolator
 #import sound
@@ -89,13 +92,16 @@ class Aeroplane(object):
         Node.reparentTo(Aeroplane._aircrafts)
         self.physics_object = self.actor_node.getPhysicsObject()
         
+        angleInt = AngularEulerIntegrator()
+        base.physicsMgr.attachAngularIntegrator(angleInt)
+        
         if specs_to_load == 0:
             pass
         elif specs_to_load:
             self.loadSpecs(specs_to_load)
         else:
             self.loadSpecs(name)
-
+        
         """
         if soundfile == 0:
             pass
@@ -110,9 +116,22 @@ class Aeroplane(object):
 
         # dynamic variables
         self.acceleration = Vec3(0.0,0.0,0.0)
-
         self.angle_of_attack = 0.0
-
+        
+        # state variables
+        self.rudder = 0.0
+        self.ailerons = 0.0
+        self.elevator = 0.0
+        
+        # more parameters
+        self.yaw_damping = -1000
+        self.pitch_damping = -1000
+        self.roll_damping = -1000
+        
+        self.rudder_coefficient = 0.5
+        self.elevator_coefficient = 0.5
+        self.ailerons_coefficient = 0.5
+    
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
         if hasattr(self, "plane_model"):
@@ -179,9 +198,11 @@ class Aeroplane(object):
                                            [radians(16.0),0.028]],
                                            0.03,0.1)
         self.max_thrust = 5000.0
-        self.actor_node.getPhysicsObject().setMass(self.mass)
-
-
+        physics_object = self.actor_node.getPhysicsObject()
+        physics_object.setMass(self.mass)
+        #physics_object.setVelocity(Vec3(0,200,0))
+        #physics_object.setPosition(Point3(0,-100,10000))
+    
     #def assignSound(self, soundfile):
     #    plane_sound = sound.Sound(soundfile, True, self.node())
     #    return plane_sound
@@ -266,19 +287,23 @@ class Aeroplane(object):
         node = NodePath(self.actor_node)
         
         if movement == "roll-left":
-            node.setR(node, -1 * self.roll_speed * dt)
-            #a=self.node().getR()
+            #node.setR(node, -1 * self.roll_speed * dt)
+            self.ailerons = -1.0
         if movement == "roll-right":
-            node.setR(node, self.roll_speed * dt)
-            #b=self.node().getR()
+            #node.setR(node, self.roll_speed * dt)
+            self.ailerons = 1.0
         if movement == "pitch-up":
-            node.setP(node, self.pitch_speed * dt)
+            #node.setP(node, self.pitch_speed * dt)
+            self.elevator = 1.0
         if movement == "pitch-down":
-            node.setP(node, -1 * self.pitch_speed * dt)
+            #node.setP(node, -1 * self.pitch_speed * dt)
+            self.elevator = -1.0
         if movement == "heading-left":
-            node.setH(node, self.yaw_speed * dt)
+            #node.setH(node, self.yaw_speed * dt)
+            self.rudder = 1.0
         if movement == "heading-right":
-            node.setH(node, -1 * self.yaw_speed * dt)
+            #node.setH(node, -1 * self.yaw_speed * dt)
+            self.rudder = -1.0
         #if movement == "move-forward":
         #    # 40 panda_units/s = ~12,4 km/h
         #    node.setFluidY(node, 40 * dt)
@@ -388,7 +413,20 @@ class Aeroplane(object):
         lvf = LinearVectorForce(force)
         lvf.setMassDependent(1)
         return lvf
-
+    
+    def _rotationalDampingForce(self,angular_v):
+        print angular_v
+        print angular_v.getHpr()
+        #yaw_v,pitch_v,roll_v = angular_v
+        dummy,pitch_v,roll_v,yaw_v = angular_v
+        yaw_damping = self.yaw_damping * yaw_v
+        pitch_damping = self.pitch_damping * pitch_v
+        roll_damping = self.roll_damping * roll_v
+        avf = AngularVectorForce(yaw_damping,
+                                 pitch_damping,
+                                 roll_damping)
+        print 
+        return avf
     
     def angleOfAttack(self):
         return self.angle_of_attack
@@ -425,6 +463,22 @@ class Aeroplane(object):
         """ return the current velocity """
         return self.physics_object.getVelocity()
     
+    def angularVelocity(self):
+        """ return the current angular velocity """
+        #orientation_hpr = self.physics_object.getOrientation().getHpr()
+        #rotation_hpr = self.physics_object.getRotation().getHpr()
+        
+        #if orientation_hpr[0] > 90 or orientation_hpr[0] < -90:
+            #rotation_hpr[2] = - rotation_hpr[2]
+            #rotation_hpr[1] = - rotation_hpr[1]
+        #if orientation_hpr[2] > 90 or orientation_hpr[2] < -90:
+            #rotation_hpr[0] = - rotation_hpr[0]
+            #rotation_hpr[1] = - rotation_hpr[1]
+        #r = LRotationf()
+        #r.setHpr(rotation_hpr)
+        #return r
+        return self.physics_object.getRotation()
+    
     def speed(self):
         """ returns the current velocity """
         return self.velocity().length()
@@ -456,6 +510,18 @@ class Aeroplane(object):
                     pitch = pitch,
                     roll = roll)
     
+    def _controlAngularForce(self,velocity):
+        #fv = velocity.dot(velocity.forward())
+        fv = velocity.length()
+        avf = AngularVectorForce(self.rudder*self.rudder_coefficient*fv,
+                                 self.elevator*self.elevator_coefficient*fv,
+                                 self.ailerons*self.ailerons_coefficient*fv)
+        
+        self.rudder = 0.0
+        self.elevator = 0.0
+        self.ailerons = 0.0
+        return avf
+    
     def runDynamics(self):
         """ update position and velocity based on aerodynamic forces """
         
@@ -464,6 +530,7 @@ class Aeroplane(object):
         actor_physical.clearLinearForces()
         
         quat = self.quat()
+        angular_velocity = self.angularVelocity()
         position = self.position()
         velocity = self.velocity()
         
@@ -472,9 +539,16 @@ class Aeroplane(object):
         right = quat.getRight()
         
         all_lvf = self._force(position,velocity,right,up,forward)
+        control_avf = self._controlAngularForce(velocity)
+        rotational_damping_avf = self._rotationalDampingForce(angular_velocity)
         forceNode=ForceNode('aeroplane-forces')
         forceNode.addForce(all_lvf)
         actor_physical.addLinearForce(all_lvf)
+        
+        # Add input angular forces
+        actor_physical.addAngularForce(control_avf)
+        actor_physical.addAngularForce(rotational_damping_avf)
+        
         if position.getZ() < 0:
             position.setZ(0)
             velocity.setZ(0)
