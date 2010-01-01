@@ -125,12 +125,16 @@ class Aeroplane(object):
         
         # more parameters
         self.yaw_damping = -1000
-        self.pitch_damping = -1000
-        self.roll_damping = -1000
+        self.pitch_damping = -500
+        self.roll_damping = -100
         
-        self.rudder_coefficient = 0.5
-        self.elevator_coefficient = 0.5
-        self.ailerons_coefficient = 0.5
+        self.terminal_yaw = 0.0005
+        self.terminal_pitch = 0.001
+        self.terminal_roll = 0.002
+        
+        self.rudder_coefficient = 0.1
+        self.elevator_coefficient = 1.5
+        self.ailerons_coefficient = 1.5
     
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
@@ -206,107 +210,21 @@ class Aeroplane(object):
     #def assignSound(self, soundfile):
     #    plane_sound = sound.Sound(soundfile, True, self.node())
     #    return plane_sound
-
-    def reverseRoll(self,offset=10.0):
-        """Automatically levels the airplane in the roll axis
-        The offset argument allows the airplane to level to upright flight
-        when the initial roll vector is beyond 90 degrees.
-        """
-        # local copies of the relevant data
-        dt = _c.getDt()
-        roll = self.node().getR()
-
-        # This may not be strictly necessary but this causes the roll rate
-        # to decrease as the roll approaches the target angle
-        r_factor = abs(roll/90.0)
-        if r_factor > 1:
-            # we are upside down and so the factor is reversed (offset ignored)
-            r_factor = 2 - r_factor
-        # sqrt gives a decaying effect, constant allows target to be reached
-        r_factor = sqrt(r_factor) + 0.1
-
-        # Determine the quadrant and apply the appropriate rotation,
-        #       correcting if the target is overshot
-        if roll < -90.0 - offset:
-            self.node().setR(self.node(), -1 * r_factor * self.roll_speed * dt)
-            if self.node().getR() > 0:
-                self.node().setR(180.0)
-        elif roll < 0.0:
-            self.node().setR(self.node(), r_factor * self.roll_speed * dt)
-            if self.node().getR() > 0:
-                self.node().setR(0.0)
-        elif roll > 90.0 + offset:
-            self.node().setR(self.node(), r_factor * self.roll_speed * dt)
-            if self.node().getR() < 0:
-                self.node().setR(180.0)
-        elif roll > 0.0:
-            self.node().setR(self.node(), -1 * r_factor * self.roll_speed * dt)
-            if self.node().getR() < 0:
-                self.node().setR(0.0)
-
-    def reversePitch(self):
-        """Automatically levels the airplane in the pitch axis"""
-        # local copies of the relevant data
-        dt = _c.getDt()
-        pitch = self.node().getP()
-
-        # The angular range for pitch is -90 -> 90 and so we need extra
-        # information to determine the direction to rotate:
-        if self.node().getQuat().getUp()[2] < 0:
-            factor = -1
-        else:
-            factor = 1
-
-        # This may not be strictly necessary but this causes the roll rate
-        # to decrease as the roll approaches the target angle
-        p_factor = abs(pitch/90.0) + 0.1
-        # sqrt gives a decaying effect, constant allows target to be reached
-        p_factor = sqrt(p_factor) + 0.1
-
-        # Determine the quadrant, helped by the 'factor' calculated above,
-        # and apply the appropriate rotation; correct if the target is overshot
-        if pitch < 0.0:
-            self.node().setP(self.node(), p_factor * factor * \
-                                                     self.pitch_speed * dt)
-            if self.node().getP() > 0: self.node().setP(0.0)
-        elif pitch > 0.0:
-            self.node().setP(self.node(), -1 * p_factor * factor * \
-                                                     self.pitch_speed * dt)
-            if self.node().getP() < 0: self.node().setP(0.0)
-
+    
     def move(self, movement):
         """Plane movement management."""
-
-        dt = _c.getDt()
-
-        # TODO (gjmm): modify the controls so that appropriately directed 
-        #              rudder and elevator activated simultaneously gives a 
-        #              coordinated turn?
-
-        # TODO (gjmm): acceleration and decay of rotations from keyboard
-        node = NodePath(self.actor_node)
-        
         if movement == "roll-left":
-            #node.setR(node, -1 * self.roll_speed * dt)
             self.ailerons = -1.0
         if movement == "roll-right":
-            #node.setR(node, self.roll_speed * dt)
             self.ailerons = 1.0
         if movement == "pitch-up":
-            #node.setP(node, self.pitch_speed * dt)
             self.elevator = 1.0
         if movement == "pitch-down":
-            #node.setP(node, -1 * self.pitch_speed * dt)
             self.elevator = -1.0
         if movement == "heading-left":
-            #node.setH(node, self.yaw_speed * dt)
             self.rudder = 1.0
         if movement == "heading-right":
-            #node.setH(node, -1 * self.yaw_speed * dt)
             self.rudder = -1.0
-        #if movement == "move-forward":
-        #    # 40 panda_units/s = ~12,4 km/h
-        #    node.setFluidY(node, 40 * dt)
 
     def chThrust(self, value):
         if value == "add" and self.thrust < 1.0:
@@ -375,15 +293,9 @@ class Aeroplane(object):
         speed_y = forward.dot(v)
         speed_z = up.dot(v)
 
-        drag_x = right*speed_x*speed_x*self.drag_factor_x
-        drag_y = forward*speed_y*speed_y*self.drag_factor_y
-        drag_z = up*speed_z*speed_z*self.drag_factor_z
-        if speed_x < 0.0:
-            drag_x = -drag_x
-        if speed_y < 0.0:
-            drag_y = -drag_y
-        if speed_z < 0.0:
-            drag_z = -drag_z
+        drag_x = right*speed_x*abs(speed_x)*self.drag_factor_x
+        drag_y = forward*speed_y*abs(speed_y)*self.drag_factor_y
+        drag_z = up*speed_z*abs(speed_z)*self.drag_factor_z
         return drag_x + drag_y + drag_z
 
     def _thrust(self,thrust_vector):
@@ -410,23 +322,12 @@ class Aeroplane(object):
         if p.getZ() == 0.0:
             if force[2] < 0.0:
                 force.setZ(0.0)
+        
         lvf = LinearVectorForce(force)
         lvf.setMassDependent(1)
         return lvf
     
-    def _rotationalDampingForce(self,angular_v):
-        print angular_v
-        print angular_v.getHpr()
-        #yaw_v,pitch_v,roll_v = angular_v
-        dummy,pitch_v,roll_v,yaw_v = angular_v
-        yaw_damping = self.yaw_damping * yaw_v
-        pitch_damping = self.pitch_damping * pitch_v
-        roll_damping = self.roll_damping * roll_v
-        avf = AngularVectorForce(yaw_damping,
-                                 pitch_damping,
-                                 roll_damping)
-        print 
-        return avf
+    
     
     def angleOfAttack(self):
         return self.angle_of_attack
@@ -465,19 +366,9 @@ class Aeroplane(object):
     
     def angularVelocity(self):
         """ return the current angular velocity """
-        #orientation_hpr = self.physics_object.getOrientation().getHpr()
-        #rotation_hpr = self.physics_object.getRotation().getHpr()
-        
-        #if orientation_hpr[0] > 90 or orientation_hpr[0] < -90:
-            #rotation_hpr[2] = - rotation_hpr[2]
-            #rotation_hpr[1] = - rotation_hpr[1]
-        #if orientation_hpr[2] > 90 or orientation_hpr[2] < -90:
-            #rotation_hpr[0] = - rotation_hpr[0]
-            #rotation_hpr[1] = - rotation_hpr[1]
-        #r = LRotationf()
-        #r.setHpr(rotation_hpr)
-        #return r
         return self.physics_object.getRotation()
+    def setAngularVelocity(self,ang_vel):
+        self.physics_object.setRotation(ang_vel)
     
     def speed(self):
         """ returns the current velocity """
@@ -510,47 +401,101 @@ class Aeroplane(object):
                     pitch = pitch,
                     roll = roll)
     
-    def _controlAngularForce(self,velocity):
-        #fv = velocity.dot(velocity.forward())
-        fv = velocity.length()
-        avf = AngularVectorForce(self.rudder*self.rudder_coefficient*fv,
-                                 self.elevator*self.elevator_coefficient*fv,
-                                 self.ailerons*self.ailerons_coefficient*fv)
+    def _rudderAF(self,speed,yaw_v):
+        """ angular force from rudder """
+        if self.rudder * yaw_v < self.terminal_yaw:
+            return AngularVectorForce(self.rudder * self.rudder_coefficient * speed, 0.0, 0.0)
+        else:
+            return AngularVectorForce(0.0, 0.0, 0.0)
+    def _elevatorAF(self,speed,pitch_v):
+        """ angular force from elevator """
+        if self.elevator * pitch_v < self.terminal_pitch:
+            return AngularVectorForce(0.0, self.elevator * self.elevator_coefficient * speed, 0.0)
+        else:
+            return AngularVectorForce(0.0, 0.0, 0.0)
+    def _aileronsAF(self,speed,roll_v):
+        """ angular force from elevator """
+        if self.ailerons * roll_v < self.terminal_roll:
+            return AngularVectorForce(0.0, 0.0, self.ailerons * self.ailerons_coefficient * speed)
+        else:
+            return AngularVectorForce(0.0, 0.0, 0.0)
+    
+    def _genDamp(self,v,damping_factor):
+        """ generic damping """
+        damp = damping_factor * v
         
-        self.rudder = 0.0
-        self.elevator = 0.0
-        self.ailerons = 0.0
-        return avf
+        # rather than trusting that we have the sign right at any point
+        # decide sign of the returned value based on the speed
+        if v < 0.0:
+            return abs(damp)
+        else:
+            return -abs(damp)
+    
+    def _yawDampingAF(self,yaw_v):
+        """ damp the current yaw based on the current yaw rate """
+        return AngularVectorForce(self._genDamp(yaw_v,self.yaw_damping), 0.0, 0.0)
+    def _pitchDampingAF(self,pitch_v):
+        """ damp the current pitch based on the current pitch rate """
+        return AngularVectorForce(0.0, self._genDamp(pitch_v,self.pitch_damping), 0.0)
+    def _rollDampingAF(self,roll_v):
+        """ damp the current pitch based on the current pitch rate """
+        return AngularVectorForce(0.0, 0.0, self._genDamp(roll_v,self.roll_damping))
+        
     
     def runDynamics(self):
         """ update position and velocity based on aerodynamic forces """
-        
-        physical_object = self.physics_object
+        # Reset the dynamics
         actor_physical = self.actor_node.getPhysical(0)
         actor_physical.clearLinearForces()
         
-        quat = self.quat()
-        angular_velocity = self.angularVelocity()
+        # Collect the required quantities from the physics object
+        physics_object = self.physics_object
+        
         position = self.position()
         velocity = self.velocity()
+        speed = velocity.length()
         
+        angular_velocity = self.angularVelocity()
+        dummy,pitchv,rollv,yawv = self.angularVelocity()
+        
+        quat = self.quat()        
         forward = quat.getForward()
         up = quat.getUp()
         right = quat.getRight()
         
         all_lvf = self._force(position,velocity,right,up,forward)
-        control_avf = self._controlAngularForce(velocity)
-        rotational_damping_avf = self._rotationalDampingForce(angular_velocity)
+        
         forceNode=ForceNode('aeroplane-forces')
         forceNode.addForce(all_lvf)
         actor_physical.addLinearForce(all_lvf)
         
-        # Add input angular forces
-        actor_physical.addAngularForce(control_avf)
-        actor_physical.addAngularForce(rotational_damping_avf)
+        # Add transverse control angular forces
+        rudder_avf = self._rudderAF(speed,yawv)
+        elevator_avf = self._elevatorAF(speed,pitchv)
+        actor_physical.addAngularForce(rudder_avf)
+        actor_physical.addAngularForce(elevator_avf)
+        
+        # Add transverse rotational damping forces
+        yaw_damping_avf = self._yawDampingAF(yawv)
+        pitch_damping_avf = self._pitchDampingAF(pitchv)
+        actor_physical.addAngularForce(yaw_damping_avf)
+        actor_physical.addAngularForce(pitch_damping_avf)
+        
+        # Add axial control angular forces
+        ailerons_avf = self._aileronsAF(speed,rollv)
+        actor_physical.addAngularForce(ailerons_avf)
+        
+        roll_damping_avf = self._rollDampingAF(rollv)
+        actor_physical.addAngularForce(roll_damping_avf)
+        
+        # Apply rotational damping forces
         
         if position.getZ() < 0:
             position.setZ(0)
             velocity.setZ(0)
-            physical_object.setPosition(position)
-            physical_object.setVelocity(velocity)
+            physics_object.setPosition(position)
+            physics_object.setVelocity(velocity)
+        self.rudder = 0.0
+        self.elevator = 0.0
+        self.ailerons = 0.0
+            
