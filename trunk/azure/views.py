@@ -219,7 +219,8 @@ class PlaneCamera(FSM):
 
     def enterDetached(self, *args):
         """Lets the camera view the plane from far away."""
-        self.camera.wrtReparentTo(render)
+        self.camera.reparentTo(render)
+        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
         taskMgr.add(self.__detachedCam, "detached camera")
 
     def exitDetached(self):
