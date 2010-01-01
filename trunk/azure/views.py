@@ -147,6 +147,7 @@ class PlaneCamera(FSM):
         if target_cam:
             try:
                 self.camera.reparentTo(target_cam)
+                self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
             except:
                 self.notifier.warning(
                         "Ok, now this really shouldn't happen! Filter said the"
@@ -239,22 +240,25 @@ class PlaneCamera(FSM):
         if target_cam:
             try:
                 self.camera.reparentTo(target_cam)
+                self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
             except:
                 self.notifier.warning(
                         "Ok, now this really shouldn't happen! Filter said the"
                         "camera is there and enter can't find it...")
 
-        taskMgr.add(self.__thirdPersonCam, "third person camera")
+        #taskMgr.add(self.__thirdPersonCam, "third person camera")
 
     def exitThirdPerson(self, *args):
         taskMgr.remove("third person camera")
 
     def __thirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
-        speed = self.parent.speed()
-        camnode = self.__cameras.find("camera ThirdPerson")
-        par = self.parent.node()
+        #speed = self.parent.speed()
+        #camnode = self.__cameras.find("camera ThirdPerson")
+        #par = self.parent.node()
+        #camnode.reparentTo(par)
 
-        camnode.lookAt(par, (0, (20 + speed/2), 0))
-        camnode.setY(-30 - speed/10)
+        #camnode.lookAt(par, (0, (20 + speed/2), 0))
+        #camnode.setY(-30 - speed/10)
+
         return Task.cont
