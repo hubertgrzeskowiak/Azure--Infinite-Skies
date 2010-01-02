@@ -61,21 +61,21 @@ class TestEnvironment(Sandbox):
         render.setLight(alnp)
 
         #render.setShaderAuto(True)
-        
+
         # initialise physics engine
         base.enableParticles()
-        
+
         # load our plane(s)
         base.player = Aeroplane("griffin2")
         base.player_camera = views.PlaneCamera(base.player)
         self.control = controls.PlaneFlight()
 
         # load some others
-        pirate1 = Aeroplane("griffin2")
-        pirate1.node().setPosHpr(-15, -20, 12, -10, -10, 20)
+        #pirate1 = Aeroplane("griffin2")
+        #pirate1.node().setPosHpr(-15, -20, 12, -10, -10, 20)
 
-        pirate2 = Aeroplane("griffin2")
-        pirate2.node().setPosHpr(18, -30, 6, 5, -5, -5)
+        #pirate2 = Aeroplane("griffin2")
+        #pirate2.node().setPosHpr(18, -30, 6, 5, -5, -5)
 
         # set default camera
         base.player.hud = gui.HUD(base.player, base.camera)
