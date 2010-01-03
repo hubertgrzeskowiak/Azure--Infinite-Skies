@@ -16,7 +16,6 @@ from direct.directtools.DirectGeometry import LineNodePath
 from direct.gui.DirectGui import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
 
-from views import DETACHED
 from views import PlaneCamera
 
 PITCH_STEP = 10

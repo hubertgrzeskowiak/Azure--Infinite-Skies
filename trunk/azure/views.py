@@ -12,9 +12,6 @@ from errors import *
 from aircrafts import Aeroplane
 
 
-# View mode constants
-FIRST_PERSON, COCKPIT, THIRD_PERSON, DETACHED = range(4)
-
 class PlaneCamera(FSM):
     """Give this class a plane as argument and it will create
     some nodes around it which you can parent the camera to (if there are no
@@ -55,6 +52,8 @@ class PlaneCamera(FSM):
         if self.__cameras.isEmpty():
             self.createCamNodes()
         self.updateCamArray()
+
+        self.sideview_direction = 0
 
         # Set up the default camera
         self.setCameraMode("ThirdPerson")
@@ -106,6 +105,8 @@ class PlaneCamera(FSM):
             assert self.notifier.debug("No cockpit camera found in "
                                        "%s. Cockpit camera disabled."
                                        % self.parent.name)
+        self.sideview_cam = NodePath("camera Sideview")
+        self.sideview_cam.reparentTo(render)
 
         self.__cameras = cameras
         # Store the cams at parent node..
@@ -125,7 +126,6 @@ class PlaneCamera(FSM):
             self.setStateArray(a)
         else:
             self.setStateArray(cameramodes)
-
 
     def getCameraMode(self):
         """Returns the current view mode."""
@@ -169,6 +169,7 @@ class PlaneCamera(FSM):
             return (request,) + args
         if request == "Sideview":
             return (request,) + args
+
         if self.__cameras.find("camera " + request):
             # TODO(Nemesis13, 26.10.09): add some nice camera transition
             return (request,) + args
@@ -219,29 +220,18 @@ class PlaneCamera(FSM):
     # Extra States:
 
     def enterSideview(self, *args):
+        self.sideview_direction += 90
+        self.camera.reparentTo(self.sideview_cam)
+        self.camera.setY(-30)
+        self.sideview_cam.setH(self.sideview_direction)
         taskMgr.add(self.__sideView, "sideview camera")
-        #self.camera.reparentTo(self.parent.node)
-        self.camera.reparentTo(render)
-        self.camera.setPos(0, 0, 0)
-        self.camera.setHpr(-90 ,0, 0)
-        #if "fixed rotation" in args:
-        #    if self.sideview != "fixed rotation":
 
     def exitSideview(self, *args):
         taskMgr.remove("sideview camera")
 
     def __sideView(self, task):
-        #self.camera.setY(self.parent.node)
-        #self.camera.setX(self.parent.node.getX(render) -30)
-        self.camera.setPos(self.parent.node.getX() -30, self.parent.node.getY(), self.parent.node.getZ())
-        #self.camera.setPos(self.parent.node.getX() -30,
-        #        self.parent.node.getY(), self.parent.node.getZ())
-        #self.camera.lookAt(self.parent.node)
-        #print self.parent.node.getPos(), self.parent.node.getHpr()
-
-
+        self.sideview_cam.setPos(self.parent.node.getPos())
         return Task.cont
-
 
     def enterDetached(self, *args):
         """Lets the camera view the plane from far away."""
