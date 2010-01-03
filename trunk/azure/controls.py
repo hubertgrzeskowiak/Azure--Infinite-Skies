@@ -84,7 +84,8 @@ class PlaneFlight(ControlState):
                        "camera.ThirdPerson":    "1",
                        "camera.FirstPerson":    "2",
                        "camera.Cockpit":        "3",
-                       "camera.Detached":       "4"
+                       "camera.Detached":       "4",
+                       "camera.Sideview":       "5"
                       }
         self.tasks = (self.flyTask,)
 

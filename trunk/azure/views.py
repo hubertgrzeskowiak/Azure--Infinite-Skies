@@ -167,6 +167,8 @@ class PlaneCamera(FSM):
             return self.requestPrev(args)
         if request == "Detached":
             return (request,) + args
+        if request == "Sideview":
+            return (request,) + args
         if self.__cameras.find("camera " + request):
             # TODO(Nemesis13, 26.10.09): add some nice camera transition
             return (request,) + args
@@ -216,6 +218,30 @@ class PlaneCamera(FSM):
 
     # Extra States:
 
+    def enterSideview(self, *args):
+        taskMgr.add(self.__sideView, "sideview camera")
+        #self.camera.reparentTo(self.parent.node)
+        self.camera.reparentTo(render)
+        self.camera.setPos(0, 0, 0)
+        self.camera.setHpr(-90 ,0, 0)
+        #if "fixed rotation" in args:
+        #    if self.sideview != "fixed rotation":
+
+    def exitSideview(self, *args):
+        taskMgr.remove("sideview camera")
+
+    def __sideView(self, task):
+        #self.camera.setY(self.parent.node)
+        #self.camera.setX(self.parent.node.getX(render) -30)
+        self.camera.setPos(self.parent.node.getX() -30, self.parent.node.getY(), self.parent.node.getZ())
+        #self.camera.setPos(self.parent.node.getX() -30,
+        #        self.parent.node.getY(), self.parent.node.getZ())
+        #self.camera.lookAt(self.parent.node)
+        #print self.parent.node.getPos(), self.parent.node.getHpr()
+
+
+        return Task.cont
+
 
     def enterDetached(self, *args):
         """Lets the camera view the plane from far away."""
@@ -223,7 +249,7 @@ class PlaneCamera(FSM):
         self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
         taskMgr.add(self.__detachedCam, "detached camera")
 
-    def exitDetached(self):
+    def exitDetached(self, *args):
         taskMgr.remove("detached camera")
 
     def __detachedCam(self, task):
