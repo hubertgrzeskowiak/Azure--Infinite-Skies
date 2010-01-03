@@ -152,12 +152,10 @@ class HUD(object):
 
     def getScreenPoint(self,vector):
         """ get the point on screen representing centre axis """
-        physical_object = self.model.actor_node.getPhysicsObject()
-        position = physical_object.getPosition()
-        
         # need the node of the airplane in order to determine position
         #       and forward direction
         node = self.model.node()
+        position = node.getPos()
         target_point = Point3(position + vector * 10000)
 
         # in order to convert the target_point to the screen position
