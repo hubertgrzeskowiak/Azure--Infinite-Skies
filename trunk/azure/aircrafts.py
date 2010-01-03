@@ -1,12 +1,14 @@
 """This module manages everthing around loading, setting up and moving
 aircrafts."""
 
-from math import cos, sin, radians, atan2, sqrt, pi
+from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin
 import ConfigParser
 from pandac.PandaModules import ClockObject
 from pandac.PandaModules import PandaNode, NodePath, ActorNode
 from pandac.PandaModules import ForceNode, AngularVectorForce, LinearVectorForce
 from pandac.PandaModules import AngularEulerIntegrator
+
+from pandac.PandaModules import OdeBody, OdeMass, Quat
 
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
 from errors import *
@@ -23,7 +25,7 @@ class Aeroplane(object):
     _plane_count = 0
 
     def __init__(self, name, model_to_load=None, specs_to_load=None,
-            soundfile=None):
+            soundfile=None,world=None):
         """arguments:
         name -- aircraft name
         model_to_load -- model to load on init. same as name if none given.
@@ -31,6 +33,7 @@ class Aeroplane(object):
         specs_to_load -- specifications to load on init. same as name if none
                          given. 0 = don't load specs
         soundfile -- engine sound file (not yet implemented)
+        world -- the physics world to connect to
 
         examples:   # load a plane called "corsair1" with model and specs "corsair"
                     pirate1 = Aeroplane("corsair1", "corsair")
@@ -59,7 +62,6 @@ class Aeroplane(object):
         Aeroplane._plane_count += 1
 
         new_node_name = "aeroplane" + str(Aeroplane._plane_count)
-        new_physics_node_name = "%s-physics" % new_node_name
         
         self._dummy_node = Aeroplane._aircrafts.attachNewNode(new_node_name)
         del new_node_name
@@ -80,20 +82,7 @@ class Aeroplane(object):
             except (ResourceHandleError, ResourceLoadError), e:
                 handleError(e)
         
-        # add new objects associated with the physics
-        Node=NodePath(PandaNode(new_physics_node_name))
-        Node.reparentTo(render)
-
         self.plane_model.reparentTo(self._dummy_node)
-        self.actor_node=ActorNode("plane-physics")
-        self.anp=Node.attachNewNode(self.actor_node)
-        base.physicsMgr.attachPhysicalNode(self.actor_node)
-        self._dummy_node.reparentTo(self.anp)
-        Node.reparentTo(Aeroplane._aircrafts)
-        self.physics_object = self.actor_node.getPhysicsObject()
-        
-        angleInt = AngularEulerIntegrator()
-        base.physicsMgr.attachAngularIntegrator(angleInt)
         
         if specs_to_load == 0:
             pass
@@ -124,17 +113,42 @@ class Aeroplane(object):
         self.elevator = 0.0
         
         # more parameters
-        self.yaw_damping = -1000
-        self.pitch_damping = -500
+        self.yaw_damping = -100
+        self.pitch_damping = -100
         self.roll_damping = -100
         
-        self.terminal_yaw = 0.0005
-        self.terminal_pitch = 0.001
-        self.terminal_roll = 0.002
+        self.terminal_yaw = 3
+        self.terminal_pitch = 3
+        self.terminal_roll = 3
         
-        self.rudder_coefficient = 0.1
-        self.elevator_coefficient = 1.5
-        self.ailerons_coefficient = 1.5
+        self.rudder_coefficient = 1.0
+        self.elevator_coefficient = 4.5
+        self.ailerons_coefficient = 5.5
+        
+        # finally, complete initialisation of the physics for this plane
+        if world is not None:
+            # we are going to interact with the world :)
+            body = OdeBody(world)
+            # positions and orientation are set relative to render
+            body.setPosition(self._dummy_node.getPos(render))
+            body.setQuaternion(self._dummy_node.getQuat(render))
+            
+            mass = OdeMass()
+            mass.setBox(self.mass, 1, 1, 1)
+            body.setMass(mass)
+            
+            self.p_world = world
+            self.p_body = body
+            self.p_mass = mass
+            
+            self.accumulator = 0.0
+            self.step_size = 0.02
+            taskMgr.add(self.simulationTask, "plane physics")
+            self.old_quat = self.quat()
+        else:
+            self.p_world = None
+            self.p_body = None
+            self.p_mass = None
     
     def loadPlaneModel(self, model, force=False):
         """Loads model for a plane. Force if there's already one loaded."""
@@ -202,8 +216,8 @@ class Aeroplane(object):
                                            [radians(16.0),0.028]],
                                            0.03,0.1)
         self.max_thrust = 5000.0
-        physics_object = self.actor_node.getPhysicsObject()
-        physics_object.setMass(self.mass)
+        #physics_object = self.actor_node.getPhysicsObject()
+        #physics_object.setMass(self.mass)
         #physics_object.setVelocity(Vec3(0,200,0))
         #physics_object.setPosition(Point3(0,-100,10000))
     
@@ -323,6 +337,7 @@ class Aeroplane(object):
             if force[2] < 0.0:
                 force.setZ(0.0)
         
+        return force
         lvf = LinearVectorForce(force)
         lvf.setMassDependent(1)
         return lvf
@@ -362,13 +377,26 @@ class Aeroplane(object):
     
     def velocity(self):
         """ return the current velocity """
-        return self.physics_object.getVelocity()
+        #return self.physics_object.getVelocity()
+        return Vec3(self.p_body.getLinearVel())
+    def setVelocity(self,v):
+        self.p_body.setLinearVel(v)
     
-    def angularVelocity(self):
-        """ return the current angular velocity """
-        return self.physics_object.getRotation()
-    def setAngularVelocity(self,ang_vel):
-        self.physics_object.setRotation(ang_vel)
+    def angVelVector(self):
+        """ return the current angular velocity as a vector """
+        return self.p_body.getAngularVel()
+    
+    def angVelBodyHpr(self):
+        """ return the heading, pitch and roll values about the body axis """
+        angv = self.angVelVector()
+        quat = self.quat()
+        h = angv.dot(quat.getUp())
+        p = angv.dot(quat.getRight())
+        r = angv.dot(quat.getForward())
+        return h,p,r
+    
+    def setAngularVelocity(self,v):
+        self.p_body.setAngularVel(v)
     
     def speed(self):
         """ returns the current velocity """
@@ -376,7 +404,9 @@ class Aeroplane(object):
         
     def position(self):
         """ return the current position """
-        return self.physics_object.getPosition()
+        return self.p_body.getPosition()
+    def setPosition(self,p):
+        self.p_body.setPosition(p)
     
     def altitude(self):
         """ returns the current altitude """
@@ -384,7 +414,7 @@ class Aeroplane(object):
     
     def quat(self):
         """ return the current quaternion representation of the attitude """
-        return self.physics_object.getOrientation()
+        return Quat(self.p_body.getQuaternion())
     
     def info(self):
         velocity = self.velocity()
@@ -401,101 +431,83 @@ class Aeroplane(object):
                     pitch = pitch,
                     roll = roll)
     
-    def _rudderAF(self,speed,yaw_v):
-        """ angular force from rudder """
-        if self.rudder * yaw_v < self.terminal_yaw:
-            return AngularVectorForce(self.rudder * self.rudder_coefficient * speed, 0.0, 0.0)
+    def _controlRotForce(self,control,axis,coeff,speed,rspeed,max_rspeed):
+        """ generic control rotation force
+        control - positive or negative amount of elevator/rudder/ailerons
+        axis - vector about which the torque is applied
+        coeff - the conversion of the amount of the control to a rotational force
+        speed - the speed of the plane
+        rspeed - the current rotational speed about the axis
+        max_rspeed - a cut-off for the rotational speed
+        """
+        if control * rspeed < max_rspeed:
+            return axis * control * coeff * speed
         else:
-            return AngularVectorForce(0.0, 0.0, 0.0)
-    def _elevatorAF(self,speed,pitch_v):
-        """ angular force from elevator """
-        if self.elevator * pitch_v < self.terminal_pitch:
-            return AngularVectorForce(0.0, self.elevator * self.elevator_coefficient * speed, 0.0)
-        else:
-            return AngularVectorForce(0.0, 0.0, 0.0)
-    def _aileronsAF(self,speed,roll_v):
-        """ angular force from elevator """
-        if self.ailerons * roll_v < self.terminal_roll:
-            return AngularVectorForce(0.0, 0.0, self.ailerons * self.ailerons_coefficient * speed)
-        else:
-            return AngularVectorForce(0.0, 0.0, 0.0)
+            return Vec3(0.0,0.0,0.0)
     
-    def _genDamp(self,v,damping_factor):
+    def _rotDamping(self,vector,rotv,damping_factor):
         """ generic damping """
-        damp = damping_factor * v
+        damp = damping_factor * rotv
         
         # rather than trusting that we have the sign right at any point
         # decide sign of the returned value based on the speed
-        if v < 0.0:
-            return abs(damp)
+        if rotv < 0.0:
+            return vector * abs(damp)
         else:
-            return -abs(damp)
-    
-    def _yawDampingAF(self,yaw_v):
-        """ damp the current yaw based on the current yaw rate """
-        return AngularVectorForce(self._genDamp(yaw_v,self.yaw_damping), 0.0, 0.0)
-    def _pitchDampingAF(self,pitch_v):
-        """ damp the current pitch based on the current pitch rate """
-        return AngularVectorForce(0.0, self._genDamp(pitch_v,self.pitch_damping), 0.0)
-    def _rollDampingAF(self,roll_v):
-        """ damp the current pitch based on the current pitch rate """
-        return AngularVectorForce(0.0, 0.0, self._genDamp(roll_v,self.roll_damping))
-        
+            return vector * -abs(damp)
     
     def runDynamics(self):
+        pass
+    
+    def simulationTask(self,task):
         """ update position and velocity based on aerodynamic forces """
-        # Reset the dynamics
-        actor_physical = self.actor_node.getPhysical(0)
-        actor_physical.clearLinearForces()
-        
-        # Collect the required quantities from the physics object
-        physics_object = self.physics_object
-        
-        position = self.position()
-        velocity = self.velocity()
-        speed = velocity.length()
-        
-        angular_velocity = self.angularVelocity()
-        dummy,pitchv,rollv,yawv = self.angularVelocity()
-        
-        quat = self.quat()        
-        forward = quat.getForward()
-        up = quat.getUp()
-        right = quat.getRight()
-        
-        all_lvf = self._force(position,velocity,right,up,forward)
-        
-        forceNode=ForceNode('aeroplane-forces')
-        forceNode.addForce(all_lvf)
-        actor_physical.addLinearForce(all_lvf)
-        
-        # Add transverse control angular forces
-        rudder_avf = self._rudderAF(speed,yawv)
-        elevator_avf = self._elevatorAF(speed,pitchv)
-        actor_physical.addAngularForce(rudder_avf)
-        actor_physical.addAngularForce(elevator_avf)
-        
-        # Add transverse rotational damping forces
-        yaw_damping_avf = self._yawDampingAF(yawv)
-        pitch_damping_avf = self._pitchDampingAF(pitchv)
-        actor_physical.addAngularForce(yaw_damping_avf)
-        actor_physical.addAngularForce(pitch_damping_avf)
-        
-        # Add axial control angular forces
-        ailerons_avf = self._aileronsAF(speed,rollv)
-        actor_physical.addAngularForce(ailerons_avf)
-        
-        roll_damping_avf = self._rollDampingAF(rollv)
-        actor_physical.addAngularForce(roll_damping_avf)
-        
-        # Apply rotational damping forces
-        
-        if position.getZ() < 0:
-            position.setZ(0)
-            velocity.setZ(0)
-            physics_object.setPosition(position)
-            physics_object.setVelocity(velocity)
-        self.rudder = 0.0
-        self.elevator = 0.0
-        self.ailerons = 0.0
+        if self.p_world:
+            self.accumulator += _c.getDt()
+            while self.accumulator > self.step_size:
+                self.accumulator -= self.step_size
+                
+                position = self.position()
+                velocity = self.velocity()
+                speed = velocity.length()
+                
+                yawv,pitchv,rollv = self.angVelBodyHpr()
+                
+                quat = self.quat()
+                forward = quat.getForward()
+                up = quat.getUp()
+                right = quat.getRight()
+                
+                linear_force = self._force(position,velocity,right,up,forward)
+                
+                self.p_body.addForce(linear_force)
+                
+                # Control forces:
+                elevator_af = self._controlRotForce(self.elevator,Vec3(1.0,0.0,0.0),
+                                                    self.elevator_coefficient,
+                                                    speed,pitchv,self.terminal_pitch)
+                ailerons_af = self._controlRotForce(self.ailerons,Vec3(0.0,1.0,0.0),
+                                                    self.ailerons_coefficient,
+                                                    speed,rollv,self.terminal_roll)
+                rudder_af = self._controlRotForce(self.rudder,Vec3(0.0,0.0,1.0),
+                                                    self.rudder_coefficient,
+                                                    speed,yawv,self.terminal_yaw)
+                
+                # Damping forces
+                pitch_damping_avf = self._rotDamping(Vec3(1.0,0.0,0.0),pitchv,self.pitch_damping)
+                roll_damping_avf = self._rotDamping(Vec3(0.0,1.0,0.0),rollv,self.roll_damping)
+                yaw_damping_avf = self._rotDamping(Vec3(0.0,0.0,1.0),yawv,self.yaw_damping)
+                
+                self.p_body.addRelTorque(elevator_af + ailerons_af + rudder_af +
+                                         roll_damping_avf + pitch_damping_avf + yaw_damping_avf)
+                if position.getZ() < 0:
+                    position.setZ(0)
+                    velocity.setZ(0)
+                    self.setPosition(position)
+                    self.setVelocity(velocity)
+                self.rudder = 0.0
+                self.elevator = 0.0
+                self.ailerons = 0.0
+                self.p_world.quickStep(self.step_size)
             
+            self._dummy_node.setPosQuat(render,self.position(),self.quat())
+        return task.cont

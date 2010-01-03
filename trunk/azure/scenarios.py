@@ -9,6 +9,7 @@ import gui
 import views
 import controls
 
+from pandac.PandaModules import OdeWorld
 
 class Scenario(object):
     """Scenarios contain missions."""
@@ -44,6 +45,11 @@ class Race(Mission):
 class TestEnvironment(Sandbox):
     """Draw some test grid and stuff."""
     def __init__(self):
+        # initialise ODE
+        world = OdeWorld()
+        #world.setGravity(0.0, 0.0, -9.81)
+        world.setGravity(0.0, 0.0, 0.0)
+        
         self.grid = DirectGrid(2000, 20, parent=render)
         self.grid.setZ(-0.001)
         setSky("bluesky")
@@ -62,11 +68,11 @@ class TestEnvironment(Sandbox):
 
         #render.setShaderAuto(True)
 
-        # initialise physics engine
-        base.enableParticles()
+        ## initialise physics engine
+        #base.enableParticles()
 
         # load our plane(s)
-        base.player = Aeroplane("griffin2")
+        base.player = Aeroplane("griffin2", world=world)
         base.player_camera = views.PlaneCamera(base.player)
         self.control = controls.PlaneFlight()
 
