@@ -42,29 +42,26 @@ class Aeroplane(object):
                     foo = Aeroplane("myname", 0, 0)
                     # for the node itself, use:
                     foo = Aeroplane("bar")
-                    airplane = foo.node()
+                    airplane = foo.node
                     # if you need access to the model itself, use:
                     foo = Aeroplane("bar")
-                    model = foo.node().getChild(0)
+                    model = foo.node.getChild(0)
 
         info:       invisible planes are for tracking only. you should assign them
                     at least models when they get into visible-range.
 
-                    The idea behind the node() is pretty simple: working with
+                    The idea behind the 'node' is pretty simple: working with
                     a virtual container prevents accidential replacement and
                     seperates things.
         """
 
-        if not hasattr(Aeroplane, "_aircrafts"):
+        if not hasattr(Aeroplane, "aircrafts"):
             assert render
-            Aeroplane._aircrafts = render.attachNewNode("aircrafts")
-        self._id = Aeroplane._plane_count
+            Aeroplane.aircrafts = render.attachNewNode("aircrafts")
+        self.id = Aeroplane._plane_count
         Aeroplane._plane_count += 1
 
-        new_node_name = "aeroplane" + str(Aeroplane._plane_count)
-        
-        self._dummy_node = Aeroplane._aircrafts.attachNewNode(new_node_name)
-        del new_node_name
+        self.node = Aeroplane.aircrafts.attachNewNode("aeroplane %s" % self.id)
         self.name = name
 
         self.thrust = 0.0
@@ -82,7 +79,7 @@ class Aeroplane(object):
             except (ResourceHandleError, ResourceLoadError), e:
                 handleError(e)
         
-        self.plane_model.reparentTo(self._dummy_node)
+        self.plane_model.reparentTo(self.node)
         
         if specs_to_load == 0:
             pass
@@ -130,8 +127,8 @@ class Aeroplane(object):
             # we are going to interact with the world :)
             body = OdeBody(world)
             # positions and orientation are set relative to render
-            body.setPosition(self._dummy_node.getPos(render))
-            body.setQuaternion(self._dummy_node.getQuat(render))
+            body.setPosition(self.node.getPos(render))
+            body.setQuaternion(self.node.getQuat(render))
             
             mass = OdeMass()
             mass.setBox(self.mass, 1, 1, 1)
@@ -156,7 +153,7 @@ class Aeroplane(object):
             if force:
                 self.plane_model = loader.loadModel(model)
                 if self.plane_model != None:
-                    self.plane_model.reparentTo(self.node())
+                    self.plane_model.reparentTo(self.node)
                 else:
                     raise ResourceLoadError(model, "no such model")
             else:
@@ -165,7 +162,7 @@ class Aeroplane(object):
         else:
             self.plane_model = loader.loadModel("planes/" + model + "/" + model)
             if self.plane_model:
-                self.plane_model.reparentTo(self.node())
+                self.plane_model.reparentTo(self.node)
             else:
                 raise ResourceLoadError(model, "no such model")
 
@@ -222,7 +219,7 @@ class Aeroplane(object):
         #physics_object.setPosition(Point3(0,-100,10000))
     
     #def assignSound(self, soundfile):
-    #    plane_sound = sound.Sound(soundfile, True, self.node())
+    #    plane_sound = sound.Sound(soundfile, True, self.node)
     #    return plane_sound
     
     def move(self, movement):
@@ -350,31 +347,23 @@ class Aeroplane(object):
         acc = self.acceleration - self.gravity/self.mass
         return acc.length()/9.81
     def gForce(self):
-        up = self.node().getQuat().getUp()
+        up = self.node.getQuat().getUp()
         acc = self.acceleration - self.gravity/self.mass
         gf = acc.dot(up) / 9.81
         return gf
 
     def lateralG(self):
-        right = self.node().getQuat().getRight()
+        right = self.node.getQuat().getRight()
         acc = self.acceleration - self.gravity/self.mass
         gf = acc.dot(right) / 9.81
         return gf
 
     def axialG(self):
-        forward = self.node().getQuat().getForward()
+        forward = self.node.getQuat().getForward()
         acc = self.acceleration - self.gravity/self.mass
         gf = acc.dot(forward) / 9.81
         return gf
-    
-    def id(self):
-        """Every plane has its own unique ID."""
-        return self._id
 
-    def node(self):
-        """Returns the plane's dummy node (empty node it's parented to)."""
-        return self._dummy_node
-    
     def velocity(self):
         """ return the current velocity """
         #return self.physics_object.getVelocity()
@@ -509,5 +498,5 @@ class Aeroplane(object):
                 self.ailerons = 0.0
                 self.p_world.quickStep(self.step_size)
             
-            self._dummy_node.setPosQuat(render,self.position(),self.quat())
+            self.node.setPosQuat(render,self.position(),self.quat())
         return task.cont

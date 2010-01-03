@@ -43,8 +43,8 @@ class Scenery(object):
             except (ResourceHandleError, ResourceLoadError), e:
                 handleError(e)
 
-        self.node().setPos(pos)
-        self.node().setScale(scale)
+        self.node.setPos(pos)
+        self.node.setScale(scale)
 
     def loadSceneryModel(self, model, force=False):
         """Loads a model for the scenery object. Force if there's already one
@@ -53,7 +53,7 @@ class Scenery(object):
             if force:
                 self.scenery_model = loader.loadModel(model)
                 if self.scenery_model != None:
-                    self.scenery_model.reparentTo(self.node())
+                    self.scenery_model.reparentTo(self.node)
                 else:
                     raise ResourceLoadError(model, "no such model")
             else:
@@ -62,7 +62,7 @@ class Scenery(object):
         else:
             self.scenery_model = loader.loadModel(model)
             if self.scenery_model != None:
-                self.scenery_model.reparentTo(self.node())
+                self.scenery_model.reparentTo(self.node)
             else:
                 raise ResourceLoadError(model, 'no such model')
 

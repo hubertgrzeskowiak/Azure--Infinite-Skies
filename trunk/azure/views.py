@@ -51,7 +51,7 @@ class PlaneCamera(FSM):
         except:
             raise BaseMissing
 
-        self.__cameras = self.parent.node().find("cameras")
+        self.__cameras = self.parent.node.find("cameras")
         if self.__cameras.isEmpty():
             self.createCamNodes()
         self.updateCamArray()
@@ -70,7 +70,7 @@ class PlaneCamera(FSM):
 
         # Look for cameras inside the model (loaded egg file)
         cameras = NodePath("cameras")
-        _c = self.parent.node().findAllMatches("**/camera ?*")
+        _c = self.parent.node.findAllMatches("**/camera ?*")
         _c.removeDuplicatePaths()
         _c.reparentTo(cameras)
 
@@ -112,7 +112,7 @@ class PlaneCamera(FSM):
         # You can edit the camera nodes from outside as well.
         # If you attach new camera nodes, though, you'll have to call this
         # function again.
-        cameras.reparentTo(self.parent.node())
+        cameras.reparentTo(self.parent.node)
 
     def updateCamArray(self, cameramodes=None):
         """Set the cameras which next and previous will switch to. Expects a
@@ -176,7 +176,7 @@ class PlaneCamera(FSM):
 
     def enterOff(self, *args):
         """Clean up everything by reparenting the camera to the plane."""
-        self.camera.reparentTo(self.parent.node())
+        self.camera.reparentTo(self.parent.node)
         self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
 
     def requestNext(self, *args):
@@ -229,7 +229,7 @@ class PlaneCamera(FSM):
     def __detachedCam(self, task):
         """Updates camera position and rotation for Detached camera."""
         try:
-            self.camera.lookAt(self.parent.node())
+            self.camera.lookAt(self.parent.node)
         except:
             assert self.notifier.warning("Error on detached cam task. Exit.")
             return Task.done
@@ -256,7 +256,7 @@ class PlaneCamera(FSM):
         """Updates camera position and rotation for ThirdPerson camera."""
         #speed = self.parent.speed()
         #camnode = self.__cameras.find("camera ThirdPerson")
-        #par = self.parent.node()
+        #par = self.parent.node
         #camnode.reparentTo(par)
 
         #camnode.lookAt(par, (0, (20 + speed/2), 0))

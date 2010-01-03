@@ -42,7 +42,7 @@ class HUD(object):
 
         # keep copies of the airplane model and the camera
         self.model = model
-        self.physics_node = model.node().getParent()
+        self.physics_node = model.node.getParent()
         self.camera = cam
 
         # store the requested colour to be used as default
@@ -154,7 +154,7 @@ class HUD(object):
         """ get the point on screen representing centre axis """
         # need the node of the airplane in order to determine position
         #       and forward direction
-        node = self.model.node()
+        node = self.model.node
         position = node.getPos()
         target_point = Point3(position + vector * 10000)
 
