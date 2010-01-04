@@ -105,7 +105,6 @@ class PlaneFlight(ControlState):
 
         #base.player.reverseRoll()
         #base.player.reversePitch()
-        base.player.runDynamics()
         base.player.hud.update()
         return Task.cont
 

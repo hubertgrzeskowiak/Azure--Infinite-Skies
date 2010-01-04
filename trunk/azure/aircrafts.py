@@ -218,10 +218,6 @@ class Aeroplane(object):
                                            [radians(16.0),0.028]],
                                            0.03,0.1)
         self.max_thrust = 5000.0
-        #physics_object = self.actor_node.getPhysicsObject()
-        #physics_object.setMass(self.mass)
-        #physics_object.setVelocity(Vec3(0,200,0))
-        #physics_object.setPosition(Point3(0,-100,10000))
     
     #def assignSound(self, soundfile):
     #    plane_sound = sound.Sound(soundfile, True, self.node)
@@ -340,11 +336,6 @@ class Aeroplane(object):
                 force.setZ(0.0)
         
         return force
-        lvf = LinearVectorForce(force)
-        lvf.setMassDependent(1)
-        return lvf
-    
-    
     
     def angleOfAttack(self):
         return self.angle_of_attack
@@ -467,9 +458,6 @@ class Aeroplane(object):
         force_h = h_angle*self.heading_force_coefficient*speed
         
         return Vec3(-torque_p, 0.0, torque_h), Vec3(-force_p, 0.0, force_h)
-    
-    def runDynamics(self):
-        pass
     
     def simulationTask(self,task):
         """ update position and velocity based on aerodynamic forces """
