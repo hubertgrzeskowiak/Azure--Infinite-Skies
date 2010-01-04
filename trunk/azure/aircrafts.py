@@ -1,7 +1,7 @@
 """This module manages everthing around loading, setting up and moving
 aircrafts."""
 
-from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin
+from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin, isnan
 import ConfigParser
 from pandac.PandaModules import ClockObject
 from pandac.PandaModules import PandaNode, NodePath, ActorNode
@@ -121,6 +121,11 @@ class Aeroplane(object):
         self.rudder_coefficient = 1.0
         self.elevator_coefficient = 4.5
         self.ailerons_coefficient = 5.5
+        
+        self.pitch_force_coefficient = 4.0
+        self.heading_force_coefficient = 1.0
+        self.pitch_torque_coefficient = 0.1
+        self.heading_torque_coefficient = 12.0
         
         # finally, complete initialisation of the physics for this plane
         if world is not None:
@@ -445,6 +450,24 @@ class Aeroplane(object):
         else:
             return vector * -abs(damp)
     
+    def _forwardAndVelocityVectorForces(self,up,right,norm_v,speed):
+        """ calculates torque and force resulting from deviation of the
+        velocity vector from the forward vector """
+        
+        # could do with a better name for this method
+        
+        # get the projection of the normalised velocity onto the up and
+        # right vectors to find relative pitch and heading angles
+        p_angle = acos(up.dot(norm_v)) - pi/2
+        h_angle = acos(right.dot(norm_v)) - pi/2
+        
+        torque_p = p_angle*self.pitch_torque_coefficient*speed
+        torque_h = h_angle*self.heading_torque_coefficient*speed
+        force_p = p_angle*self.pitch_force_coefficient*speed
+        force_h = h_angle*self.heading_force_coefficient*speed
+        
+        return Vec3(-torque_p, 0.0, torque_h), Vec3(-force_p, 0.0, force_h)
+    
     def runDynamics(self):
         pass
     
@@ -458,6 +481,8 @@ class Aeroplane(object):
                 position = self.position()
                 velocity = self.velocity()
                 speed = velocity.length()
+                norm_v = velocity + Vec3(0.0,0.0,0.0)
+                norm_v.normalize()
                 
                 yawv,pitchv,rollv = self.angVelBodyHpr()
                 
@@ -488,6 +513,13 @@ class Aeroplane(object):
                 
                 self.p_body.addRelTorque(elevator_af + ailerons_af + rudder_af +
                                          roll_damping_avf + pitch_damping_avf + yaw_damping_avf)
+                
+                # Forces to rotate the forward vector towards the velocity vector
+                # and vice versa
+                fvv_torque, fvv_force = self._forwardAndVelocityVectorForces(up,right,norm_v,speed)
+                self.p_body.addRelTorque(fvv_torque)
+                self.p_body.addForce(fvv_force)
+                
                 if position.getZ() < 0:
                     position.setZ(0)
                     velocity.setZ(0)
