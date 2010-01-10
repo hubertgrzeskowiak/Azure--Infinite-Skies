@@ -11,7 +11,9 @@
 window-title Azure: Infinite Skies
 win-origin 50 50
 win-size 800 600
-fullscreen false
+#win-size 1280 1024
+#fullscreen false
+#fullscreen true
 
 
 # paths
@@ -83,26 +85,25 @@ default-directnotify-level                  warning
 notify-level                                warning
 #notify-level-util                           fatal
 #notify-level-ShowBase                       debug
-#notify-level-BufferViewer                   debug
-#notify-level-BulletinBoard                  debug
 #notify-level-FSM                            debug
-#notify-level-DirectScrolledList             debug
-#notify-level-DirectScrolledListItem         debug
 #notify-level-EventManager                   debug
 #notify-level-ExceptionVarDump               debug
 #notify-level-FunctionInterval               debug
 #notify-level-GarbageReport                  debug
 #notify-level-InputState                     debug
-#notify-level-JobManager                     debug
-#notify-level-LerpFunctionInterval           debug
-#notify-level-LerpFunctionNoStateInterval    debug
 #notify-level-Loader                         debug
 #notify-level-Messenger                      debug
-#notify-level-MetaInterval                   debug
-#notify-level-State                          debug
 #notify-level-TaskManager                    debug
+#notify-level-JobManager                     debug
 #notify-level-azure-camera                   debug
 #notify-level-azure-controls                 debug
+#notify-level-ode                            spam
+#notify-level-odebody                        spam
+#notify-level-odegeom                        spam
+#notify-level-odespace                       spam
+#notify-level-odejoint                       spam
+#notify-level-odeworld                       spam
+#notify-level-odetrimeshdata                 spam
 
 # ignore the next line. it's only for my editor ;)
 # vim:set sw=4 ts=4 sts=4 et sta:
