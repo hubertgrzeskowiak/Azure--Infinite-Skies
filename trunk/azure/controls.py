@@ -18,7 +18,7 @@ class ControlState(DirectObject):
     """Specific control state classes should inherit from this.
     Every derived class is expected to have a list of keybindings and tasks."""
     conf_parser = SafeConfigParser()
-    conf_parser.read("etc/keybindings.ini")
+    conf_parser.read("%s/etc/keybindings.ini" % sys.path[0])
 
     @classmethod
     def reloadKeybindings(cls, filenames="etc/keybindings.ini"):

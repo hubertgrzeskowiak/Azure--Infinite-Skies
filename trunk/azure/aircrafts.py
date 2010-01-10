@@ -1,13 +1,14 @@
 """This module manages everthing around loading, setting up and moving
 aircrafts."""
 
+import sys
 from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin, isnan
 import ConfigParser
+
 from pandac.PandaModules import ClockObject
 from pandac.PandaModules import PandaNode, NodePath, ActorNode
 from pandac.PandaModules import ForceNode, AngularVectorForce, LinearVectorForce
 from pandac.PandaModules import AngularEulerIntegrator
-
 from pandac.PandaModules import OdeBody, OdeMass, Quat
 
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
@@ -17,7 +18,7 @@ from utils import ListInterpolator
 
 _c = ClockObject.getGlobalClock()
 specs = ConfigParser.SafeConfigParser()
-specs.read("etc/CraftSpecs.cfg")
+specs.read("%s/etc/CraftSpecs.cfg" % sys.path[0])
 
 class Aeroplane(object):
     """Standard aeroplane class."""

@@ -25,10 +25,10 @@ import os
 #os.putenv("PANDA_PRC_PATH", "./etc/:../etc/:/etc/azure/:~/.azure/")
 # Ffor now, load only our development config. First 2 lines are old-style,
 # latter 2 for panda 1.7 and above.
-os.environ["PANDA_PRC_DIR"] = os.getcwd()
-os.environ["PANDA_PRC_PATH"] = os.getcwd()
-os.environ["PRC_DIR"] = os.getcwd()
-os.environ["PRC_PATH"] = os.getcwd()
+os.environ["PANDA_PRC_DIR"] = sys.path[0]
+os.environ["PANDA_PRC_PATH"] = sys.path[0]
+os.environ["PRC_DIR"] = sys.path[0]
+os.environ["PRC_PATH"] = sys.path[0]
 
 try:
     from pandac.PandaModules import loadPrcFile
@@ -36,15 +36,16 @@ except ImportError:
     print "It seems you haven't got Panda3D installed properly."
     sys.exit(1)
 # Just for the case setting the environment variable setting failed, load the
-# config file now. It can'T overwrite everything from the beginning anymore,
+# config file now. It can't overwrite everything from the beginning anymore,
 # but should work well as a fallback.
-loadPrcFile("etc/azure.prc")
+loadPrcFile("%s/etc/azure.prc" % sys.path[0])
 
 
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from pandac.PandaModules import *
 
+import scenarios
 
 class Azure(object):
     """Main class called by the top level main function (see below)."""
@@ -56,11 +57,9 @@ class Azure(object):
         ShowBase()
         # Turn off Panda3D's standard camera handling.
         base.disableMouse()
-
-        from scenarios import TestEnvironment
-        TestEnvironment()
-
+        scenarios.TestEnvironment()
         run()
+
 
 # Related to relative paths.
 if __name__ == "__main__":
