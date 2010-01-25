@@ -72,15 +72,15 @@ class TestEnvironment(Sandbox):
         #base.enableParticles()
 
         # load our plane(s)
-        base.player = Aeroplane("griffin2", world=world)
+        base.player = Aeroplane("griffin", world=world)
         base.player_camera = views.PlaneCamera(base.player)
         self.control = controls.PlaneFlight()
 
         # load some others
-        #pirate1 = Aeroplane("griffin2")
+        #pirate1 = Aeroplane("griffin")
         #pirate1.node.setPosHpr(-15, -20, 12, -10, -10, 20)
 
-        #pirate2 = Aeroplane("griffin2")
+        #pirate2 = Aeroplane("griffin")
         #pirate2.node.setPosHpr(18, -30, 6, 5, -5, -5)
 
         # set default camera
