@@ -10,8 +10,9 @@ from pandac.PandaModules import PandaNode, NodePath, ActorNode
 from pandac.PandaModules import ForceNode, AngularVectorForce, LinearVectorForce
 from pandac.PandaModules import AngularEulerIntegrator
 from pandac.PandaModules import OdeBody, OdeMass, Quat
-
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
+from direct.actor.Actor import Actor
+
 from errors import *
 from utils import ListInterpolator
 #import sound
@@ -24,6 +25,7 @@ class Aeroplane(object):
     """Standard aeroplane class."""
 
     _plane_count = 0
+    aircrafts = None
 
     def __init__(self, name, model_to_load=None, specs_to_load=None,
             soundfile=None,world=None):
@@ -56,32 +58,30 @@ class Aeroplane(object):
                     seperates things.
         """
 
-        if not hasattr(Aeroplane, "aircrafts"):
+        if Aeroplane.aircrafts is None:
             assert render
             Aeroplane.aircrafts = render.attachNewNode("aircrafts")
         self.id = Aeroplane._plane_count
         Aeroplane._plane_count += 1
 
-        self.node = Aeroplane.aircrafts.attachNewNode("aeroplane %s" % self.id)
+        self.node = Aeroplane.aircrafts.attachNewNode(
+                                     "aeroplane {0} {1}".format(self.id, name))
+
         self.name = name
+        self.plane_model = None
 
         self.thrust = 0.0
 
-        if model_to_load == 0:
-            pass
-        elif model_to_load:
-            try:
-                self.loadPlaneModel(model_to_load)
-            except (ResourceHandleError, ResourceLoadError), e:
-                handleError(e)
-        else:
-            try:
-                self.loadPlaneModel(name)
-            except (ResourceHandleError, ResourceLoadError), e:
-                handleError(e)
-        
+        #try:
+        #    self.plane_model = self.loadPlaneModel(model_to_load)
+        #    self.plane_model.reparentTo(Aeroplane.aircrafts)
+        #except (ResourceHandleError, ResourceLoadError, IOError), e:
+        #    handleError(e)
+        if not model_to_load:
+            model_to_load = name
+        self.plane_model = self.loadPlaneModel(model_to_load)
         self.plane_model.reparentTo(self.node)
-        
+
         if specs_to_load == 0:
             pass
         elif specs_to_load:
@@ -152,25 +152,31 @@ class Aeroplane(object):
             self.p_world = None
             self.p_body = None
             self.p_mass = None
-    
-    def loadPlaneModel(self, model, force=False):
-        """Loads model for a plane. Force if there's already one loaded."""
-        if hasattr(self, "plane_model"):
-            if force:
-                self.plane_model = loader.loadModel(model)
-                if self.plane_model != None:
-                    self.plane_model.reparentTo(self.node)
-                else:
-                    raise ResourceLoadError(model, "no such model")
-            else:
-                raise ResourceHandleError(
-                    model, "aeroplane already has a model. force to change")
-        else:
-            self.plane_model = loader.loadModel("planes/" + model + "/" + model)
-            if self.plane_model:
-                self.plane_model.reparentTo(self.node)
-            else:
-                raise ResourceLoadError(model, "no such model")
+
+    def loadPlaneModel(self, modelname, replace=False):
+        """Loads models and animations."""
+
+        model = Actor("planes/{0}/{0}".format(modelname))
+
+        subparts = (
+            # subpart,       joints,                   animations
+            ("Doors",        ["Windscreen*", "Door*"], ("Open", "Close")),
+            ("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out", "LG In")),
+            ("Ailerons",     ["Aileron*"],            ("Roll Left", "Roll Right")),
+            ("Rudders",      ["Rudder*"],              ("Head Left", "Head Right")),
+            ("Elevators",    ["Elevator*"],            ("Pitch Up", "Pitch Down")))
+
+        for line in subparts:
+            subpart, joints, anims = line
+            model.makeSubpart(subpart, joints)
+            for anim in anims:
+                model.loadAnims({anim:
+                                "planes/{0}/{0}-{1}".format(modelname, anim)},
+                                subpart)
+                model.bindAnim(anim, subpart)
+        model.verifySubpartsComplete()
+        model.setSubpartsComplete(True)
+        return model
 
     def loadSpecs(self, s, force=False):
         """Loads specifications for a plane. Force if already loaded."""
