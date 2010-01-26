@@ -241,6 +241,7 @@ class PlaneCamera(FSM):
 
     def exitDetached(self, *args):
         taskMgr.remove("detached camera")
+        self.camera.setHpr(0, 0, 0)
 
     def __detachedCam(self, task):
         """Updates camera position and rotation for Detached camera."""
