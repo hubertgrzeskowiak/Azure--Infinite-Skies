@@ -73,7 +73,7 @@ class PlaneCamera(FSM):
         _c.removeDuplicatePaths()
         _c.reparentTo(cameras)
 
-        if not cameras.isEmpty():
+        if not _c.isEmpty():
             self.notifier.info("Cameras found under model:\n%s"
                                % _c)
         else:
@@ -81,7 +81,7 @@ class PlaneCamera(FSM):
 
         # FirstPerson camera is a must-have. Set up a guessed one if none
         # defined yet.
-        if not cameras.find("camera FirstPerson"):
+        if cameras.find("camera FirstPerson").isEmpty():
             assert self.notifier.debug("No first person camera found in %s. "
                                   "Guessing best position." % self.parent.name)
             first_person = NodePath("camera FirstPerson")
@@ -91,17 +91,17 @@ class PlaneCamera(FSM):
 
         # ThirdPerson camera is a must-have. Set up a guessed one if none
         # defined yet.
-        if not cameras.find("camera ThirdPerson"):
+        if cameras.find("camera ThirdPerson").isEmpty():
             assert self.notifier.debug("No third person camera found in %s. "
                                   "Guessing best position." % self.parent.name)
             third_person = NodePath("camera ThirdPerson")
             # TODO: Guess best position based on bounding box.
-            third_person.setPos(0, -20, 3)
-            third_person.setP(-80)
+            third_person.setPos(0, -30, 5)
+            #third_person.setP(-80)
             third_person.reparentTo(cameras)
 
         # Cockpit needs to be accurate. Don't try to guess it.
-        if not cameras.find("camera Cockpit"):
+        if cameras.find("camera Cockpit").isEmpty():
             assert self.notifier.debug("No cockpit camera found in "
                                        "%s. Cockpit camera disabled."
                                        % self.parent.name)
@@ -144,13 +144,13 @@ class PlaneCamera(FSM):
         request = self.newState
 
         target_cam = self.__cameras.find("camera " + request)
-        if target_cam:
+        if not target_cam.isEmpty():
             try:
                 self.camera.reparentTo(target_cam)
                 self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
             except:
                 self.notifier.warning(
-                        "Ok, now this really shouldn't happen! Filter said the"
+                        "Ok, now this really shouldn't happen! Filter said the "
                         "camera is there and enter can't find it...")
 
 
@@ -170,7 +170,7 @@ class PlaneCamera(FSM):
         if request == "Sideview":
             return (request,) + args
 
-        if self.__cameras.find("camera " + request):
+        if not self.__cameras.find("camera " + request).isEmpty():
             # TODO(Nemesis13, 26.10.09): add some nice camera transition
             return (request,) + args
         assert self.notifier.info("Sorry, no %s camera found." % request)
