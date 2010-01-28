@@ -1,6 +1,7 @@
 """Module for everything about controls."""
 
 import sys
+import os
 from ConfigParser import SafeConfigParser
 
 from direct.showbase.DirectObject import DirectObject
@@ -18,7 +19,7 @@ class ControlState(DirectObject):
     """Specific control state classes should inherit from this.
     Every derived class is expected to have a list of keybindings and tasks."""
     conf_parser = SafeConfigParser()
-    conf_parser.read("%s/etc/keybindings.ini" % sys.path[0])
+    conf_parser.read(os.path.abspath(os.path.join(sys.path[0], "etc/keybindings.ini")))
 
     @classmethod
     def reloadKeybindings(cls, filenames="etc/keybindings.ini"):

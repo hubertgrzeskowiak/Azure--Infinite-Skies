@@ -2,6 +2,7 @@
 aircrafts."""
 
 import sys
+import os
 from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin, isnan
 import ConfigParser
 
@@ -19,7 +20,7 @@ from utils import ListInterpolator
 
 _c = ClockObject.getGlobalClock()
 specs = ConfigParser.SafeConfigParser()
-specs.read("%s/etc/CraftSpecs.cfg" % sys.path[0])
+specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
 
 class Aeroplane(object):
     """Standard aeroplane class."""

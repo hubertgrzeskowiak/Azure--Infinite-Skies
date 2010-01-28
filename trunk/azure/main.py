@@ -20,32 +20,20 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
-# Here panda will look for files with the ending .prc and load them as config.
-# The config file will be loaded as soon as you touch a panda module.
-#os.putenv("PANDA_PRC_PATH", "./etc/:../etc/:/etc/azure/:~/.azure/")
-# Ffor now, load only our development config. First 2 lines are old-style,
-# latter 2 for panda 1.7 and above.
-os.environ["PANDA_PRC_DIR"] = sys.path[0]
-os.environ["PANDA_PRC_PATH"] = sys.path[0]
-os.environ["PRC_DIR"] = sys.path[0]
-os.environ["PRC_PATH"] = sys.path[0]
-
 try:
     from pandac.PandaModules import loadPrcFile
+    from pandac.PandaModules import Filename
 except ImportError:
     print "It seems you haven't got Panda3D installed properly."
     sys.exit(1)
-# Just for the case setting the environment variable setting failed, load the
-# config file now. It can't overwrite everything from the beginning anymore,
-# but should work well as a fallback.
-loadPrcFile("%s/etc/azure.prc" % sys.path[0])
-
-
+# Config file should be loaded as soon as possible.
+loadPrcFile(Filename.fromOsSpecific(os.path.abspath(os.path.join(sys.path[0], "etc/azure.prc"))))
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from pandac.PandaModules import *
 
 import scenarios
+
 
 class Azure(object):
     """Main class called by the top level main function (see below)."""
@@ -58,6 +46,7 @@ class Azure(object):
         # Turn off Panda3D's standard camera handling.
         base.disableMouse()
         scenarios.TestEnvironment()
+		# Start the master loop.
         run()
 
 
