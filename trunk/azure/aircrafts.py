@@ -13,6 +13,7 @@ from pandac.PandaModules import AngularEulerIntegrator
 from pandac.PandaModules import OdeBody, OdeMass, Quat
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
 from direct.actor.Actor import Actor
+from direct.task import Task
 
 from errors import *
 from utils import ListInterpolator
@@ -69,19 +70,19 @@ class Aeroplane(object):
                                      "aeroplane {0} {1}".format(self.id, name))
 
         self.name = name
-        self.plane_model = None
+        self.model = None
 
         self.thrust = 0.0
 
         #try:
-        #    self.plane_model = self.loadPlaneModel(model_to_load)
-        #    self.plane_model.reparentTo(Aeroplane.aircrafts)
+        #    self.model = self.loadPlaneModel(model_to_load)
+        #    self.model.reparentTo(Aeroplane.aircrafts)
         #except (ResourceHandleError, ResourceLoadError, IOError), e:
         #    handleError(e)
         if not model_to_load:
             model_to_load = name
-        self.plane_model = self.loadPlaneModel(model_to_load)
-        self.plane_model.reparentTo(self.node)
+        self.model, self.animcontrols = self.loadPlaneModel(model_to_load)
+        self.model.reparentTo(self.node)
 
         if specs_to_load == 0:
             pass
@@ -147,45 +148,122 @@ class Aeroplane(object):
             
             self.accumulator = 0.0
             self.step_size = 0.02
-            taskMgr.add(self.simulationTask, "plane physics")
+            taskMgr.add(self.simulationTask, "plane physics", sort=-1)
             self.old_quat = self.quat()
         else:
             self.p_world = None
             self.p_body = None
             self.p_mass = None
 
+        taskMgr.add(self._animations, "plane animations", sort=1)
+        taskMgr.add(self._propellers, "propellers animations", sort=2)
+
+
     def loadPlaneModel(self, modelname, replace=False):
         """Loads models and animations."""
 
-        model = Actor("planes/{0}/{0}".format(modelname))
+        animcontrols = {}
+        model = loader.loadModel("planes/{0}/{0}".format(modelname))
+        actor = Actor(model, setFinal=True, mergeLODBundles=True,
+                      allowAsyncBind=False, okMissing=False)
+        #actor = Actor(model, lodNode="mid")
 
         subparts = (
             # subpart,       joints,                   animations
             ("Doors",        ["Windscreen*", "Door*"], ("Open", "Close")),
-            ("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out", "LG In")),
-            ("Ailerons",     ["Aileron*"],            ("Roll Left", "Roll Right")),
+            #("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out", "LG In")),
+            ("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out",)),
+            ("Ailerons",     ["Aileron*"],             ("Roll Left", "Roll Right")),
             ("Rudders",      ["Rudder*"],              ("Head Left", "Head Right")),
             ("Elevators",    ["Elevator*"],            ("Pitch Up", "Pitch Down")))
 
         for line in subparts:
             subpart, joints, anims = line
-            model.makeSubpart(subpart, joints)
+            actor.makeSubpart(subpart, joints)
+
+            d = {}
             for anim in anims:
-                model.loadAnims({anim:
-                                "planes/{0}/{0}-{1}".format(modelname, anim)},
-                                subpart)
-                model.bindAnim(anim, subpart)
-        model.verifySubpartsComplete()
-        model.setSubpartsComplete(True)
-        return model
+                d[anim] = "planes/{0}/{0}-{1}".format(modelname, anim)
+            #actor.loadAnims(d, subpart, "mid")
+            actor.loadAnims(d, subpart)
+            for anim in anims:
+                #actor.bindAnim(anim, subpart, "mid")
+                actor.bindAnim(anim, subpart)
+                #animcontrols[anim] = actor.getAnimControls(anim, subpart, "mid", False)[0]
+                animcontrols[anim] = actor.getAnimControls(anim, subpart, None, False)[0]
+                
+        actor.makeSubpart("propellers", "Propeller*")
+        actor.verifySubpartsComplete()
+        actor.setSubpartsComplete(True)
+        self.propellers = []
+        for p in actor.getJoints("propellers", "Propeller*", "lodRoot"):
+            self.propellers.append(actor.controlJoint(None, "propellers", p.getName()))
+        #actor.pprint()
+
+        cams = model.findAllMatches("**/camera ?*")
+        if not cams.isEmpty():
+            cameras = actor.attachNewNode("cameras")
+            cams.reparentTo(cameras)
+
+        return actor, animcontrols
+
+    def _animations(self, task):
+        roll =  {-1: self.animcontrols["Roll Left"],
+                  1: self.animcontrols["Roll Right"]}
+        pitch = {-1: self.animcontrols["Pitch Down"],
+                  1: self.animcontrols["Pitch Up"]}
+        head =  {-1: self.animcontrols["Head Right"],
+                  1: self.animcontrols["Head Left"]}
+        for flaps, state in (
+                (roll, self.ailerons),
+                (pitch, self.elevator),
+                (head, self.rudder)):
+            if state == 0.0:
+                for f in flaps:
+                    if (flaps[f].isPlaying() == 1) and (flaps[f].getPlayRate() > 0):
+                        flaps[f].setPlayRate(-1)
+                    elif flaps[f].getFrame() == flaps[f].getNumFrames()-1:
+                        if flaps[f].getPlayRate() > 0:
+                            flaps[f].setPlayRate(-1)
+                        flaps[f].play()
+                    if (flaps[f].isPlaying() == 1) and (flaps[f].getFrame() == 0):
+                        flaps[f].stop()
+            else:
+                if flaps[state*-1].isPlaying() == 1:
+                    if flaps[state*-1].getPlayRate() > 0:
+                        flaps[state*-1].setPlayRate(-1)
+                    else:
+                        if flaps[state*-1].getFrame() == 0:
+                            flaps[state*-1].stop()
+                else:
+                    if flaps[state*-1].getFrame() == flaps[state*-1].getNumFrames()-1:
+                        if flaps[state*-1].getPlayRate() > 0:
+                            flaps[state*-1].setPlayRate(-1)
+                        flaps[state*-1].play()
+                    else:
+                        if (flaps[state].isPlaying() == 0):
+                            if not (flaps[state].getFrame() == (flaps[state].getNumFrames()-1)):
+                                flaps[state].setPlayRate(1)
+                                flaps[state].play()
+                        elif flaps[state].getPlayRate() < 0:
+                            flaps[state].setPlayRate(1)
+
+        return Task.cont
+
+    def _propellers(self, task):
+        if self.thrust > 0:
+            for p in self.propellers:
+                p.setP(p, (self.thrust * _c.getDt() * 500))
+
+        return Task.cont
 
     def loadSpecs(self, s, force=False):
         """Loads specifications for a plane. Force if already loaded."""
 
         def justLoad():
             self.mass = specs.getint(s, "mass")
-            # 1km/h = 2.7777 m/s (1meter = 1panda unit)
-            self.max_speed = 2.7777 * specs.getint(s, "max_speed")
+            # 1km/h = 3.6 m/s (1meter = 1panda unit)
+            self.max_speed = 3.6 * specs.getint(s, "max_speed")
             self.roll_speed = specs.getint(s, "roll_speed")
             self.pitch_speed = specs.getint(s, "pitch_speed")
             self.yaw_speed = specs.getint(s, "yaw_speed")

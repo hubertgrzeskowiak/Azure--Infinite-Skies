@@ -85,6 +85,7 @@ default-directnotify-level                  warning
 notify-level                                warning
 #notify-level-util                           fatal
 #notify-level-ShowBase                       debug
+#notify-level-Actor                          debug
 #notify-level-FSM                            debug
 #notify-level-EventManager                   debug
 #notify-level-ExceptionVarDump               debug
