@@ -54,10 +54,9 @@ audio-volume 1
 
 # else
 # ----
-# use DirectX if available (windows) or fall back to opengl (linux, mac)
+aux-display pandagl
 aux-display pandadx9
 aux-display pandadx8
-aux-display pandagl
 load-display *
 # opengl display lists support
 display-lists true
