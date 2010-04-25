@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module containing graphical user interface objects"""
 
-#------------------------------------------------------------------------------
-# Imports
-#------------------------------------------------------------------------------
-
+import sys
 from math import degrees, radians, pi, tan, sin, cos
 
 from pandac.PandaModules import GeomVertexFormat,GeomVertexData
@@ -13,10 +10,11 @@ from pandac.PandaModules import TransparencyAttrib
 from pandac.PandaModules import TextNode
 from pandac.PandaModules import Point3, Point2, Vec3, Vec4
 from direct.directtools.DirectGeometry import LineNodePath
-from direct.gui.DirectGui import OnscreenText
+from direct.gui.DirectGui import *
 from direct.gui.OnscreenImage import OnscreenImage
 
 from views import PlaneCamera
+#from core import Core
 
 PITCH_STEP = 10
 def printInstructions(instructions = ""):
@@ -440,3 +438,47 @@ class HUD(object):
         # and parent the node to aspect2d
         lineNP = aspect2d.attachNewNode(lineGN)
         return lineNP
+
+class MainMenu(object):
+    def __init__(self):
+        mainmenu = [("Adventure", lambda: base.core.request("World")),
+                    ("Quick Game", lambda: self.p("not yet implemented")),
+                    ("Credits", lambda: self.p("not yet implemented")),
+                    ("Exit", sys.exit)]
+        self.font = loader.loadFont("fonts/aranea.ttf")
+        self.font.setPixelsPerUnit(100)
+        self.parent_node = aspect2d.attachNewNode("main menu")
+        self.bg = OnscreenImage(image="backdrops/menubg.jpg",
+                                scale=(1.333333,1,1), parent=self.parent_node)
+        self.t = OnscreenText("Azure", pos=(-0.6, 0.7), font=self.font,
+                              fg=(1,1,1,1), scale=0.3)
+        margin = 0.0
+        button_options = {
+                "text_fg":(1,1,1,1), "text_font":self.font, "text_scale":0.1,
+                "relief":None, "rolloverSound":None, "clickSound":None,
+                "pressEffect":0, "frameVisibleScale":(0.1,0.1), "sortOrder":2,
+                "text_wordwrap":7, "parent":self.parent_node}
+        
+        self.buttons = []
+        lengths = 0
+        for caption, function in mainmenu:
+            b = DirectButton(text=caption, command=function, **button_options)
+            self.buttons.append(b)
+            lengths += b.getWidth()
+        space = (2 - margin * 2 - lengths) / (len(self.buttons) - 1)
+        pos = -1 + margin
+        for b in self.buttons:
+            pos -= b.node().getFrame()[0]
+            b.setPos(pos, 0, -0.7)
+            pos += b.node().getFrame()[1] + space
+
+    def p(self, arg):
+        """Temporary convenience function."""
+        print arg
+
+    def destroy(self):
+        self.parent_node.removeNode()
+        self.bg.destroy()
+        self.t.destroy()
+        for b in self.buttons:
+            b.destroy()

@@ -32,12 +32,11 @@ from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from pandac.PandaModules import *
 
-import scenarios
+from core import Core
 
 
 class Azure(object):
     """Main class called by the top level main function (see below)."""
-
     def __init__(self):
 
         # This basically sets up our rendering node-tree, some builtins and
@@ -45,7 +44,8 @@ class Azure(object):
         ShowBase()
         # Turn off Panda3D's standard camera handling.
         base.disableMouse()
-        scenarios.TestEnvironment()
+        base.setBackgroundColor(0,0,0,0)
+        base.core = Core()
 		# Start the master loop.
         run()
 

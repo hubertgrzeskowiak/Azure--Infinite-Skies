@@ -5,7 +5,7 @@ import os
 from ConfigParser import SafeConfigParser
 
 from direct.showbase.DirectObject import DirectObject
-from direct.fsm.FSM import FSM
+#from direct.fsm.FSM import FSM
 from direct.task import Task
 from direct.directnotify.DirectNotify import DirectNotify
 
@@ -76,8 +76,8 @@ class PlaneFlight(ControlState):
                        "move.roll-right":       "d",
                        "move.pitch-up":         "s",
                        "move.pitch-down":       "w",
-                       "move.heading-left":        "q",
-                       "move.heading-right":       "e",
+                       "move.heading-left":     "q",
+                       "move.heading-right":    "e",
                        "thrust.add":            "page_up",
                        "thrust.subtract":       "page_down",
                        "camera.Next":           "c",
@@ -93,21 +93,26 @@ class PlaneFlight(ControlState):
     def flyTask(self, task):
         """Move the plane acording to pressed keys."""
         actions_done = set()
+
         for action in self.requested_actions:
             a = action.split(".")[0]
             if a == "move":
                 base.player.move(action.split(".")[1])
-            if a == "thrust":
+            elif a == "thrust":
                 base.player.chThrust(action.split(".")[1])
-            if a == "camera":
+            elif a == "camera":
                 base.player_camera.setCameraMode(action.split(".")[1])
                 actions_done.add(action)
         self.requested_actions -= actions_done
 
-        #base.player.reverseRoll()
-        #base.player.reversePitch()
         base.player.hud.update()
         return Task.cont
+
+class Pause(ControlState):
+    def __init__(self):
+        ControlState.__init__(self)
+        self.keymap = {"resume": "escape",
+                       "resume": "p"}
 
 
 class GameMenu(ControlState):
@@ -119,10 +124,10 @@ class GameMenu(ControlState):
                        "go_up":     "arrow_up",
                        "go_down":   "arrow_down"
                       }
-        self.tasks = (self.menuControl,)
+        #self.tasks = (self.menuControl,)
 
-    def menuControl(self):
-        pass
+    #def menuControl(self):
+    #    pass
 
 
 class Sequence(ControlState):
@@ -134,4 +139,3 @@ class Sequence(ControlState):
 
     def skipSequence(self):
         pass
-
