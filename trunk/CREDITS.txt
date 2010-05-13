@@ -1,10 +1,11 @@
-project admins
+Developers
 ---------------
-Gjmm aka Gary Martin <gjmm at users.sourceforge.net>
-neovertex aka Alex <neovertex at users.sourceforge.net>
+Gjmm/g-ray aka Gary Martin <gjmm at users.sourceforge.net>
+Neovertex aka Alex <neovertex at users.sourceforge.net>
 Nemesis#13 aka Hubert Grzeskowiak <nemesis13 at users.sourceforge.net>
 
 special thanks
 --------------
+Reiner De Bois (rdb) for great support and his work on Panda3D
 sourceforge.net - for hosting
 cgtextures.com - for super, free textures
