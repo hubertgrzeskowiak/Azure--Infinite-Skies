@@ -12,7 +12,7 @@ window-title Azure: Infinite Skies
 win-origin 50 50
 win-size 800 600
 #win-size 1280 1024
-#fullscreen false
+fullscreen false
 #fullscreen true
 
 
@@ -96,7 +96,7 @@ notify-level                                warning
 #notify-level-TaskManager                    debug
 #notify-level-JobManager                     debug
 #notify-level-azure-camera                   debug
-#notify-level-azure-controls                 debug
+notify-level-azure-control                  debug
 #notify-level-ode                            spam
 #notify-level-odebody                        spam
 #notify-level-odegeom                        spam
