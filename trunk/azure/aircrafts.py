@@ -71,6 +71,7 @@ class Aeroplane(object):
 
         self.name = name
         self.model = None
+        self.hud = None  # later replaced
 
         self.thrust = 0.0
 
