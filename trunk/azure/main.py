@@ -43,10 +43,11 @@ class Azure(object):
         # the master loop (which iterates each frame).
         ShowBase()
         # Turn off Panda3D's standard camera handling.
-        base.disableMouse()
-        base.setBackgroundColor(0,0,0,0)
+        #base.disableMouse()
+        base.setBackgroundColor(0,0,0,1)
         base.core = Core()
 		# Start the master loop.
+        #base.bufferViewer.toggleEnable()
         run()
 
 
