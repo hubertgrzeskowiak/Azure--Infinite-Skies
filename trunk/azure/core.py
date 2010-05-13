@@ -10,6 +10,7 @@ import scenarios
 from scenarios import Scenario
 import gui
 
+
 class Core(FSM):
     def __init__(self):
         FSM.__init__(self, "Core Game Control")
@@ -31,15 +32,19 @@ class Core(FSM):
         self.scenario.start()
 
     def exitWorld(self):
-        self.world.destroy()  # Muharharhar *evil laugh*
+        try:
+            self.world.destroy()  # Muharharhar *evil laugh*
+        except:
+            pass
 
-    
     def enterMenu(self, menu=gui.MainMenu):
         self.menu = menu()
 
     def exitMenu(self):
-        self.menu.destroy()
-
+        try:
+            self.menu.destroy()
+        except:
+            pass
 
     def defaultFilter(self, request, args):
         if request not in self.defaultTransitions:
