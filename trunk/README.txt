@@ -22,17 +22,17 @@ this game depends on python 2.6 [1] and panda3d 1.7 [2]
 
 
 HOW TO RUN:
-On GNU/Linux or other Unix/-like systems, run the 'run' file like ./run ,
+On GNU/Linux or other Unix/-like systems, run the 'run' file like ./run  or
+python run,
 On Windows, you may alternatively double-click on the run.bat (or execute it in
 a terminal).
 
 
 LINKS:
-don't forget to visit our project page on SF [3] for news and our wiki [4]
+don't forget to visit our project pages, our wiki and the forums [3] :)
 
 [1] http://python.org
 [2] http://panda3d.org
-[3] http://sourceforge.net/projects/azure-is/
-[4] http://apps.sourceforge.net/mediawiki/azure-is/
+[3] http://azure.tuxfamily.org
 
 # vim:set textwidth=79:
