@@ -5,7 +5,6 @@ import os
 from ConfigParser import SafeConfigParser
 
 from direct.showbase.DirectObject import DirectObject
-#from direct.fsm.FSM import FSM
 from direct.task import Task
 from direct.directnotify.DirectNotify import DirectNotify
 
@@ -48,6 +47,8 @@ class ControlState(DirectObject):
                            "Using built-in bindings" % self.name)
 
     def activate(self):
+        if self.active is True:
+            return False
         notify.info("Activating %s" % self.name)
         if self.keymap != ():
             self.loadKeybindings()
@@ -59,6 +60,8 @@ class ControlState(DirectObject):
         self.active = True
 
     def deactivate(self):
+        if self.active is False:
+            return False
         notify.info("Deactivating %s" % self.name)
         self.ignoreAll()
         self.requested_actions.clear()
@@ -105,7 +108,8 @@ class PlaneFlight(ControlState):
                 actions_done.add(action)
         self.requested_actions -= actions_done
 
-        base.player.hud.update()
+        if base.player.hud:
+            base.player.hud.update()
         return Task.cont
 
 class Pause(ControlState):
@@ -113,6 +117,24 @@ class Pause(ControlState):
         ControlState.__init__(self)
         self.keymap = {"resume": "escape",
                        "resume": "p"}
+
+
+class DebugHelp(ControlState):
+    def __init__(self):
+        ControlState.__init__(self)
+        self.keymap = {"list_tree": "f12",
+                       "screenshot": "f11"}
+
+        self.tasks = (self.debugTask,)
+
+    def debugTask(self, task):
+        if "list_tree" in self.requested_actions:
+            print render.ls()
+        if "screenshot" in self.requested_actions:
+            #base.screenshot()
+            rint "screeenhot"
+        self.requested_actions.clear()
+        return Task.cont
 
 
 class GameMenu(ControlState):
