@@ -1,0 +1,60 @@
+//Cg
+//Cg profile arbvp1 arbfp1
+
+void vshader( in float4 vtx_position : POSITION,
+              in float2 vtx_texcoord0 : TEXCOORD0,
+              in float4 vtx_color : COLOR,
+              in uniform float4x4 mat_modelproj,
+              in uniform float4 k_time,
+              in uniform float4 k_water,
+
+              out float4 l_projection,
+
+              out float2 l_texcoord0 : TEXCOORD0,
+              out float4 l_position : POSITION,
+              out float4 l_color : COLOR )
+{
+    // position
+    l_position = mul( mat_modelproj, vtx_position );
+
+    // distortions
+    l_texcoord0.xy = vtx_texcoord0.xy * k_water.z + k_water.xy * k_time.x;
+
+    // projective texturing
+    float4x4 scaleMatrix = { 0.5f, 0.0f, 0.0f, 0.5f,
+                             0.0f, 0.5f, 0.0f, 0.5f,
+                             0.0f, 0.0f, 0.5f, 0.5f,
+                             0.0f, 0.0f, 0.0f, 1.0f };
+    float4x4 projectionMat = mul( scaleMatrix, mat_modelproj );
+    l_projection = mul( projectionMat, vtx_position );
+
+    // watermap
+    //l_texcoord0.xy = vtx_texcoord0.xy;
+    
+    //color
+    l_color=vtx_color;
+}
+
+void fshader( in float2 l_texcoord0 : TEXCOORD0,
+              in float4 l_color : COLOR,
+              in uniform sampler2D tex_0 : TEXUNIT0,
+              in uniform sampler2D tex_1 : TEXUNIT1,
+
+              in float4 l_projection,
+
+              out float4 o_color : COLOR )
+{
+    float4 distortion = normalize( tex2D( tex_1, l_texcoord0 ) - 0.5f ) * 8.0f;
+
+    float4 reflection = tex2Dproj( tex_0, l_projection + distortion );
+    float4 refraction = float4( 0.5f, 0.5f, 0.5f, 0.0f );
+
+    //float factor = tex2D( tex_2, l_texcoord0 ).x;
+    float factor = 0;
+    //o_color=reflection;
+    //o_color = lerp( reflection, refraction, factor );
+	o_color *= shade
+    //o_color *= l_color;
+}
+
+
