@@ -1,6 +1,6 @@
 Developers
 ---------------
-Gjmm/g-ray aka Gary Martin <gjmm at users.sourceforge.net>
+G-ray aka Gary Martin <garym at tuxfamily.org>
 Neovertex aka Alex <neovertex at users.sourceforge.net>
 Nemesis#13 aka Hubert Grzeskowiak <nemesis13 at users.sourceforge.net>
 
