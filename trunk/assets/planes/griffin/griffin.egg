@@ -22,6 +22,8 @@
 }
 <Texture> "Griffin Main_00_normalmap" {
   "./normalmap.tex.png"
+  <Scalar> format { RGBA }
+  <Scalar> alpha { DUAL }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -30,6 +32,8 @@
 }
 <Texture> "Griffin Glass_01_diffusemap" {
   "./diffuse.tex.png"
+  <Scalar> format { RGBA }
+  <Scalar> alpha { DUAL }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -38,6 +42,8 @@
 }
 <Texture> "Griffin Glass_00_normalmap" {
   "./normalmap.tex.png"
+  <Scalar> format { RGBA }
+  <Scalar> alpha { DUAL }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -46,6 +52,8 @@
 }
 <Texture> "Griffin Main_01_diffusemap" {
   "./diffuse.tex.png"
+  <Scalar> format { RGBA }
+  <Scalar> alpha { DUAL }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
