@@ -132,7 +132,7 @@ class DebugHelp(ControlState):
             print render.ls()
         if "screenshot" in self.requested_actions:
             #base.screenshot()
-            rint "screeenhot"
+            print "screeenhot"
         self.requested_actions.clear()
         return Task.cont
 
