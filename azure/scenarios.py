@@ -6,7 +6,7 @@ from direct.directtools.DirectGrid import DirectGrid
 from pandac.PandaModules import OdeWorld
 
 from aircrafts import Aeroplane
-from scenery import Scenery, setSky
+from scenery import Scenery, Sky
 import gui
 import views
 import controls
@@ -63,9 +63,10 @@ class TestEnvironment(Scenario):
         #world.setGravity(0.0, 0.0, -9.81)
         world.setGravity(0.0, 0.0, 0.0)
         
-        self.grid = DirectGrid(2000, 20, parent=render)
-        self.grid.setZ(-0.001)
-        setSky("bluesky")
+        #self.grid = DirectGrid(2000, 20, parent=render)
+        #self.grid.setZ(-0.001)
+        #setSky("bluesky")
+        sky = Sky("bluesky")
 
         # lights
         sunlight = DirectionalLight("sun")

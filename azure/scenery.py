@@ -1,9 +1,6 @@
-"""This module manages everthing for scenery objects."""
+"""This module manages everthing about non-interactive environment."""
 
-from pandac.PandaModules import VBase3
-from pandac.PandaModules import CardMaker
-from pandac.PandaModules import GeomNode
-from pandac.PandaModules import NodePath
+from pandac.PandaModules import *
 
 from errors import *
 
@@ -76,67 +73,36 @@ class Scenery(object):
         return self._dummy_node
 
 
-def setSky(directory, ext=".jpg"):
-    """Sets up a skybox. 'directory' is the directory whitch contains 6
-    pictures with the names right.ext, left.ext and so on (see template).
-    ext is the extension the pictures have (with dot).
-    """
-    #TODO: accept all supported image file extensions without the need for an
-    #      extra argument
-
-    # remove the old sky first when loading a new one
-    # TODO: get this working...
-    #oldsky = render.find("*sky*")
-    #print oldsky
-    #for child in render.getChildren():
-    #    child.remove()
-
-    sky = NodePath().attachNewNode("sky")
-    sides = {
-        "right":  ( 1,  0,  0, -90,   0,  0),
-        "left":   (-1,  0,  0,  90,   0,  0),
-        "top":    ( 0,  0,  1,   0,  90,  0),
-        "bottom": ( 0,  0, -1,  180,  -90,  0),
-        "front":  ( 0,  1,  0,   0,   0,  0),
-        "back":   ( 0, -1,  0, 180,   0,  0)
-        }
-    for name, poshpr in sides.iteritems():
-
-        c = CardMaker(name)
-        c.setFrame(-1, 1, -1, 1)
-        card = c.generate()
-        cardnode = sky.attachNewNode(card)
-        cardnode.setPosHpr(*poshpr)
-        tex = loader.loadTexture("skyboxes/" + directory + "/" + name + ext)
-        tex.setWrapV(tex.WMClamp)
-        tex.setMagfilter(tex.FTNearestMipmapNearest)
-        tex.setMinfilter(tex.FTNearestMipmapNearest)
-        cardnode.setTexture(tex)
-
-    sky.flattenStrong()
-    sky.setScale(10, 10, 10)
-    sky.setCompass()
-    sky.setBin('background', 0)
-    sky.setDepthTest(False)
-    sky.setDepthWrite(False)
-    sky.setLightOff()
-    sky.reparentTo(camera)
-
-    geom = sky.getChild(0).node()
-    geom.setName("cube")
-
-
-    # doesn't work yet. no idea why
-
-    #from pandac.PandaModules import MultitexReducer as MR
-    #MR.scan(sky)
-    #MR.flatten()
-
-    #geom.unify(1, False)
-    #print geom.getNumGeoms()
-
-    #def myprint(arg):
-    #    print arg
-    #base.accept("f1", myprint, [sky])
-    #base.accept("f2", myprint, [sky.getChildren()])
-    #base.accept("f3", render.ls)
+class Sky(NodePath):
+    """Skies are implemented in form of a cube with 6 square textures. See
+    assets/skyboxes/README.txt for more details."""
+    def __init__(self, resource=None):
+        if resource is not None:
+            self.create(resource)
+    def create(self, resource):
+        """Arguments:
+        resource -- name of a directory in assets/skyboxes that contains 6
+        images."""
+        for ext in ("png", "jpg", "tga"):
+            f = "skyboxes/%s/0.%s" % (resource, ext)
+            if vfs.resolveFilename(f, getModelPath().getValue()):
+                tex = loader.loadCubeMap("skyboxes/%s/#.%s" % (resource, ext))
+                if tex is not None:
+                    break
+        if tex is None:
+            raise ResourceLoadError("assets/skyboxes/%s" % resource,
+                                 "maybe wrong names or different extensions?")
+        self = loader.loadModel("misc/invcube")
+        self.clearTexture()
+        self.clearMaterial()
+        self.setScale(100)
+        self.setTwoSided(True)
+        self.setBin('background', 0)
+        self.setDepthTest(False)
+        self.setDepthWrite(False)
+        self.setLightOff()
+        self.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldPosition)
+        self.setTexProjector(TextureStage.getDefault(), render, self);
+        self.setTexture(tex, 1)
+        self.setCompass()
+        self.reparentTo(camera)
