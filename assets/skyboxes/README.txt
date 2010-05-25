@@ -11,8 +11,8 @@ are as follows:
 5. The images need to be named 0-6 plus extension. The single sides are
    mapped this way:
 
-      0.ext -- left
-      1.ext -- right
+      0.ext -- right
+      1.ext -- left
       2.ext -- front
       3.ext -- back
       4.ext -- top
