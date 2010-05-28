@@ -1,0 +1,17 @@
+filename = '/home/nemesis13/azure/assets/planes/razor/razor.egg'
+sel = ['Razor']
+anims = [['Open', 24, 1, 41],
+ ['Close', 24, 42, 82],
+ ['Head Left', 24, 83, 103],
+ ['Head Right', 24, 104, 124],
+ ['LG Out', 24, 125, 195],
+ ['Pitch Down', 24, 196, 216],
+ ['Pitch Up', 24, 217, 237],
+ ['Roll Left', 24, 238, 258],
+ ['Roll Right', 24, 259, 279]]
+tools = (0, 0, 0, 0)
+octreecollision = 0
+dotangents = 1
+singlefile = 0
+forceRelTex = 1
+pzip = 0
