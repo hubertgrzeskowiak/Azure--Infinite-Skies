@@ -58,6 +58,10 @@ class Race(Mission):
 class TestEnvironment(Scenario):
     """Draw some test grid and stuff."""
     def __init__(self):
+        """Everything here happens under a curtain."""
+
+        self.controls = []
+
         # initialise ODE
         world = OdeWorld()
         #world.setGravity(0.0, 0.0, -9.81)
@@ -65,9 +69,8 @@ class TestEnvironment(Scenario):
         
         #self.grid = DirectGrid(2000, 20, parent=render)
         #self.grid.setZ(-0.001)
-        #setSky("bluesky")
-        sky = Sky("bluesky")
         water = Water()
+        sky = Sky("bluesky")
 
         # lights
         sunlight = DirectionalLight("sun")
@@ -81,31 +84,29 @@ class TestEnvironment(Scenario):
         alnp = render.attachNewNode(alight)
         render.setLight(alnp)
 
-        #render.setShaderAuto(True)
-
-        ## initialise physics engine
+        # initialise physics engine
         #base.enableParticles()
 
         # load our plane(s)
         base.player = Aeroplane("griffin", world=world)
         base.player_camera = views.PlaneCamera(base.player)
-        self.control = controls.PlaneFlight()
+        self.controls.append(controls.PlaneFlight())
 
         # load some others
         #pirate1 = Aeroplane("griffin")
         #pirate1.node.setPosHpr(-15, -20, 12, -10, -10, 20)
-
         #pirate2 = Aeroplane("griffin")
-        #pirate2.node.setPosHpr(18, -30, 6, 5, -5, -5)
+        #pirate2.node.setPosHpr(18, -30, 0, 5, -5, -5)
 
-        # set default camera
         base.player.hud = gui.HUD(base.player, base.camera)
-        base.player.hud.update()
-        self.control.activate()
+
+        self.controls.append(controls.Debug())
 
     def start(self):
-        pass
-
-#class MainMenu(Menu):
-#    def __init__(self):
-#        gui.MainMenu()
+        """Here the curtain is taken off and the interaction begins."""
+        base.player.hud.update()
+        for control in self.controls:
+            try:
+                control.activate()
+            except:
+                pass
