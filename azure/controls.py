@@ -112,6 +112,7 @@ class PlaneFlight(ControlState):
             base.player.hud.update()
         return Task.cont
 
+
 class Pause(ControlState):
     def __init__(self):
         ControlState.__init__(self)
@@ -119,20 +120,26 @@ class Pause(ControlState):
                        "resume": "p"}
 
 
-class DebugHelp(ControlState):
+class Debug(ControlState):
     def __init__(self):
         ControlState.__init__(self)
-        self.keymap = {"list_tree": "f12",
+        self.keymap = {"print_scene": "f12",
                        "screenshot": "f11"}
 
         self.tasks = (self.debugTask,)
 
     def debugTask(self, task):
-        if "list_tree" in self.requested_actions:
+        if "print_scene" in self.requested_actions:
+            print "-" * 40
+            print "render scene graph:"
             print render.ls()
+            print "-" * 40
+            print "render2d scene graph:"
+            print render2d.ls()
+            print "-" * 40
+
         if "screenshot" in self.requested_actions:
-            #base.screenshot()
-            print "screeenhot"
+            base.screenshot()
         self.requested_actions.clear()
         return Task.cont
 
