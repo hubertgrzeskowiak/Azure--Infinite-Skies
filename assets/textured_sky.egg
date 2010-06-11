@@ -1,0 +1,288 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version 91" }
+
+<Texture> 2.png {
+  "./skyboxes/template/2.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> 3.png {
+  "./skyboxes/template/3.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> 0.png {
+  "./skyboxes/template/0.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> 1.png {
+  "./skyboxes/template/1.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> 4.png {
+  "./skyboxes/template/4.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> 5.png {
+  "./skyboxes/template/5.png"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Plane.005 {
+  <VertexPool> Plane.005 {
+    <Vertex> 0 {
+      -0.999999761581 -1.0 1.00000011921
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 1 {
+      -1.00000023842 0.999999761581 1.00000011921
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 2 {
+      1.0 1.00000011921 0.999999940395
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 3 {
+      1.00000023842 -0.999999761581 0.999999940395
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 4 {
+      1.0 0.999999940395 -1.0
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { 1.000000 -0.000000 0.000000 }
+        <Binormal> { -0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 5 {
+      -0.999999761581 1.00000023842 -1.0
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { 1.000000 -0.000000 0.000000 }
+        <Binormal> { -0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 6 {
+      -1.0 -0.999999940395 -1.0
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { 1.000000 -0.000000 0.000000 }
+        <Binormal> { -0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 7 {
+      0.999999940395 -1.0 -1.0
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { 1.000000 -0.000000 0.000000 }
+        <Binormal> { -0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 8 {
+      -0.999999821186 -1.0 1.00000011921
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 -1.000000 }
+      }
+    }
+    <Vertex> 9 {
+      0.999999940395 -1.0 1.00000011921
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { 0.000000 0.000000 -1.000000 }
+      }
+    }
+    <Vertex> 10 {
+      0.999999821186 -0.999999940395 -1.00000011921
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 -1.000000 }
+      }
+    }
+    <Vertex> 11 {
+      -1.00000011921 -0.999999940395 -0.999999821186
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 -1.000000 }
+      }
+    }
+    <Vertex> 12 {
+      -1.0 0.999999761581 -0.999999940395
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { -1.000000 -0.000000 0.000000 }
+        <Binormal> { 0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 13 {
+      0.999999761581 1.00000011921 -1.00000023842
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { -1.000000 -0.000000 0.000000 }
+        <Binormal> { 0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 14 {
+      1.0 1.00000023842 0.999999940395
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { -1.000000 -0.000000 0.000000 }
+        <Binormal> { 0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 15 {
+      -0.999999940395 0.999999940395 1.0
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { -1.000000 -0.000000 0.000000 }
+        <Binormal> { 0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 16 {
+      -1.00000035763 -0.999999940395 1.0
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { 0.000000 -0.000000 -1.000000 }
+        <Binormal> { -0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 17 {
+      -1.00000023842 -1.00000023842 -0.999999761581
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { 0.000000 -0.000000 -1.000000 }
+        <Binormal> { -0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 18 {
+      -0.999999642372 0.999999940395 -1.0
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { 0.000000 -0.000000 -1.000000 }
+        <Binormal> { -0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 19 {
+      -0.999999701977 1.0 0.999999940395
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { 0.000000 -0.000000 -1.000000 }
+        <Binormal> { -0.000000 -1.000000 0.000000 }
+      }
+    }
+    <Vertex> 20 {
+      1.00000011921 -0.999999821186 -0.999999940395
+      <UV>  {
+        1.000000 1.000000
+        <Tangent> { 0.000000 -0.000000 1.000000 }
+        <Binormal> { 0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 21 {
+      1.00000023842 -1.0 0.999999821186
+      <UV>  {
+        0.000000 1.000000
+        <Tangent> { 0.000000 -0.000000 1.000000 }
+        <Binormal> { 0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 22 {
+      0.999999940395 1.0 1.0
+      <UV>  {
+        0.000000 0.000000
+        <Tangent> { 0.000000 -0.000000 1.000000 }
+        <Binormal> { 0.000000 -1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 23 {
+      0.999999821186 1.0 -0.999999880791
+      <UV>  {
+        1.000000 0.000000
+        <Tangent> { 0.000000 -0.000000 1.000000 }
+        <Binormal> { 0.000000 -1.000000 -0.000000 }
+      }
+    }
+  }
+  <Group> Plane.005_00_ {
+    <Polygon> {
+      <TRef> { 4.png }
+      <Normal> { -0.000000 -0.000000 -1.000000
+      }
+      <VertexRef> { 0 1 2 3 <Ref> { Plane.005 } }
+    }
+    <Polygon> {
+      <TRef> { 5.png }
+      <Normal> { 0.000000 -0.000000 1.000000
+      }
+      <VertexRef> { 4 5 6 7 <Ref> { Plane.005 } }
+    }
+    <Polygon> {
+      <TRef> { 3.png }
+      <Normal> { 0.000000 1.000000 0.000000
+      }
+      <VertexRef> { 8 9 10 11 <Ref> { Plane.005 } }
+    }
+    <Polygon> {
+      <TRef> { 2.png }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
+      <VertexRef> { 12 13 14 15 <Ref> { Plane.005 } }
+    }
+    <Polygon> {
+      <TRef> { 1.png }
+      <Normal> { 1.000000 -0.000000 0.000000
+      }
+      <VertexRef> { 16 17 18 19 <Ref> { Plane.005 } }
+    }
+  }
+  <Group> Plane.005_01_ {
+    <Polygon> {
+      <TRef> { 0.png }
+      <Normal> { -1.000000 -0.000000 0.000000
+      }
+      <VertexRef> { 20 21 22 23 <Ref> { Plane.005 } }
+    }
+  }
+}
