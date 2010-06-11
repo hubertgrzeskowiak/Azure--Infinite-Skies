@@ -125,6 +125,9 @@ class Water(NodePath, DirectObject):
         size -- Edge length of the water square.
         resolution -- Texture size of the rendered reflection buffer.
         """
+        # Uncomment to see the output of the refclection buffer.
+        #base.bufferViewer.toggleEnable()
+
         NodePath.__init__(self, "water")
         DirectObject.__init__(self)
         self.cm = CardMaker("water surface")
