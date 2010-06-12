@@ -139,7 +139,7 @@ class Debug(ControlState):
             print "-" * 40
 
         if "screenshot" in self.requested_actions:
-            base.screenshot()
+            print "%s saved" % base.screenshot()
         self.requested_actions.clear()
         return Task.cont
 
