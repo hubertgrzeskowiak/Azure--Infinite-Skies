@@ -14,7 +14,8 @@ class Scenery(object):
     def __init__(self, name, model_to_load=None, pos=VBase3(0,0,0),
             scale=VBase3(1,1,1)):
         """Arguments are model to load, position (default is parent's origin)
-        and scale (default is 1)"""
+        and scale (default is 1).
+        """
 
         if not hasattr(Scenery, "_scenery"):
             assert render
@@ -46,7 +47,8 @@ class Scenery(object):
 
     def loadSceneryModel(self, model, force=False):
         """Loads a model for the scenery object. Force if there's already one
-        loaded."""
+        loaded.
+        """
         if hasattr(self, "scenery_model"):
             if force:
                 self.scenery_model = loader.loadModel(model)
@@ -70,7 +72,8 @@ class Scenery(object):
 
     def node(self):
         """Returns a container class, which you should use instead of
-        dummy_mode or the model itself."""
+        dummy_mode or the model itself.
+        """
         return self._dummy_node
 
 
@@ -85,16 +88,18 @@ class Scenery(object):
 #        self.setCompass()
 #        self.reparentTo(camera)
 
-class Sky(NodePath):
+class Sky(NodePath, DirectObject):
     """Skies are implemented in form of a cube with 6 square textures. See
-    assets/skyboxes/README.txt for more details."""
-    def __init__(self, resource=None):
-        if resource is not None:
-            self.create(resource)
-    def create(self, resource):
+    assets/skyboxes/README.txt for more details.
+    """
+    def __init__(self, resource):
         """Arguments:
         resource -- name of a directory in assets/skyboxes that contains 6
-        images."""
+        images.
+        """
+        NodePath.__init__(self, "sky")
+        DirectObject.__init__(self)
+
         for ext in ("png", "jpg", "tga"):
             f = "skyboxes/%s/0.%s" % (resource, ext)
             if vfs.resolveFilename(f, getModelPath().getValue()):
@@ -104,7 +109,8 @@ class Sky(NodePath):
         if tex is None:
             raise ResourceLoadError("assets/skyboxes/%s" % resource,
                                  "maybe wrong names or different extensions?")
-        self = loader.loadModel("misc/invcube")
+        #self.attachNewNode(loader.loadModel("misc/invcube"))
+        loader.loadModel("misc/invcube").reparentTo(self)
         self.clearTexture()
         self.clearMaterial()
         self.setScale(10000)
@@ -116,8 +122,19 @@ class Sky(NodePath):
         self.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldPosition)
         self.setTexProjector(TextureStage.getDefault(), render, self);
         self.setTexture(tex, 1)
+        self.flattenLight()
         #self.setCompass()  # not needed with world-space-UVs
         self.reparentTo(render)
+        self.addTask(self.update, "sky repositioning", sort=10)
+
+    def update(self, task):
+        self.setPos(camera.getPos(render))
+        return task.cont
+
+    def destroy(self):
+        self.removeAllTasks()
+        self.removeNode()
+
 
 class Water(NodePath, DirectObject):
     def __init__(self, size=10000, resoltion=1024):
@@ -131,15 +148,17 @@ class Water(NodePath, DirectObject):
         NodePath.__init__(self, "water")
         DirectObject.__init__(self)
         self.cm = CardMaker("water surface")
-        self.cm.setFrame(-0.5, 0.5, -0.5, 0.5)
+        self.cm.setFrame(-0.5*size, 0.5*size, -0.5*size, 0.5*size)
         self.cm.setHasUvs(True)
         self.attachNewNode(self.cm.generate())
         self.reparentTo(render)
-        self.setScale(size)
         self.setP(self, -90)
         self.flattenLight()
         self.hide(BitMask32.bit(1))
         #self.setTwoSided(True)
+
+        # size of one texture tile in meters
+        self.tex_size = 100.0
 
         diffuse = loader.loadTexture("textures/water.diffuse.png")
         diffuse.setWrapU(Texture.WMRepeat)
@@ -149,29 +168,15 @@ class Water(NodePath, DirectObject):
         diffuse_stage = TextureStage("diffuse")
         diffuse_stage.setSort(2)
         self.setTexture(diffuse_stage, diffuse)
-        self.setTexScale(diffuse_stage, size/100, size/100)
+        self.setTexScale(diffuse_stage, size/self.tex_size, size/self.tex_size)
         self.diffuse_stage = diffuse_stage
 
-        #normal = loader.loadTexture("textures/water.normal.png")
-        #normal.setWrapU(Texture.WMRepeat)
-        #normal.setWrapV(Texture.WMRepeat)
-        #normal.setMinfilter(Texture.FTLinear)
-        #normal.setMagfilter(Texture.FTLinear)
-        #normal_stage = TextureStage("normal")
-        #normal_stage.setMode(TextureStage.MNormal)
-        #normal_stage.setSort(3)
-        #self.setTexture(normal_stage, normal)
-        #self.setTexScale(normal_stage, 100, 100)
-        #self.normal_stage = normal_stage
 
-        # Required for normal maps.
-        #self.setShaderAuto()
-
+        # Reflection camera renders to 'buffer' which is projected onto the
+        # water surface.
         buffer = base.win.makeTextureBuffer("water reflection", 1024, 1024)
         buffer.setClearColor(Vec4(0, 0, 0, 1))
         
-        # Reflection camera renders to 'buffer' which is projected onto the
-        # water surface.
         self.refl_cam = base.makeCamera(buffer)
         self.refl_cam.reparentTo(render)
         self.refl_cam.node().setCameraMask(BitMask32.bit(1))
@@ -201,7 +206,6 @@ class Water(NodePath, DirectObject):
                 TextureStage.CSPrevious, TextureStage.COSrcColor,
                 TextureStage.CSConstant, TextureStage.COSrcAlpha)
 
-
         self.addTask(self.update, name="water update", sort=1)
 
     def update(self, task):
@@ -214,13 +218,15 @@ class Water(NodePath, DirectObject):
                   0, 0, 0, 1)
         self.refl_cam.setMat(mc * mf)
         
-        self.setX(camera.getX())
-        self.setY(camera.getY())
+        self.setX(camera.getX(render))
+        self.setY(camera.getY(render))
         self.setTexOffset(self.diffuse_stage,
-                self.getX()/self.getTexScale(self.diffuse_stage)[0],
-                self.getY()/self.getTexScale(self.diffuse_stage)[1])
-        #self.setTexOffset(self.normal_stage,
-        #        self.getX()/self.getTexScale(self.normal_stage)[0],
-        #        self.getY()/self.getTexScale(self.normal_stage)[1])
+                          self.getX()/self.tex_size,
+                          self.getY()/self.tex_size)
 
         return task.cont
+
+    def destroy(self):
+        self.removeAllTasks()
+        self.removeNode()
+        self.refl_cam.removeNode()
