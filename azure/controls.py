@@ -104,7 +104,7 @@ class PlaneFlight(ControlState):
             elif a == "thrust":
                 base.player.chThrust(action.split(".")[1])
             elif a == "camera":
-                base.player_camera.setCameraMode(action.split(".")[1])
+                base.player_camera.setView(action.split(".")[1])
                 actions_done.add(action)
         self.requested_actions -= actions_done
 

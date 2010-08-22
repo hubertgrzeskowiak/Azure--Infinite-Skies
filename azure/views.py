@@ -7,12 +7,13 @@ from direct.fsm.FSM import FSM
 from pandac.PandaModules import NodePathCollection, NodePath
 from direct.directnotify.DirectNotify import DirectNotify
 from direct.task import Task
+from direct.showbase.DirectObject import DirectObject
 
 from errors import *
 from aircrafts import Aeroplane
 
 
-class PlaneCamera(FSM):
+class PlaneCamera(FSM, DirectObject):
     """Give this class a plane as argument and it will create
     some nodes around it which you can parent the camera to (if there are no
     such nodes yet). Keep in mind, that it only uses base.camera the whole
@@ -20,8 +21,8 @@ class PlaneCamera(FSM):
 
     Usage:
     plane_camera = PlaneCamera(aeroplane)
-    plane_camera.setCameraMode("ThirdPerson")
-    plane_camera.setCameraMode("Next")
+    plane_camera.setView("ThirdPerson")
+    plane_camera.setView("Next")
     """
     def __init__(self, parent):
         """Arguments:
@@ -35,28 +36,29 @@ class PlaneCamera(FSM):
         self.parent = parent
         # Replaced by a NodePath with all available cameras as children and
         # plane node as parent.
-        self.__cameras = None
+        self.cameras = None
 
         #if parent.__class__.__name__ is not "Aeroplane":
         if not isinstance(self.parent, Aeroplane):
             raise ParamError, "Parent must be an Aeroplane instance, but is %s" % type(self.parent)
 
         FSM.__init__(self, "PlaneCamera: %s" % self.parent.name)
+        DirectObject.__init__(self)
 
         try:
             self.camera = base.camera
         except:
             raise BaseMissing
 
-        self.__cameras = self.parent.node.find("cameras")
-        if self.__cameras.isEmpty():
+        self.cameras = self.parent.node.find("cameras")
+        if self.cameras.isEmpty():
             self.createCamNodes()
         self.updateCamArray()
 
         self.sideview_direction = 0
 
         # Set up the default camera
-        self.setCameraMode("ThirdPerson")
+        self.setView("ThirdPerson")
 
     def createCamNodes(self):
         """Creates a few empty nodes around a plane which the camera might be
@@ -68,20 +70,20 @@ class PlaneCamera(FSM):
         """
 
         # Look for cameras inside the model (loaded egg file)
-        cameras = NodePath("cameras")
-        _c = self.parent.node.findAllMatches("**/camera ?*")
-        _c.removeDuplicatePaths()
-        _c.reparentTo(cameras)
+        self.cameras = NodePath("cameras")
+        found_cams = self.parent.node.findAllMatches("**/camera ?*")
+        found_cams.removeDuplicatePaths()
+        found_cams.reparentTo(self.cameras)
 
-        if not _c.isEmpty():
+        if not found_cams.isEmpty():
             self.notifier.info("Cameras found under model:\n%s"
-                               % _c)
+                               % found_cams)
         else:
             self.notifier.info("No cameras found under model.")
 
         # FirstPerson camera is a must-have. Set up a guessed one if none
         # defined yet.
-        if cameras.find("camera FirstPerson").isEmpty():
+        if self.cameras.find("camera FirstPerson").isEmpty():
             assert self.notifier.debug("No first person camera found in %s. "
                                   "Guessing best position." % self.parent.name)
             first_person = NodePath("camera FirstPerson")
@@ -91,7 +93,7 @@ class PlaneCamera(FSM):
 
         # ThirdPerson camera is a must-have. Set up a guessed one if none
         # defined yet.
-        if cameras.find("camera ThirdPerson").isEmpty():
+        if self.cameras.find("camera ThirdPerson").isEmpty():
             assert self.notifier.debug("No third person camera found in %s. "
                                   "Guessing best position." % self.parent.name)
             third_person = NodePath("camera ThirdPerson")
@@ -101,37 +103,36 @@ class PlaneCamera(FSM):
             third_person.reparentTo(cameras)
 
         # Cockpit needs to be accurate. Don't try to guess it.
-        if cameras.find("camera Cockpit").isEmpty():
+        if self.cameras.find("camera Cockpit").isEmpty():
             assert self.notifier.debug("No cockpit camera found in "
                                        "%s. Cockpit camera disabled."
                                        % self.parent.name)
         self.sideview_cam = NodePath("camera Sideview")
         self.sideview_cam.reparentTo(render)
 
-        self.__cameras = cameras
         # Store the cams at parent node..
         # You can edit the camera nodes from outside as well.
         # If you attach new camera nodes, though, you'll have to call this
         # function again.
-        cameras.reparentTo(self.parent.node)
+        self.cameras.reparentTo(self.parent.node)
 
     def updateCamArray(self, cameramodes=None):
         """Set the cameras which next and previous will switch to. Expects a
         list or tuple. Defaults to all available cameras."""
         a = []
         if not cameramodes:
-            for c in self.__cameras.getChildren():
+            for c in self.cameras.getChildren():
                 if c.getName().startswith("camera "):
                     a.append(c.getName().strip("camera "))
             self.setStateArray(a)
         else:
             self.setStateArray(cameramodes)
 
-    def getCameraMode(self):
+    def getView(self):
         """Returns the current view mode."""
         return self.getCurrentOrNextState()
 
-    def setCameraMode(self, mode, *args):
+    def setView(self, mode, *args):
         """Convenience function."""
         return self.request(mode, args)
 
@@ -143,7 +144,7 @@ class PlaneCamera(FSM):
                                    % (self.oldState, self.newState, args))
         request = self.newState
 
-        target_cam = self.__cameras.find("camera " + request)
+        target_cam = self.cameras.find("camera " + request)
         if not target_cam.isEmpty():
             try:
                 self.camera.reparentTo(target_cam)
@@ -159,18 +160,23 @@ class PlaneCamera(FSM):
         """Executed by the FSM every time an undefined state is requested."""
         assert self.notifier.debug("Requested %s with args: %s"
                                    % (request, args))
-        if request == "Off":
+
+        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
+
+        # Always available.
+        if request == "Off":   # implemented in FSM.py
             return (request,) + args
-        if request == "Next":
+        if request == "Next":  # implemented in FSM.py
             return self.requestNext(args)
-        if request == "Prev":
+        if request == "Prev":  # implemented in FSM.py
             return self.requestPrev(args)
         if request == "Detached":
             return (request,) + args
         if request == "Sideview":
             return (request,) + args
-
-        if not self.__cameras.find("camera " + request).isEmpty():
+        
+        # Depending on airplane.
+        if not self.cameras.find("camera " + request).isEmpty():
             # TODO(Nemesis13, 26.10.09): add some nice camera transition
             return (request,) + args
         assert self.notifier.info("Sorry, no %s camera found." % request)
@@ -178,105 +184,77 @@ class PlaneCamera(FSM):
 
 
     def enterOff(self, *args):
-        """Clean up everything by reparenting the camera to the plane."""
+        """Clean up everything by reparenting the camera to the airplane."""
         self.camera.reparentTo(self.parent.node)
         self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
-
-    def requestNext(self, *args):
-        """Request the 'next' state in the predefined state array."""
-        self.fsmLock.acquire()
-        try:
-            if self.stateArray is not []:
-                if not self.state in self.stateArray:
-                    self.request(self.stateArray[0])
-                else:
-                    cur_index = self.stateArray.index(self.state)
-                    new_index = (cur_index + 1) % len(self.stateArray)
-                    self.request(self.stateArray[new_index], args)
-            else:
-                assert self.notifier.debug(
-                                    "stateArray empty. Can't switch to next.")
-
-        finally:
-            self.fsmLock.release()
-
-    def requestPrev(self, *args):
-        """Request the 'previous' state in the predefined state array."""
-        self.fsmLock.acquire()
-        try:
-            if self.stateArray is not []:
-                if not self.state in self.stateArray:
-                    self.request(self.stateArray[0])
-                else:
-                    cur_index = self.stateArray.index(self.state)
-                    new_index = (cur_index - 1) % len(self.stateArray)
-                    self.request(self.stateArray[new_index], args)
-            else:
-                assert self.notifier.debug(
-                                    "stateArray empty. Can't switch to next.")
-        finally:
-            self.fsmLock.release()
-
-    # Extra States:
 
     def enterSideview(self, *args):
         self.sideview_direction += 90
         self.camera.reparentTo(self.sideview_cam)
         self.camera.setY(-30)
         self.sideview_cam.setH(self.sideview_direction)
-        taskMgr.add(self.__sideView, "sideview camera")
+        self.addTask(self.updateSideview, "sideview camera")
 
     def exitSideview(self, *args):
-        taskMgr.remove("sideview camera")
+        self.removeTask("sideview camera")
 
-    def __sideView(self, task):
+    def updateSideview(self, task):
         self.sideview_cam.setPos(self.parent.node.getPos())
         return Task.cont
 
     def enterDetached(self, *args):
         """Lets the camera view the plane from far away."""
         self.camera.reparentTo(render)
-        self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
-        taskMgr.add(self.__detachedCam, "detached camera")
+        self.camera.setPosHpr(0, 0, 10, 0, 0, 0)
+        self.addTask(self.updateDetachedCam, "detached camera")
 
     def exitDetached(self, *args):
-        taskMgr.remove("detached camera")
-        self.camera.setHpr(0, 0, 0)
+        self.removeTask("detached camera")
 
-    def __detachedCam(self, task):
+    def updateDetachedCam(self, task):
         """Updates camera position and rotation for Detached camera."""
         try:
             self.camera.lookAt(self.parent.node)
         except:
-            assert self.notifier.warning("Error on detached cam task. Exit.")
+            self.notifier.warning("Error on detached cam task. Exit.")
             return Task.done
         return Task.cont
 
     def enterThirdPerson(self, *args):
         """Lets the camera view the plane from far away."""
-        target_cam = self.__cameras.find("camera ThirdPerson")
-        if target_cam:
-            try:
-                self.camera.reparentTo(target_cam)
-                self.camera.setPosHpr(0, 0, 0, 0, 0, 0)
-            except:
-                self.notifier.warning(
-                        "Ok, now this really shouldn't happen! Filter said the"
-                        "camera is there and enter can't find it...")
-
-        #taskMgr.add(self.__thirdPersonCam, "third person camera")
+        self._hist = []
+        self.camera.reparentTo(self.cameras.find("camera ThirdPerson"))
+        self.addTask(self.updateThirdPersonCam, "third person camera")
+        print "entering third person"
 
     def exitThirdPerson(self, *args):
-        taskMgr.remove("third person camera")
+        self.removeTask("third person camera")
+        del self._hist
+        print "third person exited"
 
-    def __thirdPersonCam(self, task):
+    def updateThirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
-        #speed = self.parent.speed()
-        #camnode = self.__cameras.find("camera ThirdPerson")
-        #par = self.parent.node
-        #camnode.reparentTo(par)
+        speed = self.parent.speed()
+        plane = self.parent.node
+        self._hist.insert(0, [task.time, camera.getPos(plane)])
+        while len(self._hist) > 50:
+            self._hist.pop()
+        
+        for snapshot in self._hist:
+            if snapshot[0] > task.time:
+                break
+        time_delta = snapshot[0] - task.time
+        self.camera.setPos(plane, snapshot[1])
 
-        #camnode.lookAt(par, (0, (20 + speed/2), 0))
-        #camnode.setY(-30 - speed/10)
+        #print snapshot
+        #self.camera.setPos(render, snapshot[1])
+        self.camera.lookAt(plane, (0, 20+1*speed, 0))
+
+        #self.camera.setY(5+0.1*speed)
+        #self.camera.setZ(5-0.1*speed)
 
         return Task.cont
+
+    def destroy(self):
+        self.removeAllTasks()
+        self.demand("Off")
