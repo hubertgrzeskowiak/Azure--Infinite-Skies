@@ -53,8 +53,13 @@ class ControlState(DirectObject):
         if self.keymap != ():
             self.loadKeybindings()
             for action, key in self.keymap.items():
-                self.accept(key, self.requested_actions.add, [action])
-                self.accept(key+"-up", self.requested_actions.discard, [action])
+                if isinstance(key, basestring):
+                    self.accept(key, self.requested_actions.add, [action])
+                    self.accept(key+"-up", self.requested_actions.discard, [action])
+                else:
+                    for k in key:
+                        self.accept(k, self.requested_actions.add, [action])
+                        self.accept(k+"-up", self.requested_actions.discard, [action])
         for task in self.tasks:
             self.addTask(task, task.__name__)
         self.active = True
@@ -65,8 +70,9 @@ class ControlState(DirectObject):
         notify.info("Deactivating %s" % self.name)
         self.ignoreAll()
         self.requested_actions.clear()
-        for task in self.tasks:
-            self.removeTask(task)
+        #for task in self.tasks:
+        #    self.removeTask(task)
+        self.removeAllTasks()
         self.active = False
 
 #-----------------------------------------------------------------------------
@@ -106,7 +112,8 @@ class PlaneFlight(ControlState):
             elif a == "camera":
                 base.player_camera.setView(action.split(".")[1])
                 actions_done.add(action)
-        self.requested_actions -= actions_done
+                # One-timer. Prevent this from being caught
+                self.requested_actions -= actions_done
 
         if base.player.hud:
             base.player.hud.update()

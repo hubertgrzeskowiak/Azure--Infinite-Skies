@@ -156,6 +156,7 @@ class Water(NodePath, DirectObject):
         self.flattenLight()
         self.hide(BitMask32.bit(1))
         #self.setTwoSided(True)
+        self.setShaderOff()
 
         # size of one texture tile in meters
         self.tex_size = 100.0
