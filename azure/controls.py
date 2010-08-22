@@ -19,6 +19,7 @@ class ControlState(DirectObject):
     Every derived class is expected to have a list of keybindings and tasks."""
     conf_parser = SafeConfigParser()
     conf_parser.read(os.path.abspath(os.path.join(sys.path[0], "etc/keybindings.ini")))
+    active_states = []
 
     @classmethod
     def reloadKeybindings(cls, filenames="etc/keybindings.ini"):
@@ -63,6 +64,7 @@ class ControlState(DirectObject):
         for task in self.tasks:
             self.addTask(task, task.__name__)
         self.active = True
+        ControlState.active_states.add(self)
 
     def deactivate(self):
         if self.active is False:
@@ -74,6 +76,7 @@ class ControlState(DirectObject):
         #    self.removeTask(task)
         self.removeAllTasks()
         self.active = False
+        ControlState.active_states.discard(self)
 
 #-----------------------------------------------------------------------------
 
@@ -130,13 +133,13 @@ class Pause(ControlState):
 class Debug(ControlState):
     def __init__(self):
         ControlState.__init__(self)
-        self.keymap = {"print_scene": "f12",
+        self.keymap = {"printScene": "f12",
                        "screenshot": "f11"}
 
         self.tasks = (self.debugTask,)
 
     def debugTask(self, task):
-        if "print_scene" in self.requested_actions:
+        if "printScene" in self.requested_actions:
             print "-" * 40
             print "render scene graph:"
             print render.ls()
