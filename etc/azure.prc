@@ -14,6 +14,7 @@ win-size 800 600
 #win-size 1280 1024
 fullscreen false
 #fullscreen true
+#win-fixed-size 1
 
 
 # paths
