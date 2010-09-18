@@ -160,8 +160,8 @@ class Aeroplane(object):
         taskMgr.add(self._propellers, "propellers animations", sort=2)
 
 
-    def loadPlaneModel(self, modelname, replace=False):
-        """Loads models and animations."""
+    def loadPlaneModel(self, modelname):
+        """Loads models and animations from the planes directory."""
 
         animcontrols = {}
         model = loader.loadModel("planes/{0}/{0}".format(modelname))
@@ -182,9 +182,9 @@ class Aeroplane(object):
             subpart, joints, anims = line
             actor.makeSubpart(subpart, joints)
 
-            d = {}
-            for anim in anims:
-                d[anim] = "planes/{0}/{0}-{1}".format(modelname, anim)
+            path = "planes/{0}/{0}-{{0}}".format(modelname)
+            d = dict((anim, path.format(anim)) for anim in anims)
+
             #actor.loadAnims(d, subpart, "mid")
             actor.loadAnims(d, subpart)
             for anim in anims:
@@ -314,21 +314,21 @@ class Aeroplane(object):
         """Plane movement management."""
         if movement == "roll-left":
             self.ailerons = -1.0
-        if movement == "roll-right":
+        elif movement == "roll-right":
             self.ailerons = 1.0
-        if movement == "pitch-up":
+        elif movement == "pitch-up":
             self.elevator = 1.0
-        if movement == "pitch-down":
+        elif movement == "pitch-down":
             self.elevator = -1.0
-        if movement == "heading-left":
+        elif movement == "heading-left":
             self.rudder = 1.0
-        if movement == "heading-right":
+        elif movement == "heading-right":
             self.rudder = -1.0
 
     def chThrust(self, value):
         if value == "add" and self.thrust < 1.0:
             self.thrust += 0.01
-        if value == "subtract" and self.thrust > 0.0:
+        elif value == "subtract" and self.thrust > 0.0:
             self.thrust -= 0.01
 
     def setCalculationConstants(self):
