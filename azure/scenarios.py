@@ -90,7 +90,6 @@ class TestEnvironment(Scenario):
         # load our plane(s)
         base.player = Aeroplane("griffin", world=world)
         base.player_camera = views.PlaneCamera(base.player)
-        self.controls.append(controls.PlaneFlight())
 
         # load some others
         #pirate1 = Aeroplane("griffin")
@@ -101,12 +100,11 @@ class TestEnvironment(Scenario):
         base.player.hud = gui.HUD(base.player, base.camera)
 
         self.controls.append(controls.Debug())
+        self.controls.append(controls.PlaneFlight())
+        self.controls.append(controls.Pause())
 
     def start(self):
         """Here the curtain is taken off and the interaction begins."""
         base.player.hud.update()
         for control in self.controls:
-            try:
-                control.activate()
-            except:
-                pass
+            control.activate()
