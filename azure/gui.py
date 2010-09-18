@@ -13,7 +13,7 @@ from direct.directtools.DirectGeometry import LineNodePath
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenImage import OnscreenImage
 
-from views import PlaneCamera
+#from views import PlaneCamera
 #from core import Core
 
 PITCH_STEP = 10
@@ -32,7 +32,7 @@ class HUD(object):
     """ Head Up Display """
     def __init__(self,model,cam,colour=(1,1,1,1)):
         """ HUD initialisation """
-        self.plane_camera = PlaneCamera(base.player)
+        #self.plane_camera = PlaneCamera(base.player)
         # this font is loaded to make sure we have unicode characaters
         # specifically we want to be able to display the greek alpha character
         self.unicodefont = loader.loadFont("fonts/DejaVuSansMono.ttf")
