@@ -40,7 +40,8 @@ class PlaneCamera(FSM, DirectObject):
 
         #if parent.__class__.__name__ is not "Aeroplane":
         if not isinstance(self.parent, Aeroplane):
-            raise ParamError, "Parent must be an Aeroplane instance, but is %s" % type(self.parent)
+            raise ParamError, "Parent must be an Aeroplane instance, " + \
+                              "but is %s" % type(self.parent)
 
         FSM.__init__(self, "PlaneCamera: %s" % self.parent.name)
         DirectObject.__init__(self)
