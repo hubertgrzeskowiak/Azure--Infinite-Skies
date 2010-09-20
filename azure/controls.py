@@ -108,8 +108,8 @@ class ControlState(DirectObject):
 class Pause(ControlState):
     def __init__(self):
         ControlState.__init__(self)
-        self.keymap = {"pause": "p"}
-        self.functionmap = {"pause": self.togglePause}
+        self.keymap = {"toggle": "p"}
+        self.functionmap = {"toggle": self.togglePause}
         self.paused_states = []
         self.no_pause = True
 
@@ -207,26 +207,20 @@ class Debug(ControlState):
     def __init__(self):
         ControlState.__init__(self)
         self.keymap = {"print_scene": "f11",
-                       "print_tasks": "f10",
                        "screenshot": ["f12", "print_screen"]
                       }
-
+        self.functionmap = {"screenshot": base.screenshot}
         self.tasks = (self.debugTask,)
 
     def debugTask(self, task):
         if "print_scene" in self.requested_actions:
-            print "-" * 40
+            print
             print "render scene graph:"
             print render.ls()
             print "-" * 40
             print "render2d scene graph:"
             print render2d.ls()
-            print "-" * 40
-
-        if "screenshot" in self.requested_actions:
-            print "%s saved" % base.screenshot()
-        if "print_tasks" in self.requested_actions:
-            print base.player_camera
+            print
         self.requested_actions.clear()
         return Task.cont
 
