@@ -206,8 +206,10 @@ class PlaneFlight(ControlState):
 class Debug(ControlState):
     def __init__(self):
         ControlState.__init__(self)
-        self.keymap = {"print_scene": "f11",
-                       "screenshot": ["f12", "print_screen"]
+        self.keymap = {"print_tasks": "f10",
+                       "print_scene": "f11",
+                       "screenshot": ["f12", "print_screen"],
+         #              "toggle_hud": "f9"
                       }
         self.functionmap = {"screenshot": base.screenshot}
         self.tasks = (self.debugTask,)
@@ -221,6 +223,15 @@ class Debug(ControlState):
             print "render2d scene graph:"
             print render2d.ls()
             print
+        if "print_tasks" in self.requested_actions:
+            print base.taskMgr
+        #if "toggle_hud" in self.requested_actions:
+        #    if base.player.hud:
+        #        base.player.hud.destroy()
+        #        base.player.hud = None
+        #    else:
+        #        base.player.hud = gui.HUD(base.player, base.camera)
+
         self.requested_actions.clear()
         return Task.cont
 
