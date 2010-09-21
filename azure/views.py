@@ -235,21 +235,21 @@ class PlaneCamera(FSM, DirectObject):
 
     def updateThirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
-        speed = self.parent.speed()
-        plane = self.parent.node
-        self._hist.insert(0, [task.time, camera.getPos(plane)])
-        while len(self._hist) > 50:
-            self._hist.pop()
-        
-        for snapshot in self._hist:
-            if snapshot[0] > task.time:
-                break
-        time_delta = snapshot[0] - task.time
-        self.camera.setPos(plane, snapshot[1])
+        #speed = self.parent.speed()
+        #plane = self.parent.node
+        #self._hist.insert(0, [task.time, camera.getPos(plane)])
+        #while len(self._hist) > 50:
+        #    self._hist.pop()
+        #
+        #for snapshot in self._hist:
+        #    if snapshot[0] > task.time:
+        #        break
+        #time_delta = snapshot[0] - task.time
+        #self.camera.setPos(plane, snapshot[1])
 
         #print snapshot
         #self.camera.setPos(render, snapshot[1])
-        self.camera.lookAt(plane, (0, 20+1*speed, 0))
+        #self.camera.lookAt(plane, (0, 20+1*speed, 0))
 
         #self.camera.setY(5+0.1*speed)
         #self.camera.setZ(5-0.1*speed)
