@@ -3,7 +3,7 @@
 from pandac.PandaModules import AmbientLight, DirectionalLight
 from pandac.PandaModules import VBase3, Vec4
 from direct.directtools.DirectGrid import DirectGrid
-from pandac.PandaModules import OdeWorld
+from pandac.PandaModules import OdeWorld, Vec3
 
 from aircrafts import Aeroplane
 from scenery import Scenery, Sky, Water
@@ -89,11 +89,14 @@ class TestEnvironment(Scenario):
 
         # load our plane(s)
         base.player = Aeroplane("griffin", world=world)
+        base.player.node.setZ(10)
+        base.player.setVelocity(Vec3(0,300,0))
+        base.player.thrust = 1
         base.player_camera = views.PlaneCamera(base.player)
 
         # load some others
-        #pirate1 = Aeroplane("griffin")
-        #pirate1.node.setPosHpr(-15, -20, 12, -10, -10, 20)
+        #pirate1 = Aeroplane("griffin", world=world)
+        #pirate1.node.setPos(10, 10, 10)
         #pirate2 = Aeroplane("griffin")
         #pirate2.node.setPosHpr(18, -30, 0, 5, -5, -5)
 
