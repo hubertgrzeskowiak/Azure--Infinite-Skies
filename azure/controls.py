@@ -90,7 +90,12 @@ class ControlState(DirectObject):
         self.loadKeybindings()
 
         for task in self.tasks:
-            self.addTask(task, task.__name__)
+            if isinstance(task, list):
+                self.addTask(*task, taskChain="world")
+            elif isinstance(task, dict):
+                self.addTask(*task, taskChain="world")
+            else:
+                self.addTask(task, task.__name__, taskChain="world")
         self.active = True
         ControlState.active_states.append(self)
 
@@ -216,7 +221,7 @@ class Debug(ControlState):
          #              "toggle_hud": "f9"
                       }
         self.functionmap = {"screenshot": base.screenshot}
-        self.tasks = (self.debugTask,)
+        self.tasks = ([self.debugTask, "debugging task"],)
         self.no_pause = True
 
     def debugTask(self, task):
