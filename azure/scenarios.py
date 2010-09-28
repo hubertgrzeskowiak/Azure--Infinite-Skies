@@ -13,7 +13,9 @@ import controls
 
 
 class Scenario(object):
-    """Kind of metaclass for all scenario classes."""
+    """Kind of metaclass for all scenario classes.
+    A scenario defines a plan for a certain time of gameplay. Think of it like
+    chapters in a book."""
     @classmethod
     def list(cls):
         return cls.__subclasses__()
@@ -22,11 +24,17 @@ class Scenario(object):
     def names(cls):
         return [c.__name__ for c in cls.__subclasses__()]
 
+    def __init__(self):
+        """Everything here happens under a curtain."""
+
 #    def request(self, scenario_name):
 #        base.core.request(scenario_name)
 
 class Mission(object):
-    """General Mission class. Inherit from it in the more special missions."""
+    """General Mission class. Inherit from it in the more special missions.
+    A mission means you have one or multiple goals and possibly a reward.
+    Missions are started in scenarios and ended either by themselves or by the
+    scenario."""
     @classmethod
     def list(cls):
         return cls.__subclasses__()
@@ -56,7 +64,7 @@ class Race(Mission):
 
 
 class TestEnvironment(Scenario):
-    """Draw some test grid and stuff."""
+    """Development Environment."""
     def __init__(self):
         """Everything here happens under a curtain."""
 
@@ -111,3 +119,10 @@ class TestEnvironment(Scenario):
         base.player.hud.update()
         for control in self.controls:
             control.activate()
+
+
+class Tutorial(Scenario):
+    """Introduce the player to the controls."""
+    def __init__(self):
+        pass
+

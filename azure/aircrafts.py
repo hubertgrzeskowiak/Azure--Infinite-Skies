@@ -175,13 +175,14 @@ class Aeroplane(object):
         #actor = Actor(model, lodNode="mid")
 
         subparts = (
-            # subpart,       joints,                   animations
-            ("Doors",        ["Windscreen*", "Door*"], ("Open", "Close")),
-            #("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out", "LG In")),
-            ("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out",)),
-            ("Ailerons",     ["Aileron*"],             ("Roll Left", "Roll Right")),
-            ("Rudders",      ["Rudder*"],              ("Head Left", "Head Right")),
-            ("Elevators",    ["Elevator*"],            ("Pitch Up", "Pitch Down")))
+        # subpart,       joints,                   animations
+        ("Doors",        ["Windscreen*", "Door*"], ("Open", "Close")),
+        #("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out", "LG In")),
+        ("Landing Gear", ["Landing?Gear*", "LG*"], ("LG Out",)),
+        ("Ailerons",     ["Aileron*"],            ("Roll Left", "Roll Right")),
+        ("Rudders",      ["Rudder*"],             ("Head Left", "Head Right")),
+        ("Elevators",    ["Elevator*"],           ("Pitch Up", "Pitch Down"))
+        )
 
         for line in subparts:
             subpart, joints, anims = line

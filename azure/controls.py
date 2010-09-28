@@ -43,6 +43,10 @@ class ControlState(DirectObject):
         # format for functionmap: functionmap["action"] = function
         self.functionmap = {}
         self.requested_actions = set()
+        # the tasks list can contain task functions, lists of format
+        # [task, name, sort] or dicts of format
+        # {"taskOrFunc":function, "name":"task name", "sort":10}
+        # in the latter two versions everything except task is optional
         self.tasks = ()
         self.no_pause = False
         self.active = False
@@ -62,7 +66,7 @@ class ControlState(DirectObject):
                         for k in map(str.strip, key.split(',')):
                             self.keymap[a] = k
         except NoSectionError:
-            notify.warning("Keybindings for section %s not found. Using built-in bindings" % self.name)
+            notify.warning("".join("Keybindings for section {0} not found. ", "Using built-in bindings").format(self.name))
 
     def activate(self):
         if self.active is True:
@@ -171,9 +175,9 @@ class PlaneFlight(ControlState):
                             lambda: base.player_camera.setView("Sideview")
                            }
 
-        self.tasks = (self.fly, self.updateHUD)
+        self.tasks = (self.flightControl, self.updateHUD)
 
-    def fly(self, task):
+    def flightControl(self, task):
         """Move the plane acording to pressed keys."""
         for action in self.requested_actions:
             a = action.split(".")[0]

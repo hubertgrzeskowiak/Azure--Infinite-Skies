@@ -439,6 +439,7 @@ class HUD(object):
         lineNP = aspect2d.attachNewNode(lineGN)
         return lineNP
 
+
 class MainMenu(object):
     def __init__(self):
         mainmenu = [("Adventure", lambda: base.core.request("World")),
@@ -449,7 +450,7 @@ class MainMenu(object):
         self.font.setPixelsPerUnit(100)
         self.parent_node = aspect2d.attachNewNode("main menu")
         self.bg = OnscreenImage(image="backdrops/menubg.jpg",
-                                scale=(1.333333,1,1), parent=self.parent_node)
+                                scale=(4.0/3,1,1), parent=self.parent_node)
         self.t = OnscreenText("Azure", pos=(-0.6, 0.7), font=self.font,
                               fg=(1,1,1,1), scale=0.3)
         margin = 0.0
