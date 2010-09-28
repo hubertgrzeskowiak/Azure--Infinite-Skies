@@ -145,15 +145,24 @@ class Aeroplane(object):
             
             self.accumulator = 0.0
             self.step_size = 0.02
-            taskMgr.add(self.simulationTask, "plane physics", sort=-1)
+            taskMgr.add(self.simulationTask,
+                        "plane physics for {0}".format(self.name),
+                        sort=-1,
+                        taskChain="world")
             self.old_quat = self.quat()
         else:
             self.p_world = None
             self.p_body = None
             self.p_mass = None
 
-        taskMgr.add(self._animations, "plane animations", sort=1)
-        taskMgr.add(self._propellers, "propellers animations", sort=2)
+        taskMgr.add(self._animations,
+                    "plane animations for {0}".format(self.name),
+                    sort=1,
+                    taskChain="world")
+        taskMgr.add(self._propellers,
+                    "propellers animations for {0}".format(self.name),
+                    sort=2,
+                    taskChain="world")
 
 
     def loadPlaneModel(self, modelname):

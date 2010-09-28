@@ -118,17 +118,17 @@ class Pause(ControlState):
             if not state.no_pause:
                 state.deactivate()
                 self.paused_states.append(state)
+        taskMgr.setupTaskChain("world", frameBudget=0)
 
     def pauseOff(self):
         for state in self.paused_states:
             state.activate()
         self.paused_states = []
+        taskMgr.setupTaskChain("world", frameBudget=-1)
+        self.menu.destroy()
 
     def togglePause(self):
-        if self.paused_states:
-            self.pauseOff()
-        else:
-            self.pauseOn()
+        self.pauseOff() if self.paused_states else self.pauseOn()
 
     def status(self):
         """Returns True if paused."""
@@ -213,6 +213,7 @@ class Debug(ControlState):
                       }
         self.functionmap = {"screenshot": base.screenshot}
         self.tasks = (self.debugTask,)
+        self.no_pause = True
 
     def debugTask(self, task):
         if "print_scene" in self.requested_actions:

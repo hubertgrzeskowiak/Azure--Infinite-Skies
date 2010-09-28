@@ -194,7 +194,7 @@ class PlaneCamera(FSM, DirectObject):
         self.camera.reparentTo(self.sideview_cam)
         self.camera.setY(-30)
         self.sideview_cam.setH(self.sideview_direction)
-        self.addTask(self.updateSideview, "sideview camera")
+        self.addTask(self.updateSideview, "sideview camera", taskChain="world")
 
     def exitSideview(self, *args):
         self.removeTask("sideview camera")
@@ -207,7 +207,8 @@ class PlaneCamera(FSM, DirectObject):
         """Lets the camera view the plane from far away."""
         self.camera.reparentTo(render)
         self.camera.setPosHpr(0, 0, 10, 0, 0, 0)
-        self.addTask(self.updateDetachedCam, "detached camera")
+        self.addTask(self.updateDetachedCam, "detached camera",
+                     taskChain="world")
 
     def exitDetached(self, *args):
         self.removeTask("detached camera")
@@ -225,7 +226,8 @@ class PlaneCamera(FSM, DirectObject):
         """Lets the camera view the plane from far away."""
         self._hist = []
         self.camera.reparentTo(self.cameras.find("camera ThirdPerson"))
-        self.addTask(self.updateThirdPersonCam, "third person camera")
+        self.addTask(self.updateThirdPersonCam, "third person camera",
+                     taskChain="world")
         print "entering third person"
 
     def exitThirdPerson(self, *args):

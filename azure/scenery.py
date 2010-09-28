@@ -125,7 +125,8 @@ class Sky(NodePath, DirectObject):
         self.flattenLight()
         #self.setCompass()  # not needed with world-space-UVs
         self.reparentTo(render)
-        self.addTask(self.update, "sky repositioning", sort=10)
+        self.addTask(self.update, "sky repositioning", sort=10,
+                     taskChain="world")
 
     def update(self, task):
         self.setPos(camera.getPos(render))
@@ -207,7 +208,10 @@ class Water(NodePath, DirectObject):
                 TextureStage.CSPrevious, TextureStage.COSrcColor,
                 TextureStage.CSConstant, TextureStage.COSrcAlpha)
 
-        self.addTask(self.update, name="water update", sort=1)
+        self.addTask(self.update,
+                     name="water update",
+                     sort=1,
+                     taskChain="world")
 
     def update(self, task):
         """Updates position of the reflection camera and the water plane."""
