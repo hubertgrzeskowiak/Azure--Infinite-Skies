@@ -7,17 +7,13 @@ from math import cos, sin, radians, atan2, sqrt, pi, copysign, acos, asin, isnan
 import ConfigParser
 
 from pandac.PandaModules import ClockObject
-from pandac.PandaModules import PandaNode, NodePath, ActorNode
-from pandac.PandaModules import ForceNode, AngularVectorForce, LinearVectorForce
-from pandac.PandaModules import AngularEulerIntegrator
 from pandac.PandaModules import OdeBody, OdeMass, Quat
-from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, LRotationf
+from direct.showbase.ShowBase import Plane, Vec3
 from direct.actor.Actor import Actor
 from direct.task import Task
 
 from errors import *
 from utils import ListInterpolator
-#import sound
 
 _c = ClockObject.getGlobalClock()
 specs = ConfigParser.SafeConfigParser()
