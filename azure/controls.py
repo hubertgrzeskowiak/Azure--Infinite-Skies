@@ -128,6 +128,8 @@ class Pause(ControlState):
                 state.deactivate()
                 self.paused_states.append(state)
         taskMgr.setupTaskChain("world", frameBudget=0)
+        from gui import PauseMenu
+        self.menu = PauseMenu()
 
     def pauseOff(self):
         for state in self.paused_states:

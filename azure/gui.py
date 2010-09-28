@@ -483,3 +483,12 @@ class MainMenu(object):
         self.t.destroy()
         for b in self.buttons:
             b.destroy()
+
+class PauseMenu(object):
+    def __init__(self):
+
+        self.dialog = OkDialog(fadeScreen=0.5, text="Game Paused")
+        self.dialog.show()
+
+    def destroy(self):
+        self.dialog.destroy()
