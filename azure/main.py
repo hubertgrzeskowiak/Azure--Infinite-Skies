@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Azure: Infinite Skies
 
 Copyright (c) 2009 Azure Developers
