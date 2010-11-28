@@ -48,7 +48,6 @@ class Azure(object):
         #base.bufferViewer.toggleEnable()
         run()
 
-
 # Related to relative paths.
 if __name__ == "__main__":
     print "Don't run this module directly! Use the run script instead!"

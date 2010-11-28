@@ -70,11 +70,6 @@ class TestEnvironment(Scenario):
 
         self.controls = []
 
-        # initialise ODE
-        world = OdeWorld()
-        #world.setGravity(0.0, 0.0, -9.81)
-        world.setGravity(0.0, 0.0, 0.0)
-        
         #self.grid = DirectGrid(2000, 20, parent=render)
         #self.grid.setZ(-0.001)
         water = Water()
@@ -96,14 +91,14 @@ class TestEnvironment(Scenario):
         #base.enableParticles()
 
         # load our plane(s)
-        base.player = Aeroplane("griffin", world=world)
+        base.player = Aeroplane("griffin", "griffin", True)
         base.player.node.setZ(10)
-        base.player.setVelocity(Vec3(0,300,0))
-        base.player.thrust = 1
+        base.player.physics.setVelocity(Vec3(0,300,0))
+        base.player.physics.thrust = 1
         base.player_camera = views.PlaneCamera(base.player)
 
         # load some others
-        #pirate1 = Aeroplane("griffin", world=world)
+        #pirate1 = Aeroplane("griffin")
         #pirate1.node.setPos(10, 10, 10)
         #pirate2 = Aeroplane("griffin")
         #pirate2.node.setPosHpr(18, -30, 0, 5, -5, -5)

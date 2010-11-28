@@ -174,11 +174,11 @@ class HUD(object):
 
     def update(self):
         """ update the HUD display """
-        velocity = self.model.velocity()
+        velocity = self.model.physics.velocity()
         normalized_velocity = velocity * 1.0
         normalized_velocity.normalize()
         
-        quat = self.model.quat()
+        quat = self.model.physics.quat()
         forward = quat.getForward()
         
         self.staticElementUpdate(forward)
@@ -241,13 +241,13 @@ class HUD(object):
 
         #format for climb rate always includes the sign
         climb = '%+7.1f' %velocity.getZ()
-        alt = '%6d' %int(self.model.altitude())
+        alt = '%6d' %int(self.model.physics.altitude())
 
         # velocity is converted to km/h (1 m/s = 3.6 km/h)
-        vel = '%4d' %int(self.model.speed()*3.6)
+        vel = '%4d' %int(self.model.physics.speed()*3.6)
         # alpha (angle of attack) includes a unicode greek alpha character
-        alpha = u'\u03b1: %5.1f' %round(degrees(self.model.angleOfAttack()),1)
-        tgf = 'G: % 5.1f' %round(self.model.gForceTotal(),1)
+        alpha = u'\u03b1: %5.1f' %round(degrees(self.model.physics.angleOfAttack()),1)
+        tgf = 'G: % 5.1f' %round(self.model.physics.gForceTotal(),1)
 
         self.heading_text.setText(head)
         self.climb_text.setText(climb)

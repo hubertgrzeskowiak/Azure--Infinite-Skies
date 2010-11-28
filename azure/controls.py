@@ -189,9 +189,9 @@ class PlaneFlight(ControlState):
         for action in self.requested_actions:
             a = action.split(".")[0]
             if a == "move":
-                base.player.move(action.split(".")[1])
+                base.player.physics.move(action.split(".")[1])
             elif a == "thrust":
-                base.player.chThrust(action.split(".")[1])
+                base.player.physics.chThrust(action.split(".")[1])
         return Task.cont
 
     def updateHUD(self, task):
