@@ -97,7 +97,7 @@ notify-level                                warning
 #notify-level-TaskManager                    debug
 #notify-level-JobManager                     debug
 #notify-level-azure-camera                   debug
-notify-level-azure-control                  debug
+#notify-level-azure-control                  debug
 #notify-level-ode                            spam
 #notify-level-odebody                        spam
 #notify-level-odegeom                        spam

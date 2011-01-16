@@ -228,12 +228,12 @@ class PlaneCamera(FSM, DirectObject):
         self.camera.reparentTo(self.cameras.find("camera ThirdPerson"))
         self.addTask(self.updateThirdPersonCam, "third person camera",
                      taskChain="world")
-        print "entering third person"
+        #print "entering third person"
 
     def exitThirdPerson(self, *args):
         self.removeTask("third person camera")
         del self._hist
-        print "third person exited"
+        #print "third person exited"
 
     def updateThirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
