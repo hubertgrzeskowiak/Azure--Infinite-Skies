@@ -1,9 +1,9 @@
 """Module for everything about controls."""
 
-import sys
-import os
 from ConfigParser import SafeConfigParser, NoSectionError
 
+from panda3d.core import ExecutionEnvironment as EE
+from panda3d.core import Filename
 from direct.showbase.DirectObject import DirectObject
 from direct.task import Task
 from direct.directnotify.DirectNotify import DirectNotify
@@ -24,8 +24,9 @@ class ControlState(DirectObject):
     behaviors inside simple classes. 
     """
     conf_parser = SafeConfigParser()
-    conf_parser.read(os.path.abspath(os.path.join(sys.path[0],
-                                     "etc/keybindings.ini")))
+    f = Filename(EE.expandString("$MAIN_DIR/etc/keybindings.ini"))
+    conf_parser.read(f.toOsSpecific())
+
     active_states = []
 
 
