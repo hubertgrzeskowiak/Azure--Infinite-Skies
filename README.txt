@@ -1,6 +1,6 @@
 Azure: Infinite Skies
 
-Copyright (C) 2009 2010 Azure Developers
+Copyright (C) 2009-2011 Azure Developers
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------
 
 DEPENDENCIES:
-this game depends on python 2.6 [1] and panda3d 1.7 [2]
+this game depends on python 2.x [1] and panda3d 1.7 [2]
 
 
 HOW TO RUN:
