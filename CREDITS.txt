@@ -1,12 +1,20 @@
-Developers
----------------
-G-ray aka Gary Martin <garym at tuxfamily.org>
-Neovertex aka Alex <neovertex at users.sourceforge.net>
-Nemesis#13 aka Hubert Grzeskowiak <dev at nemesis13.de>
+Idea:
+-----
+Alexander Tiegel
+Hubert Grzeskowiak
 
-special thanks
---------------
-Reiner De Bois (rdb) for great support and his work on Panda3D
+Development:
+------------
+Hubert Grzeskowiak
+
+Art:
+----
+Hubert Grzeskowiak
+
+Special Thanks:
+---------------
+Gary Martin for great chats and the airplane physics integration
+Reinier De Bois aka rdb for great support and his work on Panda3D
 s4msung - for Trac hosting and chat
 sourceforge.net and tuxfamily.org - for hosting
 cgtextures.com - for super, free textures
