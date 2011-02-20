@@ -129,7 +129,8 @@ class Aeroplane(DirectObject):
             return 1
         self.physics = AeroplanePhysics(self.node)
         self.addTask(self._propellers,
-                     "propeller animations for plane %s" % self.id)
+                     "propeller animations for plane %s" % self.id,
+                     taskChain="world")
         self.addTask(self._flapAnimations,
                      "flaps animations for plane %s" % self.id)
 
