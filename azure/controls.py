@@ -49,7 +49,7 @@ class ControlState(DirectObject):
         # {"taskOrFunc":function, "name":"task name", "sort":10}
         # in the latter two versions everything except task is optional
         self.tasks = ()
-        self.no_pause = False
+        self.paused = True
         self.active = False
 
     def __repr__(self):
@@ -108,7 +108,7 @@ class ControlState(DirectObject):
         self.requested_actions.clear()
         #for task in self.tasks:
         #    self.removeTask(task)
-        self.removeAllTasks()
+        #self.removeAllTasks()
         self.active = False
         ControlState.active_states.remove(self)
 
@@ -121,11 +121,11 @@ class Pause(ControlState):
         self.keymap = {"toggle": "p"}
         self.functionmap = {"toggle": self.togglePause}
         self.paused_states = []
-        self.no_pause = True
+        self.paused = False
 
     def pauseOn(self):
         for state in list(ControlState.active_states):
-            if not state.no_pause:
+            if state.paused:
                 state.deactivate()
                 self.paused_states.append(state)
         taskMgr.setupTaskChain("world", frameBudget=0)
@@ -225,7 +225,7 @@ class Debug(ControlState):
                       }
         self.functionmap = {"screenshot": base.screenshot}
         self.tasks = ([self.debugTask, "debugging task"],)
-        self.no_pause = True
+        self.paused = False
 
     def debugTask(self, task):
         if "print_scene" in self.requested_actions:
