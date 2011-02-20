@@ -12,11 +12,15 @@ import gui
 
 
 class Core(FSM):
+    """A Finite State Machine with which you can switch between scenarios
+    (world) and menu screens and the like.
+
+    Call core.request(scenario) to load a scenario.
+    """
     def __init__(self):
         FSM.__init__(self, "Core Game Control")
         self.defaultTransitions = {"Menu": ["World"],
-                                   "World": ["Pause"],
-                                   "Pause": ["World", "Menu"]}
+                                   "World": ["Menu"]}
         self.demand("Menu")
 
     def enterWorld(self, scenario=scenarios.TestEnvironment):
@@ -47,6 +51,10 @@ class Core(FSM):
             pass
 
     def defaultFilter(self, request, args):
+        """Describes the behavior of self.request().
+        Argument can be class or class name of something inside the scenarios
+        module.
+        """
         if request not in self.defaultTransitions:
             if type(request).__name__ == "type":
                 # It's a class.
