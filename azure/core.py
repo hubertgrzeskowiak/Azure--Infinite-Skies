@@ -19,6 +19,8 @@ class Core(FSM):
     """
     def __init__(self):
         FSM.__init__(self, "Core Game Control")
+        # Optional, but prevents a warning message
+        base.taskMgr.setupTaskChain("world", frameBudget=-1)
         self.defaultTransitions = {"Menu": ["World"],
                                    "World": ["Menu"]}
         self.demand("Menu")
