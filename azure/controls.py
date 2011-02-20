@@ -44,9 +44,11 @@ class ControlState(DirectObject):
         # format for functionmap: functionmap["action"] = function
         self.functionmap = {}
         self.requested_actions = set()
-        # the tasks list can contain task functions, lists of format
-        # [task, name, sort] or dicts of format
-        # {"taskOrFunc":function, "name":"task name", "sort":10}
+        # the tasks list can contain task functions, lists/tuples of format
+        #     [task, name, sort]
+        # or dicts of format
+        #     {"taskOrFunc":function, "name":"task name", "sort":10}
+        #
         # in the latter two versions everything except task is optional
         self.tasks = ()
         self.paused = True
@@ -56,9 +58,10 @@ class ControlState(DirectObject):
         return self.name
 
     def loadKeybindings(self):
-        """Overrides the hardcoded keymap with those found in the
-        keybindings file. Only defined actions are overwritten - no extra
-        actions are added from the keybindings file."""
+        """Overrides the hardcoded keymap with those found in the keybindings
+        file (or owerwrites previously loaded ones). Only defined actions are
+        overwritten - no extra actions are added from the keybindings file.
+        """
         try:
             keys_from_file = ControlState.conf_parser.items(self.name)
             for a in self.keymap:
@@ -67,11 +70,11 @@ class ControlState(DirectObject):
                         for k in map(str.strip, key.split(',')):
                             self.keymap[a] = k
         except NoSectionError:
-            notify.warning("".join("Keybindings for section {0} not found. ", "Using built-in bindings").format(self.name))
+            notify.warning("".join("Keybindings for section {0} not found. ",
+                                  "Using built-in bindings").format(self.name))
 
     def activate(self):
         if self.active is True:
-            "activating an active state: %s" % self.name
             return False
         notify.info("Activating %s" % self.name)
 
@@ -91,9 +94,7 @@ class ControlState(DirectObject):
         self.loadKeybindings()
 
         for task in self.tasks:
-            if isinstance(task, list):
-                self.addTask(*task, taskChain="world")
-            elif isinstance(task, dict):
+            if isinstance(task, list) or isinstance(task, dict):
                 self.addTask(*task, taskChain="world")
             else:
                 self.addTask(task, task.__name__, taskChain="world")
@@ -183,7 +184,8 @@ class PlaneFlight(ControlState):
                             lambda: base.player_camera.setView("Sideview")
                            }
 
-        self.tasks = (self.flightControl, self.updateHUD)
+        #self.tasks = (self.flightControl, self.updateHUD)
+        self.tasks = (self.flightControl,)
 
     def flightControl(self, task):
         """Move the plane acording to pressed keys."""
@@ -195,6 +197,7 @@ class PlaneFlight(ControlState):
                 base.player.physics.chThrust(action.split(".")[1])
         return Task.cont
 
+    # Function leaky! Slows down things at pause+resume
     def updateHUD(self, task):
         if base.player.hud:
             base.player.hud.update()

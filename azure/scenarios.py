@@ -103,7 +103,8 @@ class TestEnvironment(Scenario):
         #pirate2 = Aeroplane("griffin")
         #pirate2.node.setPosHpr(18, -30, 0, 5, -5, -5)
 
-        base.player.hud = gui.HUD(base.player, base.camera)
+        # Warning! Leaking! Slows down things at pause+resume
+        #base.player.hud = gui.HUD(base.player, base.camera)
 
         self.controls.append(controls.Debug())
         self.controls.append(controls.PlaneFlight())
@@ -111,7 +112,7 @@ class TestEnvironment(Scenario):
 
     def start(self):
         """Here the curtain is taken off and the interaction begins."""
-        base.player.hud.update()
+        #base.player.hud.update()
         for control in self.controls:
             control.activate()
 
