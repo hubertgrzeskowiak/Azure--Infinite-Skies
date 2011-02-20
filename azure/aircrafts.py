@@ -19,6 +19,8 @@ from physics import AeroplanePhysics
 #specs = ConfigParser.SafeConfigParser()
 #specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
 
+global_clock = ClockObject.getGlobalClock()
+
 class Aeroplane(DirectObject):
     """Standard aeroplane class."""
 
@@ -193,7 +195,7 @@ class Aeroplane(DirectObject):
         if self.physics is None:
             return 1
         if self.physics.thrust > 0:
-            delta_time = ClockObject.getGlobalClock().getDt()
+            delta_time = global_clock.getDt()
             for p in self.propellers:
                 p.setP(p, (self.physics.thrust * delta_time * 500))
         return Task.cont

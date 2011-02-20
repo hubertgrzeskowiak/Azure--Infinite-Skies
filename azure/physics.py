@@ -15,9 +15,9 @@ from direct.task import Task
 from errors import *
 from utils import ListInterpolator
 
-_c = ClockObject.getGlobalClock()
 #specs = ConfigParser.SafeConfigParser()
 #specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
+global_clock = ClockObject.getGlobalClock()
 
 
 class Physical(object):
@@ -85,6 +85,9 @@ class AeroplanePhysics(Physical):
         self.drag_area_z = 50.0
         self.aspect_ratio = self.wing_span * self.wing_span /self.wing_area
 
+        # What the hell is this?! I still don't get it... :-(
+        # Does this need to be individual per plane?
+        # -Nemesis13
         self.liftvsaoa = ListInterpolator([[radians(-10.0),-0.4],
                                            [radians(-8.0),-0.45],
                                            [radians(15.0),1.75],
@@ -132,6 +135,7 @@ class AeroplanePhysics(Physical):
             self.rudder = -1.0
 
     def chThrust(self, value):
+        delta_time = global_clock.getDt()
         if value == "add" and self.thrust < 1.0:
             self.thrust += 0.01
         elif value == "subtract" and self.thrust > 0.0:
@@ -339,7 +343,8 @@ class AeroplanePhysics(Physical):
     
     def simulationTask(self,task):
         """Update position and velocity based on aerodynamic forces."""
-        self.accumulator += _c.getDt()
+        delta_time = global_clock.getDt()
+        self.accumulator += delta_time
         while self.accumulator > self.step_size:
             self.accumulator -= self.step_size
             
