@@ -345,8 +345,10 @@ class AeroplanePhysics(Physical):
         """Update position and velocity based on aerodynamic forces."""
         delta_time = global_clock.getDt()
         self.accumulator += delta_time
+        updated = False
         while self.accumulator > self.step_size:
             self.accumulator -= self.step_size
+            updated = True
             
             position = self.position()
             velocity = self.velocity()
@@ -399,8 +401,8 @@ class AeroplanePhysics(Physical):
             self.elevator = 0.0
             self.ailerons = 0.0
             self.world.quickStep(self.step_size)
-        
-        self.node.setPosQuat(render, self.position(), quat)
+        if updated:
+            self.node.setPosQuat(render, self.position(), quat)
         return task.cont
 
     def destroy():
