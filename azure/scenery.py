@@ -19,7 +19,7 @@ class Scenery(object):
 
         if not hasattr(Scenery, "_scenery"):
             assert render
-            _scenery = render.attachNewNode("scenery")
+            Scenery._scenery = render.attachNewNode("scenery")
 
         self._id = Scenery._scenery_count
         Scenery._scenery_count += 1
@@ -70,6 +70,7 @@ class Scenery(object):
         """Every scenery object has its own unique ID."""
         return self._id
 
+    @property
     def node(self):
         """Returns a container class, which you should use instead of
         dummy_mode or the model itself.
