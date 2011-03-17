@@ -2,6 +2,7 @@
 
 from pandac.PandaModules import AmbientLight, DirectionalLight
 from pandac.PandaModules import VBase3, Vec4
+from pandac.PandaModules import ClockObject
 from direct.directtools.DirectGrid import DirectGrid
 from pandac.PandaModules import OdeWorld, Vec3
 
@@ -16,6 +17,9 @@ class Scenario(object):
     """Kind of metaclass for all scenario classes.
     A scenario defines a plan for a certain time of gameplay. Think of it like
     chapters in a book."""
+
+    global_clock = ClockObject.getGlobalClock()
+
     @classmethod
     def list(cls):
         return cls.__subclasses__()
@@ -25,8 +29,7 @@ class Scenario(object):
         return [c.__name__ for c in cls.__subclasses__()]
 
     def __init__(self):
-        """Everything here happens under a curtain."""
-
+        pass
 #    def request(self, scenario_name):
 #        base.core.request(scenario_name)
 
@@ -67,6 +70,7 @@ class TestEnvironment(Scenario):
     """Development Environment."""
     def __init__(self):
         """Everything here happens under a curtain."""
+        Scenario.__init__(self)
 
         self.controls = []
 
@@ -113,6 +117,9 @@ class TestEnvironment(Scenario):
     def start(self):
         """Here the curtain is taken off and the interaction begins."""
         #base.player.hud.update()
+        # TODO(Nemesis#13): reset delta time of GlobalClock
+        #Scenario.global_clock.setDt(0.0000001)  # doesn't work
+        base.player.node.setY(0)  # workaround
         for control in self.controls:
             control.activate()
 
@@ -120,5 +127,4 @@ class TestEnvironment(Scenario):
 class Tutorial(Scenario):
     """Introduce the player to the controls."""
     def __init__(self):
-        pass
-
+        Scenario.__init__(self)
