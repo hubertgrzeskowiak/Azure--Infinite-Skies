@@ -91,6 +91,9 @@ class TestEnvironment(Scenario):
         alnp = render.attachNewNode(alight)
         render.setLight(alnp)
 
+        #big = Scenery("B1G", "big", VBase3(-100, 900, 100),
+        #              VBase3(100, 100, 100))
+
         # initialise physics engine
         #base.enableParticles()
 
@@ -109,6 +112,11 @@ class TestEnvironment(Scenario):
 
         # Warning! Leaking! Slows down things at pause+resume
         #base.player.hud = gui.HUD(base.player, base.camera)
+
+        self.indicators = gui.Indicators(parent=base.a2dTopLeft)
+        self.indicators.add("speed", base.player.physics.speed, vartype=int)
+        self.indicators.add("thrust", base.player.physics.getThrust,
+                            vartype=(round, 1))
 
         self.controls.append(controls.Debug())
         self.controls.append(controls.PlaneFlight())
