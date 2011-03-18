@@ -9,27 +9,20 @@ from pandac.PandaModules import Geom,GeomNode,GeomVertexWriter,GeomLines
 from pandac.PandaModules import TransparencyAttrib
 from pandac.PandaModules import TextNode
 from pandac.PandaModules import Point3, Point2, Vec3, Vec4
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGeometry import LineNodePath
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.task import Task
 
 #from views import PlaneCamera
 #from core import Core
 
-PITCH_STEP = 10
-def printInstructions(instructions = ""):
-    """Give me some text and i'll print it at the top left corner"""
-    # temporary function. used until we have some real interface
-    OnscreenText(
-        text = instructions,
-        style = 1,
-        fg = (1,1,1,1),
-        pos = (-1.3, 0.95),
-        align = TextNode.ALeft,
-        scale = .05)
 
 class HUD(object):
     """ Head Up Display """
+    PITCH_STEP = 10
+
     def __init__(self,model,cam,colour=(1,1,1,1)):
         """ HUD initialisation """
         #self.plane_camera = PlaneCamera(base.player)
@@ -81,7 +74,7 @@ class HUD(object):
 
         # create and store the pitchladder lines and numbers - positioning of 
         #       these are dealt with as the HUD is updated
-        lines,leftnumbers,rightnumbers = self.createPitchLadder(PITCH_STEP)
+        lines,leftnumbers,rightnumbers = self.createPitchLadder(HUD.PITCH_STEP)
         self.pitchlines = lines
         self.pitchnumbersL = leftnumbers
         self.pitchnumbersR = rightnumbers
@@ -439,8 +432,120 @@ class HUD(object):
         lineNP = aspect2d.attachNewNode(lineGN)
         return lineNP
 
+class _Indicator(object):
+    """One single onscreen indicator. Used by Indicators class."""
+    def __init__(self, name, func, func_args=[], vartype=None, color=(0,0,0,1),
+                 parent=None):
+        """Arguments:
+        name -- the visible label. should be unique
+        func -- a function that gives a value to display
+        func_args -- arguments for the function above (list or dict)
+        vartype -- a type converting function like float, int or the like
+                if it's a tuple, the first element will be considered the
+                function func and others as additional parameters.
+                Examples: vartype=int  or  type=(round, 1)
+        color -- indvidual color for that indicator
+        parent -- which corner to move to
+        """
+        self.opts = {"fg":color, "parent":parent or base.a2dBottomRight}
+        self.indent = 0.3  # for the value
+        self.name = name
+        self.func = func
+        self.func_args = func_args
+        self.vartype = vartype
+        self.label = OnscreenText(text=name+":", align=TextNode.ALeft,
+                                  mayChange=True, scale=0.04, **self.opts)
+        self.value = OnscreenText(text="", align=TextNode.ARight,
+                                  mayChange=True, scale=0.04, **self.opts)
+        self.value.setX(self.indent)
+
+    def destroy(self):
+        self.label.destroy()
+        self.value.destroy()
+
+
+class Indicators(DirectObject):
+    """Draw some debugging info on the screen like speed, thrust etc.."""
+    def __init__(self, parent=None, color=(0,0,0,1)):
+        """parent can be one of: base.a2dTopCenter, base.a2dBottomCenter,
+        base.a2dLeftCenter, base.a2dRightCenter, base.a2dTopLeft,
+        base.a2dTopRight, base.a2dBottomLeft, base.a2dBottomRight
+        """
+        self.indicators = {}  # form: {name: _Indicator}
+        self.parent = parent or base.a2dBottomRight
+        self.lspacing = 0.04  # line spacing
+        self.margin = 0.4  #  margin from screen border
+        self.color = color
+        self.task = self.addTask(self.updateIndicators,
+                                 "Update onscreen debugging infos",
+                                 taskChain="world", sort=80)
+
+    def add(self, name, func, func_args=[], vartype=None, color=None):
+        """Add a new indicator. Same parameters as _indicator.__init__ ."""
+        if self.indicators.has_key(name):
+            return False
+        self.indicators[name] = _Indicator(name, func, func_args, vartype,
+                                           color or self.color, self.parent)
+        self.reposition()
+
+    def remove(self, name):
+        """Remove an indicator."""
+        if self.indicators.has_key(name):
+            self.indicators[name].destroy()
+            del self.indicators[name]
+            self.reposition()
+        else:
+            return False
+
+    def reposition(self):
+        """After removing items or changing the positioning vars, this puts
+        everthing into its place.
+        """
+        i = x = y = 0
+        parx = self.parent.getX()
+        pary = self.parent.getZ()
+        if parx != 0:
+            x = self.margin * -parx / abs(parx)
+        if pary != 0:
+            y = self.margin / 3 * -pary / abs(pary)
+        print x, y
+        for indicator in self.indicators.values():
+            indicator.label.setPos(x, y+self.lspacing*i)
+            indicator.value.setPos(x + indicator.indent, y+self.lspacing*i)
+            i += 1 if pary >= 0 else -1
+
+    def updateIndicators(self, task):
+        for name, indicator in self.indicators.items():
+            func = indicator.func.__call__
+            args = indicator.func_args
+            vartype = indicator.vartype
+
+            if not args:
+                text = func()
+            elif isinstance(args, []):
+                text = func(*args)
+            elif isinstance(args, {}):
+                text = func(**args)
+
+            if vartype:
+                if isinstance(vartype, tuple):
+                    text = vartype[0].__call__(text, *vartype[1:])
+                else:
+                    text = vartype.__call__(text)
+
+            indicator.value.setText(str(text))
+        return Task.cont
+
+    def destroy(self):
+        """Remove all indicators and stop the updating task."""
+        self.removeTask(self.task)
+        for name, ind in self.indicators.items():
+            ind.destroy()
+        self.indicators = {}
+
 
 class MainMenu(object):
+    """Draw a nice menu with some choices."""
     def __init__(self):
         mainmenu = [("Adventure", lambda: base.core.request("World")),
                     ("Quick Game", lambda: self.p("not yet implemented")),
