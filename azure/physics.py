@@ -141,6 +141,9 @@ class AeroplanePhysics(Physical):
         elif value == "subtract" and self.thrust > 0.0:
             self.thrust -= 0.01
 
+    def getThrust(self):
+        return self.thrust
+
     def setCalculationConstants(self):
         """pre-calculate some calculation constants from the
         flight parameters"""
@@ -346,6 +349,7 @@ class AeroplanePhysics(Physical):
         delta_time = global_clock.getDt()
         self.accumulator += delta_time
         updated = False
+        #print self.accumulator, delta_time
         while self.accumulator > self.step_size:
             self.accumulator -= self.step_size
             updated = True
