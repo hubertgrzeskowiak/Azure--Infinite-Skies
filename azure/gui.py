@@ -501,14 +501,18 @@ class Indicators(DirectObject):
         """After removing items or changing the positioning vars, this puts
         everthing into its place.
         """
+        if not self.indicators:
+            return False
+
         i = x = y = 0
         parx = self.parent.getX()
         pary = self.parent.getZ()
         if parx != 0:
             x = self.margin * -parx / abs(parx)
+            if parx < 0:
+                x -= self.indicators[label],indent
         if pary != 0:
             y = self.margin / 3 * -pary / abs(pary)
-        print x, y
         for indicator in self.indicators.values():
             indicator.label.setPos(x, y+self.lspacing*i)
             indicator.value.setPos(x + indicator.indent, y+self.lspacing*i)
