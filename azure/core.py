@@ -17,13 +17,13 @@ class Core(FSM):
 
     Call core.request(scenario) to load a scenario.
     """
-    def __init__(self):
+    def __init__(self, start="Menu"):
         FSM.__init__(self, "Core Game Control")
         # Optional, but prevents a warning message
         base.taskMgr.setupTaskChain("world", frameBudget=-1)
         self.defaultTransitions = {"Menu": ["World"],
                                    "World": ["Menu"]}
-        self.demand("Menu")
+        self.demand(start)
 
     def enterWorld(self, scenario=scenarios.TestEnvironment):
         #self.world = OdeWorld()
