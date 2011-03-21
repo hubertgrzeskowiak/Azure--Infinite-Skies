@@ -434,6 +434,7 @@ class HUD(object):
 
 class _Indicator(object):
     """One single onscreen indicator. Used by Indicators class."""
+    indent = 0.3  # distance label<->value
     def __init__(self, name, func, func_args=[], vartype=None, color=(0,0,0,1),
                  parent=None):
         """Arguments:
@@ -448,7 +449,6 @@ class _Indicator(object):
         parent -- which corner to move to
         """
         self.opts = {"fg":color, "parent":parent or base.a2dBottomRight}
-        self.indent = 0.3  # for the value
         self.name = name
         self.func = func
         self.func_args = func_args
@@ -510,12 +510,12 @@ class Indicators(DirectObject):
         if parx != 0:
             x = self.margin * -parx / abs(parx)
             if parx < 0:
-                x -= self.indicators[label],indent
+                x -= _Indicator.indent
         if pary != 0:
             y = self.margin / 3 * -pary / abs(pary)
         for indicator in self.indicators.values():
             indicator.label.setPos(x, y+self.lspacing*i)
-            indicator.value.setPos(x + indicator.indent, y+self.lspacing*i)
+            indicator.value.setPos(x + _Indicator.indent, y+self.lspacing*i)
             i += 1 if pary >= 0 else -1
 
     def updateIndicators(self, task):
