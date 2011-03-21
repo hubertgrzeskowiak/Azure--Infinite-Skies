@@ -113,10 +113,14 @@ class TestEnvironment(Scenario):
         # Warning! Leaking! Slows down things at pause+resume
         #base.player.hud = gui.HUD(base.player, base.camera)
 
-        self.indicators = gui.Indicators(parent=base.a2dTopLeft)
-        self.indicators.add("speed", base.player.physics.speed, vartype=int)
-        self.indicators.add("thrust", base.player.physics.getThrust,
+        self.indicatorsTL = gui.Indicators(parent=base.a2dTopLeft)
+        self.indicatorsTL.add("speed", base.player.physics.speed, vartype=int)
+        self.indicatorsTL.add("thrust", base.player.physics.getThrust,
                             vartype=(round, 1))
+        self.indicatorsBR = gui.Indicators(parent=base.a2dBottomRight)
+        self.indicatorsBR.add("x", base.player.node.getX, vartype=(int))
+        self.indicatorsBR.add("y", base.player.node.getY, vartype=(int))
+        self.indicatorsBR.add("z", base.player.node.getZ, vartype=(int))
 
         self.controls.append(controls.Debug())
         self.controls.append(controls.PlaneFlight())
