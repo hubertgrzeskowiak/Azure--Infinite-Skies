@@ -161,7 +161,8 @@ class AeroplanePhysics(Physical):
         self.drag_factor_z = (-1.0) * half_rho * self.drag_area_z * \
                                                  self.drag_coef_z
 
-        self.gravity = Vec3(0.0,0.0,(-9.81) * self.mass)
+        self.gravity = Vec3(0.0,0.0,-9.81) 
+        self.gravityM = self.gravity * self.mass
 
     def _wingAngleOfAttack(self,v_norm,up):
         """ calculate the angle between the wing and the relative motion of the air """
@@ -226,7 +227,7 @@ class AeroplanePhysics(Physical):
         thrust = self._thrust(forward)
         self.angle_of_attack = aoa
 
-        force = lift + drag + self.gravity + thrust
+        force = lift + drag + self.gravityM + thrust
 
         # if the plane is on the ground, the ground reacts to the downward force
         # TODO (gjmm): need to modify in order to consider reaction to objects
@@ -240,23 +241,23 @@ class AeroplanePhysics(Physical):
     def angleOfAttack(self):
         return self.angle_of_attack
     def gForceTotal(self):
-        acc = self.acceleration - self.gravity/self.mass
+        acc = self.acceleration - self.gravity
         return acc.length()/9.81
     def gForce(self):
         up = self.node.getQuat().getUp()
-        acc = self.acceleration - self.gravity/self.mass
+        acc = self.acceleration - self.gravity
         gf = acc.dot(up) / 9.81
         return gf
 
     def lateralG(self):
         right = self.node.getQuat().getRight()
-        acc = self.acceleration - self.gravity/self.mass
+        acc = self.acceleration - self.gravity
         gf = acc.dot(right) / 9.81
         return gf
 
     def axialG(self):
         forward = self.node.getQuat().getForward()
-        acc = self.acceleration - self.gravity/self.mass
+        acc = self.acceleration - self.gravity
         gf = acc.dot(forward) / 9.81
         return gf
 
