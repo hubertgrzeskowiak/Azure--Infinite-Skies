@@ -5,13 +5,16 @@ manager."""
 import sys
 import os
 
+from panda3d.core import ExecutionEnvironment as EE
+from panda3d.core import Filename
+
 from options import options
 
 # If we only need to print version, do this first and leave everything else
 # untouched.
 if options.print_version:
     try:
-        print open("VERSION").read()
+        print open(EE.expandString("$MAIN_DIR/VERSION")).read()
     except IOError:
         print "Version unknown. Can't find the VERSION file."
     sys.exit()
@@ -24,7 +27,7 @@ except ImportError:
     sys.exit(1)
 # Config file should be loaded as soon as possible.
 # TODO(Nemesis#13): this must get smarter
-loadPrcFile(Filename.fromOsSpecific(os.path.abspath(os.path.join(sys.path[0], "etc/azure.prc"))))
+loadPrcFile(EE.expandString("$MAIN_DIR/etc/azure.prc"))
 from direct.showbase.ShowBase import ShowBase
 
 from core import Core
