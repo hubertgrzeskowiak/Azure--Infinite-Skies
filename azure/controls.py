@@ -43,19 +43,33 @@ class ControlState(DirectObject):
         self.keymap = {}
         # format for functionmap: functionmap["action"] = function
         self.functionmap = {}
+        # auto filled by the event listener
         self.requested_actions = set()
-        # the tasks list can contain task functions, lists/tuples of format
-        #     [task, name, sort]
-        # or dicts of format
-        #     {"taskOrFunc":function, "name":"task name", "sort":10}
+        # the tasks list can contain task functions,
+        #     (function1, function2, ...)
+        # lists or tuples,
+        #     ([function1, name1, sort], [function2, name2, sort], ...)
+        # or dicts
+        #     ({"taskOrFunc":function, "name":"task name", "sort":10},
+        #      {"taskOrFunc":function2, "name":"task name2", "sort":20})
         #
-        # in the latter two versions everything except task is optional
+        # in the latter two versions everything except task is optional.
+        # in fact if the items aren't callable they're expected to be
+        # unpackable
         self.tasks = ()
         self.paused = True
         self.active = False
 
     def __repr__(self):
-        return self.name
+        t = "ControlState: " + self.name
+        if self.paused: t += " (paused)"
+        if not self.active: t += " (inactive)"
+        t += "\nlistens to the following events:\n" + self.getAllAccepting()
+        t += "\nkeymap:\n" + self.keymap
+        t += "\nfunctionmap:\n" + self.functionmap
+        t += "\nrequested actions:\n" + self.requested_actions
+        t += "\n"
+        return t
 
     def loadKeybindings(self):
         """Overrides the hardcoded keymap with those found in the keybindings
@@ -94,10 +108,11 @@ class ControlState(DirectObject):
         self.loadKeybindings()
 
         for task in self.tasks:
-            if isinstance(task, list) or isinstance(task, dict):
-                self.addTask(*task, taskChain="world")
-            else:
+            if callable(task):
                 self.addTask(task, task.__name__, taskChain="world")
+            else:
+                self.addTask(*task, taskChain="world")
+
         self.active = True
         ControlState.active_states.append(self)
 
@@ -112,6 +127,7 @@ class ControlState(DirectObject):
         #self.removeAllTasks()
         self.active = False
         ControlState.active_states.remove(self)
+
 
 #-----------------------------------------------------------------------------
 
@@ -250,6 +266,11 @@ class Debug(ControlState):
 
         self.requested_actions.clear()
         return Task.cont
+
+class FreeCameraFlight(ControlState):
+    def __init__(self):
+        ControlState.__init__(self)
+        self.keymap = {}
 
 
 class IngameMenu(ControlState):
