@@ -18,10 +18,5 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
-if __name__ == "__main__":
-
-    from azure.main import Azure
-    Azure()
-
-else:
-    print "this is the starter, not a module!"
+from azure.main import Azure
+Azure()
