@@ -101,6 +101,7 @@ class Sky(NodePath, DirectObject):
         NodePath.__init__(self, "sky")
         DirectObject.__init__(self)
 
+        tex = None
         for ext in ("png", "jpg", "tga"):
             f = "skyboxes/%s/0.%s" % (resource, ext)
             if vfs.resolveFilename(f, getModelPath().getValue()):
@@ -112,6 +113,8 @@ class Sky(NodePath, DirectObject):
                                  "maybe wrong names or different extensions?")
         #self.attachNewNode(loader.loadModel("misc/invcube"))
         loader.loadModel("misc/invcube").reparentTo(self)
+        # probably the same as the line above
+        #self.attachNewNode(loader.loadModelNode("misc/invcuvbe"))
         self.clearTexture()
         self.clearMaterial()
         self.setScale(10000)
