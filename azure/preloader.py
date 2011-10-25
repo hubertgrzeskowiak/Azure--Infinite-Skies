@@ -1,4 +1,5 @@
 from panda3d.core import PandaLoader, TexturePool, FontPool
+# PandaLoader is the new ModelPool - kind of
 
 class Preloader(Directobject):
     def __init__(self, models=[], fonts=[], sounds=[], textures=[],
