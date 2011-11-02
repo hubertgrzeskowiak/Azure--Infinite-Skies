@@ -5,9 +5,14 @@ manager."""
 import sys
 import os
 
+try:
+    import panda3d
+except ImportError:
+    print "It seems you haven't got Panda3D installed properly."
+    sys.exit(1)
+
 from panda3d.core import ExecutionEnvironment as EE
 from panda3d.core import Filename
-
 from options import options
 
 # If we only need to print version, do this first and leave everything else
@@ -19,14 +24,9 @@ if options.print_version:
         print "Version unknown. Can't find the VERSION file."
     sys.exit()
 
-try:
-    from pandac.PandaModules import loadPrcFile
-    from pandac.PandaModules import Filename
-except ImportError:
-    print "It seems you haven't got Panda3D installed properly."
-    sys.exit(1)
+from pandac.PandaModules import loadPrcFile
+from pandac.PandaModules import Filename
 # Config file should be loaded as soon as possible.
-# TODO(Nemesis#13): this must get smarter
 loadPrcFile(EE.expandString("$MAIN_DIR/etc/azure.prc"))
 from direct.showbase.ShowBase import ShowBase
 
@@ -34,23 +34,32 @@ from core import Core
 
 
 class Azure(ShowBase):
-    """Main class called by the top level main function (see below)."""
     def __init__(self):
+    """Program entry point."""
+        # TODO(Nemesis#13): rewrite ShowBase to not use globals.
 
         # This basically sets up our rendering node-tree, some builtins and
         # the master loop (which iterates each frame).
         ShowBase.__init__(self)
+
         # Turn off Panda3D's standard camera handling.
         self.disableMouse()
+
         self.setBackgroundColor(0,0,0,1)
-        # Start our Finite State Machine
-        self.core = Core(options.scenario) if options.scenario else Core()
+
+        # Start our Core Finite State Machine
+        self.core = Core()
+        if (options.scenario):
+            self.core.requestScenario(options.scenario)
+        else:
+            self.core.requestMenu("MainMenu")
 
         #base.bufferViewer.toggleEnable()
+
 		# Start the master loop.
         self.run()
 
-# Related to relative paths.
 if __name__ == "__main__":
+    # Related to relative paths.
     print "Don't run this module directly! Use the run script instead!"
     sys.exit(2)
