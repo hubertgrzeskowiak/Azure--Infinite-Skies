@@ -1,7 +1,25 @@
-from panda3d.core import PandaLoader, TexturePool, FontPool
+# TODO look at AsyncTask and PandaLoader, which seem to load everything
+
+#from panda3d.core import PandaLoader, TexturePool, FontPool
 # PandaLoader is the new ModelPool - kind of
 
-class Preloader(Directobject):
+from direct.showbase.DirectObject import DirectObject
+
+def scenarioPreloader(self, scenario):
+    """Create a preloader and attach values from a scenario file to it, then
+    return it."""
+    preloader = Preloader()
+    s = scenario
+    preloader.models = s.models if hasattr(s, "models") else []
+    preloader.fonts = s.fonts if hasattr(s, "fonts") else []
+    preloader.sounds = s.sounds if hasattr(s, "sounds") else []
+    preloader.textures = s.textures if hasattr(s, "textures") else []
+    preloader.textures3d = s.textures3d if hasattr(s, "textures3d") else []
+    preloader.cubemaps = s.cubemaps if hasattr(s, "cubemaps") else []
+    return preloader
+
+
+class Preloader(DirectObject):
     def __init__(self, models=[], fonts=[], sounds=[], textures=[],
                  textures3d=[], cubemaps=[]):
 
@@ -12,25 +30,50 @@ class Preloader(Directobject):
         self.textures3d = textures3d
         self.cubemaps = cubemaps
 
-        self.modelloader = PandaLoader.getGlobalPtr().loadModel
-        l = PandaLoader.getGlobalPtr()
-        self.asyncmodelloader = lambda x: l.loadAsync(l.makeAsyncRequest(x))
-        self.textureloader = TexturePool.loadTexture
-        self.fontloader = FontPool.loadFont
+        # TODO: replace with something more object oriented and not so.. global
+        self.loader = base.loader
 
         self._preloaded = 0
+        self._progress_cached = -1
+        self._progress_f_cached = -1.0
 
     @property
     def progress(self):
-        """Return the progress of preloading assets (range 0.0 - 1.0)."""
-        return self._preloaded / float(len(self.models)+
-                                       len(self.fonts)+
-                                       len(self.sounds)+
-                                       len(self.textures)+
-                                       len(self.textures3d)+
-                                       len(self.cubemaps)
-                                       )
+        """Return the progress of preloading assets in percent (range 0 - 100).
+        """
+        # through the multiplication we save ourselves a floating point
+        # division
+        if self._progress_cached < 0:
+            result = self._preloaded  * 100 / len(self.models)+\
+                                              len(self.fonts)+\
+                                              len(self.sounds)+\
+                                              len(self.textures)+\
+                                              len(self.textures3d)+\
+                                              len(self.cubemaps)
+            self._progress_cached = result
+            return result
+        else:
+            return self._progress_cached
 
+    @property
+    def progressFloat(self):
+        """Return the progress of preloading assets in percent
+        (range 0.0 - 1.0). This is slightly slower than the upper function.
+        """
+        if self._progress_f_cached < 0:
+            result = self._preloaded / float(len(self.models)+\
+                                             len(self.fonts)+\
+                                             len(self.sounds)+\
+                                             len(self.textures)+\
+                                             len(self.textures3d)+\
+                                             len(self.cubemaps)
+                                             )
+            self._progress_f_cached = result
+            return result
+        else:
+            return self._progress_f_cached
+
+    # Convenience functions.
     def preloadFast(self):
         """Load everything NOW."""
         return self.preload(async=False, atonce=True)
@@ -38,20 +81,28 @@ class Preloader(Directobject):
     def preloadPerFrame(self):
         """Every frame one asset is loaded. Frames might last long."""
         return self.addTask(self.preload, "preloading",
-                            extraArgs={async=False, atonce=False})
+                            extraArgs={"async":False, "atonce":False})
 
-    def preloadBackground(self):
-        """Progress indicator will jump after each batch."""
+    def preloadBackground(self, callback=None):
+        """Progress indicator will jump after each batch.
+        Arguments:
+        callback -- a function to call upon finish
+        """
         return self.addTask(self.preload, "preloading",
-                            extraArgs={async:True, atonce:True})
+                            extraArgs={"async":True, "atonce":True})
 
-    def preloadBackgroundResponsive(self):
-        """Progress indicator will raise after each loaded asset."""
+    def preloadBackgroundResponsive(self, callback=None):
+        """Progress indicator will raise after each loaded asset.
+        Arguments:
+        callback -- a function to call upon finish
+        """
         return self.addTask(self.preload, "preloading",
-                            extraArgs={async:True, atonce:False})
+                            extraArgs={"async":True, "atonce":False})
+
 
     def preload(self, task=None, async=False, atonce=False, force=False):
-        """Implicitly preload 3d models, fonts and other assets.
+        """Preload 3d models, fonts and other assets that are assigned to self
+        as lists.
         
         Arguments:
         task -- when using async, this function is passed to a task manager.
@@ -72,7 +123,8 @@ class Preloader(Directobject):
                 return
 
         def setStatus(*args):
-            print args
+            self._progress_cached = -1
+            self._progress_f_cached = -1.0
             self._preloaded += len(args)
 
         if async:
