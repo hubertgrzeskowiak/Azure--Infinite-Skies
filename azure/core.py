@@ -1,71 +1,57 @@
 """Azure's core FSM."""
 
-from pandac.PandaModules import OdeWorld
-
 from direct.fsm.FSM import FSM
 from direct.gui.OnscreenText import OnscreenText
 from pandac.PandaModules import TextNode
 
-import scenarios
-from scenarios import Scenario
-import gui
+from preloader import scenarioPreloader
+#from menuproxy import MenuProxy
+from scenarioproxy import ScenarioProxy
 
 
 class Core(FSM):
-    """A Finite State Machine with which you can switch between scenarios
-    (world) and menu screens and the like.
-
-    Call core.request(scenario) to load a scenario.
-    """
-    def __init__(self, start="Menu"):
+    """knows Menu, Scenario and Loading."""
+    def __init__(self):
         FSM.__init__(self, "Core Game Control")
-        # Optional, but prevents a warning message
-        base.taskMgr.setupTaskChain("world", frameBudget=-1)
-        self.defaultTransitions = {"Menu": ["World"],
-                                   "World": ["Menu"]}
-        self.demand(start)
+        # We might need to put a loading screen in front of menu if we get some
+        # fancy menu screens.
+        self.defaultTransitions = {"Menu":["Loading",],
+                                   "Loading":["Scenario",],
+                                   "Scenario":["Menu", "Loading"]
+                                   }
+        # Optional, but prevents a warning message.
+        # The scenario task chain gives us grouping option.
+        # It might get replaced by an own task manager, by chance.
+        base.taskMgr.setupTaskChain("scenario", frameBudget=-1)
 
-    def enterWorld(self, scenario=scenarios.TestEnvironment):
-        #self.world = OdeWorld()
-        #self.world.setGravity(0.0, 0.0, 0.0)
-        #world.setGravity(0.0, 0.0, -9.81)
-        loading = OnscreenText(text="LOADING", pos=(0,0), scale=0.1,
+    def enterLoading(self, scenario, *args):
+        # TODO: put this into gui package and add a black background
+        self.loading = OnscreenText(text="LOADING", pos=(0,0), scale=0.1,
                                align=TextNode.ACenter, fg=(1,1,1,1))
-        base.graphicsEngine.renderFrame()
-        base.graphicsEngine.renderFrame()
-        self.scenario = scenario()
-        loading.destroy()
-        self.scenario.start()
+        self.preloader = scenarioPreloader(scenario)
+        self.preloader.preloadFast()  # depends on the loading screen
+        # Other preloader methods would specify a callback that calls
+        # self.demand(scenario), but preloadFast() is executed in one frame, so
+        # we can safely demand that from here. Interactive loading screens
+        # might require special handling.
+        self.demand(scenario, *args)
 
-    def exitWorld(self):
-        try:
-            self.world.destroy()  # Muharharhar *evil laugh*
-        except:
-            pass
+    def exitLoading(self):
+        self.loading.destroy()
+        del self.loading
+        del self.preloader
 
-    def enterMenu(self, menu=gui.MainMenu):
-        self.menu = menu()
+    def enterScenario(self, scenario, *args):
+        self.scenario = ScenarioProxy(scenario, *args)
+        self.scenario.begin()
+
+    def exitScenario(self):
+        self.scenario.destroy()
+
+    def enterMenu(self, menu, *args):
+        #self.menu = MenuProxy(menu, *args)
+        self.menu = __import__("gui."+menu)
+        self.menu = self.menu()
 
     def exitMenu(self):
-        try:
-            self.menu.destroy()
-        except:
-            pass
-
-    def defaultFilter(self, request, args):
-        """Describes the behavior of self.request().
-        Argument can be class or class name of something inside the scenarios
-        module.
-        """
-        if request not in self.defaultTransitions:
-            if type(request).__name__ == "type":
-                # It's a class.
-                if request in scenarios.Scenario.list():
-                    return ("World",) + request
-            elif isinstance(request, basestring):
-                if not request.startswith("scenarios."):
-                    request = "scenarios." + request
-                if request in scenarios.Scenario.names():
-                    return ("World",) + eval("scenarios." + request)
-        else:
-            return request
+        self.menu.destroy()

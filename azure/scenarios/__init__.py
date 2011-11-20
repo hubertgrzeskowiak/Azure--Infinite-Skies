@@ -1,4 +1,1 @@
-import os
-
-class C:
-    pass
+from test import Developmentenvironment

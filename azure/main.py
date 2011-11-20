@@ -35,7 +35,7 @@ from core import Core
 
 class Azure(ShowBase):
     def __init__(self):
-    """Program entry point."""
+        """Program entry point."""
         # TODO(Nemesis#13): rewrite ShowBase to not use globals.
 
         # This basically sets up our rendering node-tree, some builtins and
@@ -50,9 +50,10 @@ class Azure(ShowBase):
         # Start our Core Finite State Machine
         self.core = Core()
         if (options.scenario):
-            self.core.requestScenario(options.scenario)
+            # Scenario was specified at command line.
+            self.core.demandLoading(options.scenario)
         else:
-            self.core.requestMenu("MainMenu")
+            self.core.demand("Menu", "MainMenu")
 
         #base.bufferViewer.toggleEnable()
 
