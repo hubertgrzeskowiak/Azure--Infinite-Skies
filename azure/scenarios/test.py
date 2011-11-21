@@ -3,6 +3,7 @@ from azure import controls
 #from azure import gui
 from pandac.PandaModules import *
 from azure.aircrafts import Aeroplane
+from azure.scenery import Sky, Water
 
 
 class Developmentenvironment(object):
@@ -28,6 +29,10 @@ class Developmentenvironment(object):
         sunlight_np = NodePath(sunlight)
         render.setLight(sunlight_np)
 
+        Sky("bluesky")
+        Water()
+
+
         griffin = Aeroplane("griffin", "griffin", True)
         griffin.node.setZ(10)
         # how this should look later:
@@ -36,7 +41,8 @@ class Developmentenvironment(object):
         griffin.physics.thrust = 1
 
         view = views.PlaneCamera(griffin)
-        control = controls.PlaneFlight(griffin)
+        control = controls.PlaneFlight(griffin, view)
+        control.activate()
 
 
         # inline helper functions
