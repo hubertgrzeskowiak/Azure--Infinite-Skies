@@ -551,7 +551,8 @@ class Indicators(DirectObject):
 class MainMenu(object):
     """Draw a nice menu with some choices."""
     def __init__(self):
-        mainmenu = [("Adventure", lambda: base.core.request("World")),
+        mainmenu = [("Adventure", lambda: base.core.demand("Loading",
+            "Developmentenvironment")),
                     ("Quick Game", lambda: self.p("not yet implemented")),
                     ("Credits", lambda: self.p("not yet implemented")),
                     ("Exit", sys.exit)]
