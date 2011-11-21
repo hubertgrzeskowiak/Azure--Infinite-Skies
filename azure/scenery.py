@@ -142,7 +142,7 @@ class Sky(NodePath, DirectObject):
 
 
 class Water(NodePath, DirectObject):
-    def __init__(self, size=10000, resoltion=1024):
+    def __init__(self, size=10000, resolution=1024):
         """Arguments:
         size -- Edge length of the water square.
         resolution -- Texture size of the rendered reflection buffer.
@@ -180,7 +180,8 @@ class Water(NodePath, DirectObject):
 
         # Reflection camera renders to 'buffer' which is projected onto the
         # water surface.
-        buffer = base.win.makeTextureBuffer("water reflection", 1024, 1024)
+        buffer = base.win.makeTextureBuffer("water reflection",
+                                            resolution, resolution)
         buffer.setClearColor(Vec4(0, 0, 0, 1))
         
         self.refl_cam = base.makeCamera(buffer)
