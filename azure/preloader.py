@@ -5,7 +5,7 @@
 
 from direct.showbase.DirectObject import DirectObject
 
-def scenarioPreloader(self, scenario):
+def scenarioPreloader(scenario):
     """Create a preloader and attach values from a scenario file to it, then
     return it."""
     preloader = Preloader()
