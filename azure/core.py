@@ -34,7 +34,7 @@ class Core(FSM):
         # self.demand(scenario), but preloadFast() is executed in one frame, so
         # we can safely demand that from here. Interactive loading screens
         # might require special handling.
-        self.demand(scenario, *args)
+        self.demand("Scenario", scenario, *args)
 
     def exitLoading(self):
         self.loading.destroy()
@@ -50,8 +50,8 @@ class Core(FSM):
 
     def enterMenu(self, menu, *args):
         #self.menu = MenuProxy(menu, *args)
-        self.menu = __import__("gui."+menu)
-        self.menu = self.menu()
+        import gui
+        self.menu = getattr(gui, menu)()
 
     def exitMenu(self):
         self.menu.destroy()
