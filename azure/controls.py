@@ -166,7 +166,7 @@ class Pause(ControlState):
 
 class PlaneFlight(ControlState):
     """A control state for flying a plane."""
-    def __init__(self):
+    def __init__(self, plane):
         ControlState.__init__(self)
         self.keymap = {"move.roll-left":        "a",
                        "move.roll-right":       "d",
@@ -202,21 +202,22 @@ class PlaneFlight(ControlState):
 
         #self.tasks = (self.flightControl, self.updateHUD)
         self.tasks = (self.flightControl,)
+        self.plane = plane
 
     def flightControl(self, task):
         """Move the plane acording to pressed keys."""
         for action in self.requested_actions:
             a = action.split(".")[0]
             if a == "move":
-                base.player.physics.move(action.split(".")[1])
+                self.plane.physics.move(action.split(".")[1])
             elif a == "thrust":
-                base.player.physics.chThrust(action.split(".")[1])
+                self.plane.physics.chThrust(action.split(".")[1])
         return Task.cont
 
     # Function leaky! Slows down things at pause+resume
     def updateHUD(self, task):
-        if base.player.hud:
-            base.player.hud.update()
+        if self.plane.hud:
+            self.plane.hud.update()
         return Task.cont
 
     #def switchView(self, task):
