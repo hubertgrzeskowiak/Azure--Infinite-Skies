@@ -166,7 +166,7 @@ class Pause(ControlState):
 
 class PlaneFlight(ControlState):
     """A control state for flying a plane."""
-    def __init__(self, plane):
+    def __init__(self, plane, view):
         ControlState.__init__(self)
         self.keymap = {"move.roll-left":        "a",
                        "move.roll-right":       "d",
@@ -185,24 +185,25 @@ class PlaneFlight(ControlState):
                        "camera.sideview":       "5"
                       }
         self.functionmap = {"camera.next":
-                            lambda: base.player_camera.setView("Next"),
+                            lambda: self.plane_camera.setView("Next"),
                             "camera.prev":
-                            lambda: base.player_camera.setView("Prev"),
+                            lambda: self.plane_camera.setView("Prev"),
                             "camera.third-person":
-                            lambda: base.player_camera.setView("ThirdPerson"),
+                            lambda: self.plane_camera.setView("ThirdPerson"),
                             "camera.first-person":
-                            lambda: base.player_camera.setView("FirstPerson"),
+                            lambda: self.plane_camera.setView("FirstPerson"),
                             "camera.cockpit":
-                            lambda: base.player_camera.setView("Cockpit"),
+                            lambda: self.plane_camera.setView("Cockpit"),
                             "camera.detached":
-                            lambda: base.player_camera.setView("Detached"),
+                            lambda: self.plane_camera.setView("Detached"),
                             "camera.sideview":
-                            lambda: base.player_camera.setView("Sideview")
+                            lambda: self.plane_camera.setView("Sideview")
                            }
 
         #self.tasks = (self.flightControl, self.updateHUD)
         self.tasks = (self.flightControl,)
         self.plane = plane
+        self.plane_camera = view
 
     def flightControl(self, task):
         """Move the plane acording to pressed keys."""
@@ -227,7 +228,7 @@ class PlaneFlight(ControlState):
     #            request = action.split(".")[1]
     #            # Translate option to class name
     #            view = "".join(x.capitalize() for x in request.split('-'))
-    #            base.player_camera.setView(view)
+    #            self.plane_camera.setView(view)
     #            # Key could be pressed over multiple frames, but we want this
     #            # to be activated only once.
     #            actions_done.add(action)
@@ -258,12 +259,6 @@ class Debug(ControlState):
             print
         if "print_tasks" in self.requested_actions:
             print base.taskMgr
-        #if "toggle_hud" in self.requested_actions:
-        #    if base.player.hud:
-        #        base.player.hud.destroy()
-        #        base.player.hud = None
-        #    else:
-        #        base.player.hud = gui.HUD(base.player, base.camera)
 
         self.requested_actions.clear()
         return Task.cont
