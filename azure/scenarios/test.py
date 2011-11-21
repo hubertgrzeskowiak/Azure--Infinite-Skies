@@ -1,6 +1,8 @@
 from azure import views
 from azure import controls
-import gui
+#from azure import gui
+from pandac.PandaModules import *
+from azure.aircrafts import Aeroplane
 
 
 class Developmentenvironment(object):
@@ -12,7 +14,7 @@ class Developmentenvironment(object):
     def prepare(*args, **kwargs):
         pass
 
-    def begin():
+    def begin(self):
         # how this should look later:
         #AmbientLight(color=(0.6, 0.6, 0.8))
         ambient = AmbientLight("ambient light")
@@ -34,7 +36,7 @@ class Developmentenvironment(object):
         griffin.physics.thrust = 1
 
         view = views.PlaneCamera(griffin)
-        control = controls.PlaneControl(griffin)
+        control = controls.PlaneFlight(griffin)
 
 
         # inline helper functions
