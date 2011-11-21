@@ -51,7 +51,7 @@ class Azure(ShowBase):
         self.core = Core()
         if (options.scenario):
             # Scenario was specified at command line.
-            self.core.demandLoading(options.scenario)
+            self.core.demand("Loading", options.scenario)
         else:
             self.core.demand("Menu", "MainMenu")
 
