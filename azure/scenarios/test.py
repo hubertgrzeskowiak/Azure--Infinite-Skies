@@ -19,13 +19,13 @@ class Developmentenvironment(object):
         # how this should look later:
         #AmbientLight(color=(0.6, 0.6, 0.8))
         ambient = AmbientLight("ambient light")
-        ambient.setColor(Vec4(0.6, 0.6, 0.8, 1))
+        ambient.setColor(Vec4(1.6, 1.6, 1.8, 1))
         ambient_np = NodePath(ambient)
         ambient_np.reparentTo(render)
         render.setLight(ambient_np)
 
         sunlight = DirectionalLight("sun")
-        sunlight.setColor(Vec4(1.0, 0.9, 0.8, 1))
+        sunlight.setColor(Vec4(2.0, 1.9, 1.6, 1))
         sunlight_np = NodePath(sunlight)
         render.setLight(sunlight_np)
 
