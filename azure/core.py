@@ -29,6 +29,8 @@ class Core(FSM):
         self.loading = OnscreenText(text="LOADING", pos=(0,0), scale=0.1,
                                align=TextNode.ACenter, fg=(1,1,1,1))
         self.preloader = scenarioPreloader(scenario)
+        base.graphicsEngine.renderFrame()
+        base.graphicsEngine.renderFrame()
         self.preloader.preloadFast()  # depends on the loading screen
         # Other preloader methods would specify a callback that calls
         # self.demand(scenario), but preloadFast() is executed in one frame, so
