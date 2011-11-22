@@ -1,5 +1,15 @@
 """Utilities which don't suit into any other module."""
 
+def sign(number):
+    """Return the signature of a number. -1, 0 or 1 for negative, 0 and
+    positive numbers respectively."""
+    if number < 0:
+        return -1
+    elif number > 0:
+        return 1
+    else:
+        return 0
+
 class ListInterpolator(object):
     """Defines an interpolated data type."""
 
