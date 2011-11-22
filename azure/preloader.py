@@ -44,12 +44,16 @@ class Preloader(DirectObject):
         # through the multiplication we save ourselves a floating point
         # division
         if self._progress_cached < 0:
-            result = self._preloaded  * 100 / len(self.models)+\
-                                              len(self.fonts)+\
-                                              len(self.sounds)+\
-                                              len(self.textures)+\
-                                              len(self.textures3d)+\
-                                              len(self.cubemaps)
+            items_len = len(self.models)+\
+                        len(self.fonts)+\
+                        len(self.sounds)+\
+                        len(self.textures)+\
+                        len(self.textures3d)+\
+                        len(self.cubemaps)
+            if items_len != 0:
+                result = self._preloaded  * 100 / items_len
+            else:
+                result = 0
             self._progress_cached = result
             return result
         else:
@@ -61,21 +65,25 @@ class Preloader(DirectObject):
         (range 0.0 - 1.0). This is slightly slower than the upper function.
         """
         if self._progress_f_cached < 0:
-            result = self._preloaded / float(len(self.models)+\
-                                             len(self.fonts)+\
-                                             len(self.sounds)+\
-                                             len(self.textures)+\
-                                             len(self.textures3d)+\
-                                             len(self.cubemaps)
-                                             )
+            items_len = len(self.models)+\
+                        len(self.fonts)+\
+                        len(self.sounds)+\
+                        len(self.textures)+\
+                        len(self.textures3d)+\
+                        len(self.cubemaps)
+            if items_len != 0:
+                result = self._preloaded / float(items_len)
+            else:
+                result = 0.0
             self._progress_f_cached = result
             return result
         else:
             return self._progress_f_cached
 
     # Convenience functions.
-    def preloadFast(self):
-        """Load everything NOW."""
+    def preloadFast(self, *args):
+        """Load everything in one frame. This uses doMethodLater for loading in
+        next frame, so wen can show a loading screen in the meanwhile."""
         return self.preload(async=False, atonce=True)
 
     def preloadPerFrame(self):
@@ -116,7 +124,7 @@ class Preloader(DirectObject):
         """
         # TODO: preload not only models, but also other assets
 
-        if self.loadingprogress == 1:
+        if self.progress == 1:
             if force:
                 self._preloaded = 0
             else:
