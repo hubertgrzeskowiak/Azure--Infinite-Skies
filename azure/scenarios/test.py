@@ -4,6 +4,7 @@ from azure import controls
 from pandac.PandaModules import *
 from azure.aircrafts import Aeroplane
 from azure.scenery import Sky, Water
+from azure.gui import debug
 
 
 class Developmentenvironment(object):
@@ -46,14 +47,14 @@ class Developmentenvironment(object):
 
 
         # inline helper functions
-#        getSpeed = lambda: round(getattr(griffin.physics, "speed"), 1)
-#        getThrust = lambda: round(getattr(griffin.physics, "thrust"), 1)
+        getSpeed = lambda: round(griffin.physics.speed(), 1)
+        getThrust = lambda: round(getattr(griffin.physics, "thrust"), 1)
 
         # on screen debugging
-#        osd = gui.OSDebug(base.a3dTopLeft)
-#        osd.add("speed", getSpeed)
-#        osd.add("thrust", getThrust)
-#        osd = gui.OSDebug(base.a2dBottomRight)
-#        osd.add("x", lambda: int(griffin.node.getX()))
-#        osd.add("y", lambda: int(griffin.node.getY()))
-#        osd.add("z", lambda: int(griffin.node.getZ()))
+        osd = debug.OSDebug(base.a2dTopLeft)
+        osd.add("speed", getSpeed)
+        osd.add("thrust", getThrust)
+        osd = debug.OSDebug(base.a2dBottomRight)
+        osd.add("x", lambda: int(griffin.node.getX()))
+        osd.add("y", lambda: int(griffin.node.getY()))
+        osd.add("z", lambda: int(griffin.node.getZ()))
