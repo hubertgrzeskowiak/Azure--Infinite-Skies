@@ -22,7 +22,6 @@ class Indicator(object):
         color -- indvidual color for that indicator
         parent -- which corner to move to
         """
-        print "got new indicator with name: "+name+" and func: "+str(func)
         self.opts = {"fg":color, "bg":bg_color,
                      "parent":parent or base.a2dBottomRight}
         self.name = name
