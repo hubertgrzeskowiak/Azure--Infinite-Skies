@@ -13,7 +13,6 @@ from direct.actor.Actor import Actor
 from direct.task import Task
 
 from errors import *
-from utils import ListInterpolator
 from physics import AeroplanePhysics
 
 #specs = ConfigParser.SafeConfigParser()
