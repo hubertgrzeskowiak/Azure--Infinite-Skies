@@ -32,8 +32,8 @@ def handleError(error):
         sys.stderr.write(error.message)
         sys.exit(1)
     else:
-        raise ParamError("Error when raising error! Invalid value for"
-                         "handleError(): {}".format(err_action)
+        raise ParamError("Error when raising error! Invalid value for"\
+                         "handleError(): {}".format(err_action))
 
 
 class AzureError(Exception):
@@ -44,7 +44,7 @@ class ResourceLoadError(AzureError):
     """Should be thrown when a resource is improperly loaded or fails to load
     at all."""
     def __init__(self, resource="None", details="None"):
-        self.message = "Failed to load resource: {}\n"
+        self.message = "Failed to load resource: {}\n"\
                        "\tDetails: {}".format(resource, details)
         self.resource = resource
     def __str__(self):
@@ -55,7 +55,7 @@ class ResourceHandleError(AzureError):
     """Should be thrown when an attempt is made to use a resource in a way
     that was not intended."""
     def __init__(self, resource="None", details="None"):
-        self.message = "Error handling resource: {}\n "
+        self.message = "Error handling resource: {}\n "\
                        "\tDetails: {}".format(resource, details)
         self.resource = resource
     def __str__(self):
@@ -72,7 +72,7 @@ class ParamError(AzureError):
 
 class BaseMissing(AzureError):
     """ShowBase builtins are needed but not available."""
-    def __init__(self, message="Missing base or some of its builtins. "
+    def __init__(self, message="Missing base or some of its builtins. "\
                                "Are you sure ShowBase is initialized?"):
         self.message = message
     def __str__(self):
@@ -82,7 +82,7 @@ class BaseMissing(AzureError):
 class ScenarioLoadingError(AzureError):
     """A scenario was requested that is not available."""
     def __init__(self, scenario):
-        self.message = "The requested scenario {} could not "
+        self.message = "The requested scenario '{}' could not "\
                        "be found.".format(scenario)
     def __str__(self):
         return self.message
