@@ -20,6 +20,8 @@ def scenarioPreloader(scenario):
 
 
 class Preloader(DirectObject):
+    """The Preloader is used to load all types of resources (assets) all with
+    one call. For that it offers different types of loading."""
     def __init__(self, models=[], fonts=[], sounds=[], textures=[],
                  textures3d=[], cubemaps=[]):
 
