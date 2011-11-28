@@ -3,6 +3,7 @@ import types
 from direct.showbase.Messenger import Messenger
 
 from preloader import Preloader
+from errors import ScenarioLoadingError
 
 class ScenarioProxy(object):
     """Proxy for scenarios that adds a few methods and offers checks of a
@@ -16,7 +17,10 @@ class ScenarioProxy(object):
         """
         if isinstance(scenario, types.StringTypes):
             import scenarios
-            self.scenario = getattr(scenarios, scenario)()
+            try:
+                self.scenario = getattr(scenarios, scenario)()
+            except AttributeError:
+                raise ScenarioLoadingError(scenario)
         else:
             self.scenario = scenario()
         # TODO: get render-top-root here, somehow
