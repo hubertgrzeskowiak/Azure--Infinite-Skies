@@ -3,17 +3,16 @@ aircrafts."""
 
 import sys
 import os
-import ConfigParser
+#import ConfigParser
 
 from pandac.PandaModules import ClockObject
-from pandac.PandaModules import OdeBody, OdeMass, Quat
-from pandac.PandaModules import Plane, Vec3
+from pandac.PandaModules import NodePath
 from direct.showbase.DirectObject import DirectObject
 from direct.actor.Actor import Actor
 from direct.task import Task
 
-from errors import *
-from physics import AeroplanePhysics
+from azure.errors import *
+from azure.physics import AeroplanePhysics
 
 #specs = ConfigParser.SafeConfigParser()
 #specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
@@ -22,9 +21,6 @@ global_clock = ClockObject.getGlobalClock()
 
 class Aeroplane(DirectObject):
     """Standard aeroplane class."""
-
-    _plane_count = 0
-    aircrafts = None
 
     def __init__(self, name, model=None, physics=False):
         """Arguments:
@@ -45,14 +41,7 @@ class Aeroplane(DirectObject):
                     a virtual container prevents accidential replacement and
                     seperates things.
         """
-        if Aeroplane.aircrafts is None:
-            assert render
-            Aeroplane.aircrafts = render.attachNewNode("aircrafts")
-        self.id = Aeroplane._plane_count
-        Aeroplane._plane_count += 1
-
-        self.node = Aeroplane.aircrafts.attachNewNode(
-                                    "aeroplane {0} {1}".format(self.id, name))
+        self.node = NodePath("aeroplane "+name)
 
         self.name = name
         self.model = None
@@ -128,10 +117,10 @@ class Aeroplane(DirectObject):
             return 1
         self.physics = AeroplanePhysics(self.node)
         self.addTask(self._propellers,
-                     "propeller animations for plane %s" % self.id,
+                     "propeller animations",
                      taskChain="world")
         self.addTask(self._flapAnimations,
-                     "flaps animations for plane %s" % self.id)
+                     "flaps animations")
 
     def deactivatePhysics(self):
         if self.physics is None:
@@ -199,3 +188,20 @@ class Aeroplane(DirectObject):
             for p in self.propellers:
                 p.setP(p, (self.physics.thrust * delta_time * 500))
         return Task.cont
+    
+    def __str__(self):
+		return self.name    
+
+    def __repr__(self):
+		r =  "Aeroplane {}\n"
+		r += "model: {}\n"
+		r += "physics: {}\n"
+		r = r.format(self.name, self.model, self.physics)
+		return r
+
+# Test
+if __name__ == "__main__":
+    from direct.showbase.ShowBase import ShowBase
+    ShowBase()
+    a = Aeroplane("test plane", False)
+    print a.__repr__()
