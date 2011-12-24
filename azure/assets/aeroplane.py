@@ -61,7 +61,7 @@ class Aeroplane(DirectObject):
         self.physics = None
         if physics:
             self.activatePhysics();
-        
+
     def loadPlaneModel(self, modelname):
         """Loads models and animations from the planes directory."""
         animcontrols = {}
@@ -96,7 +96,6 @@ class Aeroplane(DirectObject):
                 #                                           "mid", False)[0]
                 animcontrols[anim] = actor.getAnimControls(anim, subpart,
                                                                None, False)[0]
-                
         actor.makeSubpart("propellers", "Propeller*")
         actor.verifySubpartsComplete()
         actor.setSubpartsComplete(True)
@@ -111,7 +110,7 @@ class Aeroplane(DirectObject):
             cams.reparentTo(cameras)
 
         return actor, animcontrols
-    
+
     def activatePhysics(self):
         if self.physics is not None:
             return 1
@@ -188,9 +187,9 @@ class Aeroplane(DirectObject):
             for p in self.propellers:
                 p.setP(p, (self.physics.thrust * delta_time * 500))
         return Task.cont
-    
+
     def __str__(self):
-		return self.name    
+		return self.name
 
     def __repr__(self):
 		r =  "Aeroplane {}\n"
