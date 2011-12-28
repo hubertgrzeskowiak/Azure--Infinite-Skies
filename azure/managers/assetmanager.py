@@ -32,7 +32,7 @@ class AssetManager(object):
 
         if asset in dir(assets):
             A = getattr(assets, asset)
-            a = A(name, *args, **kwargs)
+            a = A(name, self.loader, *args, **kwargs)
             self.assets.append(a)
             return len(self.assets)-1
         else:
