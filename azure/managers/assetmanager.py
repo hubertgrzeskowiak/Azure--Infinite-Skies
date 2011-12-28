@@ -50,7 +50,14 @@ class AssetManager(object):
         return result
 
     def getById(self, id):
+        """Returns one asset that is identified by id."""
         return self.assets[id]
+
+    def deleteAsset(self, id):
+        """Destroys an asset completely. It removes it from from the scene
+        graph and from this manager. The id won't be recycled."""
+        self.assets[id].destroy()
+        self.assets[id] = None
 
     def destroy(self):
         """Destroys all assets and removes the root node. This makes an
