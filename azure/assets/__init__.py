@@ -1,3 +1,4 @@
-from aircrafts import Aeroplane
+from aeroplane import Aeroplane
 from empty import Empty
+from lights import *
 
