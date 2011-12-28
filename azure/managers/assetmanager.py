@@ -6,6 +6,9 @@ class AssetManager(object):
     """An asset manager loads asset classes on demand, initializes them and
     keeps references to all of them. Main reason for this class is a central
     list of all assets depending on a context (e.g. a particular scenario).
+
+    Although the attributes are not declared as private, this class is meant to
+    be used only through its functions.
     """
     def __init__(self, root):
         """Arguments:
