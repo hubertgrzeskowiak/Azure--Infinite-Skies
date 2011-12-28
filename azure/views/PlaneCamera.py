@@ -4,7 +4,7 @@ import string
 
 from direct.fsm.FSM import FSM
 #from pandac.PandaModules import ClockObject
-from pandac.PandaModules import NodePathCollection, NodePath
+from pandac.PandaModules import NodePathCollection, NodePath, Vec3, Point3, LineSegs
 from direct.directnotify.DirectNotify import DirectNotify
 from direct.task import Task
 from direct.showbase.DirectObject import DirectObject
@@ -226,6 +226,7 @@ class PlaneCamera(FSM, DirectObject):
         """Lets the camera view the plane from far away."""
         self._hist = []
         self.camera.reparentTo(self.cameras.find("camera ThirdPerson"))
+        self.cameras.find("camera ThirdPerson").setPos(0, -30, 0)
         self.addTask(self.updateThirdPersonCam, "third person camera",
                      taskChain="world")
         #print "entering third person"
@@ -237,7 +238,27 @@ class PlaneCamera(FSM, DirectObject):
 
     def updateThirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
-        #speed = self.parent.speed()
+        speed = self.parent.physics.speed()
+        velocity = self.parent.physics.velocity()
+        #v = Point3(self.parent.physics.angVelVector())
+        v = Point3(self.parent.physics.angVelBodyHpr())
+        print round(v.getX(), 2), round(v.getY(), 2), round(v.getZ(), 2)
+
+        #self.segs = LineSegs("lines");
+        #self.segs.setColor(1,1,1,1)
+        #self.segs.drawTo(-1, 0)
+        #self.segsnode = self.segs.create()
+        #render2d.attachNewNode(self.segsnode) 
+
+        vec = Point3(self.parent.physics.angVelBodyHpr())
+        # Y hiervon ist pitch, Z ist roll
+        #print round(vec.getY(), 2), round(vec.getZ(), 2)
+        self.camera.lookAt(self.parent.node)
+        self.camera.setR(self.camera, vec.getZ()*3)
+        #self.camera.setPos(abs(v.getX()), 0,  vec.getY())
+
+        
+
         #plane = self.parent.node
         #self._hist.insert(0, [task.time, camera.getPos(plane)])
         #while len(self._hist) > 50:
