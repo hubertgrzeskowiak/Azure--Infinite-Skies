@@ -16,13 +16,14 @@ class AssetManager(object):
         self.assets = []
         self.loader = Loader()
 
-    def load(self, asset, name, *args, **kwargs):
+    def load(self, asset, name="asset", *args, **kwargs):
         """Loads an asset from the assets package and initialises it.
-        Returns the asset instance on success or raises an Exception otherwise.
+        Returns an id on success or raises an Exception otherwise.
         
         Arguments:
         asset -- a class name from the assets package
-        name -- a string that is used to identify this asset
+        name -- a string that is used to identify this asset (doesn't have to
+                be unique)
         All other arguments will be passed to the constructor of the asset.
         """
         # Alternative that would save us from the garbage in __init__.py:
@@ -33,11 +34,11 @@ class AssetManager(object):
             A = getattr(assets, asset)
             a = A(name, *args, **kwargs)
             self.assets.append(a)
-            return a
+            return len(self.assets)-1
         else:
             raise Exception("Couldn't load asset: {} {}".format(asset, name))
 
-    def get(self, name):
+    def getByName(self, name):
         """Returns a list of assets matching name."""
         result = []
         for a in self.assets:
@@ -45,13 +46,15 @@ class AssetManager(object):
                 result.append(a)
         return result
 
+    def getById(self, id):
+        return self.assets[id]
+
     def destroy(self):
         """Destroys all assets and removes the root node. This makes an
         instance of AssetManager unusable!"""
         for a in self.assets:
             a.destroy()
         self.assets = []
-        self.root.removeNode()
         self.root = None
     
     def __repr__(self):
@@ -59,3 +62,20 @@ class AssetManager(object):
         for a in self.assets:
             r+="\n\t{}   {}".format(type(a).__name__, a.name)
         return r
+
+
+# Test
+# Needs assets.empty.Empty
+if __name__ == "__main__":
+    from panda3d.core import NodePath
+
+    root = NodePath("root")
+    am = AssetManager(root)
+    id0 = am.load("Empty", "empty test asset 1")
+    id1 = am.load("Empty", "empty test asset 2")
+    assert id0 == 0 and id1 == 1
+    assert am.getById(id1).__class__.__name__ == "Empty"
+    assert am.getById(id0) == am.getByName("empty test asset 1")[0]
+    am.destroy()
+    assert len(am.assets) == 0
+    assert root.getChildren().getNumPaths() == 0
