@@ -20,8 +20,8 @@ class AssetManager(object):
         self.loader = Loader()
 
     def load(self, asset, name="asset", *args, **kwargs):
-        """Loads an asset from the assets package and initialises it.
-        Returns an id on success or raises an Exception otherwise.
+        """Load an asset from the assets package and initialise it.
+        Return an id on success or raises an Exception otherwise.
         
         Arguments:
         asset -- a class name from the assets package
@@ -42,7 +42,7 @@ class AssetManager(object):
             raise Exception("Couldn't load asset: {} {}".format(asset, name))
 
     def getByName(self, name):
-        """Returns a list of assets matching name."""
+        """Return a list of assets matching name."""
         result = []
         for a in self.assets:
             if a.name == name:
@@ -50,17 +50,17 @@ class AssetManager(object):
         return result
 
     def getById(self, id):
-        """Returns one asset that is identified by id."""
+        """Return one asset that is identified by id."""
         return self.assets[id]
 
     def deleteAsset(self, id):
-        """Destroys an asset completely. It removes it from from the scene
+        """Destroy an asset completely. Remove it from from the scene
         graph and from this manager. The id won't be recycled."""
         self.assets[id].destroy()
         self.assets[id] = None
 
     def destroy(self):
-        """Destroys all assets and removes the root node. This makes an
+        """Destroy all assets and removes the root node. This makes an
         instance of AssetManager unusable!"""
         for a in self.assets:
             a.destroy()
