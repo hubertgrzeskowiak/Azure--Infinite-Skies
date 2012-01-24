@@ -1,3 +1,8 @@
+# IDEA: We could set up a second camera and give that to a second view
+# on transition. This of course only makes sense where we need a transition
+# with both views at the same time. The second camera with its buffer would be
+# deleted right after the transition finished.
+
 from direct.fsm import FSM
 
 from azure import views
@@ -15,7 +20,6 @@ class ViewManager(FSM):
         camera -- NodePath to the camera used
         """
         # TODO: Set up a log notifier
-        # TODO: make this a finite state machine
         FSM.__init__(self, "view manager")
         self.camera = camera
         self.view = None
