@@ -1,4 +1,3 @@
-"""Base class of all control states."""
 # TODO: declare private attributes and outsource some functions
 class ControlState(DirectObject):
     """Specific control state classes should inherit from this."""
