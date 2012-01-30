@@ -5,6 +5,9 @@ manager."""
 import sys
 import os
 
+# Set Python Path to the directory this file lies in
+sys.path[0] = os.path.dirname(os.path.abspath(__file__))
+
 try:
     import panda3d
 except ImportError:
