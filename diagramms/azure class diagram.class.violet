@@ -19,31 +19,21 @@
         <void method="set">
          <object idref="Point2D$Double0">
           <void method="setLocation">
-           <double>436.38477631085027</double>
-           <double>72.0</double>
+           <double>443.38477631085027</double>
+           <double>73.0</double>
           </void>
          </object>
-         <double>72.0</double>
+         <double>73.0</double>
         </void>
        </void>
       </object>
-      <double>436.38477631085027</double>
+      <double>443.38477631085027</double>
      </void>
     </void>
    </object>
   </void>
   <void method="addNode">
    <object class="com.horstmann.violet.ClassNode" id="ClassNode1">
-    <void property="methods">
-     <void property="text">
-      <string>request(state, *args)
-demand(state, *args)
-enterScenario(scenario)
-exitScenario()
-enterMenu(menu)
-exitMenu()</string>
-     </void>
-    </void>
     <void property="name">
      <void property="text">
       <string>Core</string>
@@ -60,15 +50,15 @@ exitMenu()</string>
         <void method="set">
          <object idref="Point2D$Double1">
           <void method="setLocation">
-           <double>400.0</double>
-           <double>187.0</double>
+           <double>441.0</double>
+           <double>247.0</double>
           </void>
          </object>
-         <double>187.0</double>
+         <double>247.0</double>
         </void>
        </void>
       </object>
-      <double>400.0</double>
+      <double>441.0</double>
      </void>
     </void>
    </object>
@@ -116,10 +106,12 @@ exitMenu()</string>
     </void>
     <void property="text">
      <void property="text">
-      <string>The core FSM knows two states:
-world - 3d game driven by scenarios
-menu - 2d main menu
-</string>
+      <string>The core FSM knows the
+following states:
+scenario - 3d game
+menu - 2d menu
+loading - a screen that
+  indicates a translation</string>
      </void>
     </void>
    </object>
@@ -133,15 +125,15 @@ menu - 2d main menu
         <void method="set">
          <object idref="Point2D$Double3">
           <void method="setLocation">
-           <double>151.4942977194325</double>
-           <double>189.93834698396748</double>
+           <double>272.4942977194325</double>
+           <double>165.93834698396748</double>
           </void>
          </object>
-         <double>189.93834698396748</double>
+         <double>165.93834698396748</double>
         </void>
        </void>
       </object>
-      <double>151.4942977194325</double>
+      <double>272.4942977194325</double>
      </void>
     </void>
    </object>
@@ -164,15 +156,15 @@ menu - 2d main menu
         <void method="set">
          <object idref="Point2D$Double4">
           <void method="setLocation">
-           <double>148.41421356237308</double>
-           <double>261.72287142747444</double>
+           <double>67.41421356237308</double>
+           <double>247.72287142747444</double>
           </void>
          </object>
-         <double>261.72287142747444</double>
+         <double>247.72287142747444</double>
         </void>
        </void>
       </object>
-      <double>148.41421356237308</double>
+      <double>67.41421356237308</double>
      </void>
     </void>
    </object>
@@ -180,7 +172,12 @@ menu - 2d main menu
   <void method="addNode">
    <object class="com.horstmann.violet.NoteNode">
     <void property="color">
-     <object idref="Color0"/>
+     <object class="java.awt.Color" id="Color1">
+      <int>255</int>
+      <int>250</int>
+      <int>205</int>
+      <int>255</int>
+     </object>
     </void>
     <void property="text">
      <void property="text">
@@ -613,7 +610,7 @@ deactivate()</string>
   <void method="addNode">
    <object class="com.horstmann.violet.NoteNode">
     <void property="color">
-     <object idref="Color0"/>
+     <object idref="Color1"/>
     </void>
     <void property="text">
      <void property="text">
@@ -1016,7 +1013,7 @@ scenarios.</string>
   <void method="addNode">
    <object class="com.horstmann.violet.NoteNode">
     <void property="color">
-     <object class="java.awt.Color" id="Color1">
+     <object class="java.awt.Color">
       <int>255</int>
       <int>250</int>
       <int>205</int>
@@ -1200,14 +1197,14 @@ all over the place.</string>
   <void method="addNode">
    <object class="com.horstmann.violet.NoteNode">
     <void property="color">
-     <object idref="Color1"/>
+     <object idref="Color0"/>
     </void>
     <void property="text">
      <void property="text">
       <string>Assets stand for real or abstract
 objects from a scene (or a scene itself).
 They inherit either from AssetBase or
-ManagedAsset.</string>
+ManagedAsset (Borg).</string>
      </void>
     </void>
    </object>
@@ -1901,7 +1898,7 @@ Everything that only needs the 2d layer.</string>
   <void method="addNode">
    <object class="com.horstmann.violet.NoteNode">
     <void property="color">
-     <object idref="Color2"/>
+     <object idref="Color0"/>
     </void>
     <void property="text">
      <void property="text">
