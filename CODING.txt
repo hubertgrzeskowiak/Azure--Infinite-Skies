@@ -1,0 +1,90 @@
+Coding Guide for Azure: Infinite Skies
+======================================
+
+1. Terminology
+
+	Scenario
+	--------
+	A scenario is a recipe for a part of the game. Most often it's bound to
+	a certain gameplay or place.
+
+	Resource
+	--------
+	A resource is a file that is used and in most cases doesn't use anything
+	by itself. Typical resources are 3d models, textures or sound files.
+
+	Asset
+	-----
+	An asset in this context is a class that is responsible for an entity in
+	the scene. This might be a house, a car or a particular human. We try
+	to make asset classes as harmless as possible. That means they don't
+	operate on the main scene graph, but only on a small branch. Also
+	they don't add any tasks or the like. All assets do is loading resources,
+	keeping states for assets and serving their behavior to actual controllers.
+
+	View
+	----
+	A view is generally speaking a type of camera handling and movement.
+	View classes control how the camera behaves based on some inputs from
+	outside, e.g. player input or asset attributes.
+
+	Control State
+	-------------
+	All time in game we have many different states in terms of gameplay.
+	E.g. when we begin, we see an intro and afterwards we can control the
+	action. That are at least two states, if not more. There also can be
+	multiple states that all match at once.
+	A Control State in sense of code is an input handler for one specific
+	state. It defines which keys to catch and what actions to invoke after
+	occurance. Many control states can be active at the same time, but you
+	have to be aware of occasional key mappings overlapping.
+	
+2. Commonly used patterns
+
+	FSM
+	---
+	A "Finite State Machine" is a class that manages a few states of which only
+	one is allowed to be active at a time. It also allows complex transition
+	choices based on certain aspects.
+	It can help translate relative functions into concrete ones.
+	E.g.: requestRight() would activate "North" if the previous state was "West".
+
+	Manager
+	-------
+	A Manager usually is an aggregation of objects. You can add and delete
+	objects as if it was a list, which, strictly speaking, most managers use
+	internally.	Main reason for managers over lists is context sensitiveness,
+	access restriction and debugging possibilities.
+	A manager alternatively can be a FSM in some cases (e.g. ViewManager).
+
+	Base Class
+	----------
+	This is kind of an interface known from Java and other computer languages.
+	It serves two purposes: for the developers intending to write a specific part
+	that should interact with the rest of the application (e.g. an Asset), and
+	for the application, on the other side, as a collection of fallbacks.
+
+3. Commonly used names
+
+	destroy()
+	---------
+	This method does not only clean up after an object, but it
+	radically destroys it so it frees all ressources but can't be used again.
+
+	cleanup()
+	---------
+	This method cleans up an object so that it looses its states/values.
+	After calling this method you have a clean object that looks as if it would
+	have been just created. Keep in mind that the object still might be referenced
+	from outside.
+
+4. Code architecture
+
+	Universal Packages
+	------------------
+	Classes from packages assets, views, controls and gui get a base class each.
+	That base class is a kind of interface. It consists of comments, defaults and
+	functions that most probably need to be overridden.
+	Assets, Views etc. are all considered weak classes, which depend on objects
+	from outside. They have little to nothing to do by themselves, but define
+	attribute values that are read by another classes.
