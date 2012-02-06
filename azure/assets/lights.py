@@ -1,40 +1,30 @@
-"""Easy access to proper lighting."""
+from panda3d.core import AmbientLight as AL, DirectionalLight as DL
+from panda3d.core import Vec3, Vec4
+from panda3d.core import NodePath
 
-class Light(object):
-    """Genral class for all lights to inherit from."""
-    def __init__(self):
-        if Light.lights is None:
-            assert render
-            Light.render.attachNewNode("Lights")
+from assetbase import AssetBase
 
-    def destroy():
-        self.node.removeNode()
-
-
-class Ambient(Light):
-    id  = 0
-    def __init__(self, color=Vec4(0.6, 0.6, 0.8, 1))
-        Light.__init__(self)
-        self.light = AmbientLight("ambient light " + Ambient.id)
-        Ambient.id += 1
+class AmbientLight(AssetBase):
+    def __init__(self, color=Vec4(0.6, 0.6, 0.8, 1)):
+        self.light = AL("ambient light")
         self.light.setColor(color)
-        self.node = Light.lights.attachNewNode(self.light)
-        render.setLight(self.light)
+        self.node = NodePath(self.light)
 
+class DirectionalLight(AssetBase):
+    def __init__(self, color=Vec4(1,1,1,1)):
+        self.light = DL("directional light")
+        self.light.setColor(color)
+        self.node = NodePath(self.light)
 
-class Directional(Light):
-    id = 0
-    def __init__(self, color=Vec4(1,1,1,1), hpr=Vec3(0,0,0)):
-        Light.__init__(self)
-        self.light = DirectionalLight("directional light " + Directional.id)
-        Directional.id += 1
-        self.light.setHpr(hpr)
-        self.node = Light.lights.attachNewNode(self.light)
-        render.setLight(self.light)
-
-
-class DefaultLights(object):
+class DefaultLights(AssetBase):
     def __init__(self):
-        self.ambient = Ambient()
+        self.ambient = AmbientLight()
         self.sun = DirectionalLight()
 
+
+# Test
+if __name__ == "__main__":
+    a = AmbientLight()
+    print a
+    d = DirectionalLight()
+    print d
