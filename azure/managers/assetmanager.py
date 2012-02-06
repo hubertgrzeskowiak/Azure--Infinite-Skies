@@ -19,7 +19,7 @@ class AssetManager(object):
         self.assets = []
         self.loader = Loader()
 
-    def load(self, asset, name="asset", *args, **kwargs):
+    def add(self, asset, name="asset", *args, **kwargs):
         """Load an asset from the assets package and initialise it.
         Return an id on success or raises an Exception otherwise.
         
@@ -29,29 +29,30 @@ class AssetManager(object):
                 be unique)
         All other arguments will be passed to the constructor of the asset.
         """
-        # Alternative that would save us from the garbage in __init__.py:
+        # Alternative that would save us from the garbage in assets/__init__.py:
         # asset_module = __import__(asset.lower(), fromlist=["assets"])
         # getattr(asset_module, asset)
 
-        if asset in dir(assets):
-            A = getattr(assets, asset)
-            a = A(name, self.loader, *args, **kwargs)
-            self.assets.append(a)
-            return len(self.assets)-1
-        else:
-            raise Exception("Couldn't load asset: {} {}".format(asset, name))
+        if asset not in dir(assets):
+            raise ResourceLoadError(asset, name)
+
+        cls = getattr(assets, asset)
+        obj = cls(name, self.loader, *args, **kwargs)
+        obj.node.reparentTo(self.root)
+        self.assets.append(obj)
+        return len(self.assets)-1
 
     def getByName(self, name):
         """Return a list of assets matching name."""
-        result = []
-        for a in self.assets:
-            if a.name == name:
-                result.append(a)
-        return result
+        return [a for a in self.assets if a.name == name]
 
     def getById(self, id):
         """Return one asset that is identified by id."""
         return self.assets[id]
+
+    def getLast(self):
+        """Return the most recently added asset."""
+        return self.assets[len(self.assets-1)]
 
     def deleteAsset(self, id):
         """Destroy an asset completely. Remove it from from the scene
@@ -81,8 +82,8 @@ if __name__ == "__main__":
 
     root = NodePath("root")
     am = AssetManager(root)
-    id0 = am.load("Empty", "empty test asset 1")
-    id1 = am.load("Empty", "empty test asset 2")
+    id0 = am.add("Empty", "empty test asset 1")
+    id1 = am.add("Empty", "empty test asset 2")
     assert id0 == 0 and id1 == 1
     assert am.getById(id1).__class__.__name__ == "Empty"
     assert am.getById(id0) == am.getByName("empty test asset 1")[0]
