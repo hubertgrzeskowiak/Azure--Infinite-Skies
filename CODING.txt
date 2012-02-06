@@ -71,7 +71,7 @@ Coding Guide for Azure: Infinite Skies
 	This method does not only clean up after an object, but it
 	radically destroys it so it frees all ressources but can't be used again.
 
-	cleanup()
+	reset()
 	---------
 	This method cleans up an object so that it looses its states/values.
 	After calling this method you have a clean object that looks as if it would
