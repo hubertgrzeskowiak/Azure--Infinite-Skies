@@ -1,12 +1,3 @@
-from azure import views
-from azure import controls
-#from azure import gui
-from pandac.PandaModules import *
-from azure.aircrafts import Aeroplane
-from azure.scenery import Sky, Water
-from azure.gui import debug
-
-
 class Developmentenvironment(object):
     def __init__(self):
         name = "Development Environment"
@@ -16,34 +7,25 @@ class Developmentenvironment(object):
     def prepare(*args, **kwargs):
         pass
 
-    def begin(self):
-        # how this should look later:
-        #AmbientLight(color=(0.6, 0.6, 0.8))
-        ambient = AmbientLight("ambient light")
-        ambient.setColor(Vec4(1.6, 1.6, 1.8, 1))
-        ambient_np = NodePath(ambient)
-        ambient_np.reparentTo(render)
-        render.setLight(ambient_np)
+    def begin(self, managers):
+        m = managers
 
-        sunlight = DirectionalLight("sun")
-        sunlight.setColor(Vec4(2.0, 1.9, 1.6, 1))
-        sunlight_np = NodePath(sunlight)
-        render.setLight(sunlight_np)
+        m.assets.add("AmbientLight", color=(1.6, 1.6, 1.8, 1))
+        m.assets.add("DirectionalLight", color=(2.0, 1.9, 1.6, 1))
+        m.assets.add("Sky", "bluesky")
+        m.assets.add("Water")
 
-        Sky("bluesky")
-        Water()
-
-
-        griffin = Aeroplane("griffin", "griffin", True)
+        m.assets.add("Aeroplane", "griffin", name="Griffin")
+        griffin = m.assets.getLast()
         griffin.node.setZ(10)
-        # how this should look later:
-        #griffin.physics.velocity = Vec3(0, 300, 0)
-        griffin.physics.setVelocity(Vec3(0, 300, 0))
-        griffin.physics.thrust = 1
+        griffin.physics.setVelocity(0, 300, 0)
+        griffin.physics.setThrust(1)
 
-        view = views.PlaneCamera(griffin)
-        control = controls.PlaneFlight(griffin, view)
-        control.activate()
+        m.views.activate("PlaneFlight", griffin)
+        m.controls.activate("PlaneFlight", griffin, m.views.getLast())
+        # alternative syntax:
+        #pf = m.controls.add("PlaneFlight", griffin)
+        #m.controls.activate(pf)
 
 
         # inline helper functions
