@@ -14,29 +14,27 @@ from errors import *
 from aircrafts import Aeroplane
 
 
-class PlaneCamera(FSM, DirectObject):
+class PlaneView(FSM, DirectObject):
     """Give this class a plane as argument and it will create
     some nodes around it which you can parent the camera to (if there are no
-    such nodes yet). Keep in mind, that it only uses base.camera the whole
-    time - no other cams are involved.
+    such nodes yet).
 
     Usage:
-    plane_camera = PlaneCamera(aeroplane)
+    plane_camera = PlaneCamera(aeroplane, camera)
     plane_camera.setView("ThirdPerson")
     plane_camera.setView("Next")
     """
-    def __init__(self, parent):
+    def __init__(self, parent, camera):
         """Arguments:
         parent -- Aeroplane which the camera should follow
+        camera -- Camera to be used
         """
 
-        # Used for debugging. Verbosity is set in config file.
-        # Usually this is called self.notify, but in this case it would
-        # override FSM's own.
         self.notifier = DirectNotify().newCategory("azure-camera")
+        self.camera = camera
         self.parent = parent
-        # Replaced by a NodePath with all available cameras as children and
-        # plane node as parent.
+        # This gets replaced by a NodePath with all available cameras as
+        # children and plane node as parent in createCamNodes()
         self.cameras = None
 
         #if parent.__class__.__name__ is not "Aeroplane":
@@ -46,11 +44,6 @@ class PlaneCamera(FSM, DirectObject):
 
         FSM.__init__(self, "PlaneCamera: %s" % self.parent.name)
         DirectObject.__init__(self)
-
-        try:
-            self.camera = base.camera
-        except:
-            raise BaseMissing
 
         self.cameras = self.parent.node.find("cameras")
         if self.cameras.isEmpty():
@@ -179,7 +172,6 @@ class PlaneCamera(FSM, DirectObject):
         
         # Depending on airplane.
         if not self.cameras.find("camera " + request).isEmpty():
-            # TODO(Nemesis13, 26.10.09): add some nice camera transition
             return (request,) + args
         assert self.notifier.info("Sorry, no %s camera found." % request)
         return None
@@ -195,10 +187,12 @@ class PlaneCamera(FSM, DirectObject):
         self.camera.reparentTo(self.sideview_cam)
         self.camera.setY(-30)
         self.sideview_cam.setH(self.sideview_direction)
-        self.addTask(self.updateSideview, "sideview camera", taskChain="world")
+        #self.addTask(self.updateSideview, "sideview camera", taskChain="world")
+        self.task = self.updateSidevew
 
     def exitSideview(self, *args):
-        self.removeTask("sideview camera")
+        #self.removeTask("sideview camera")
+        self.task = lambda x: Task.cont
 
     def updateSideview(self, task):
         self.sideview_cam.setPos(self.parent.node.getPos())
@@ -208,11 +202,13 @@ class PlaneCamera(FSM, DirectObject):
         """Lets the camera view the plane from far away."""
         self.camera.reparentTo(render)
         self.camera.setPosHpr(0, 0, 10, 0, 0, 0)
-        self.addTask(self.updateDetachedCam, "detached camera",
-                     taskChain="world")
+        #self.addTask(self.updateDetachedCam, "detached camera",
+        #             taskChain="world")
+        self.task = self.updateDetachedCam
 
     def exitDetached(self, *args):
-        self.removeTask("detached camera")
+        #self.removeTask("detached camera")
+        self.task = lambda x: Task.cont
 
     def updateDetachedCam(self, task):
         """Updates camera position and rotation for Detached camera."""
@@ -228,14 +224,15 @@ class PlaneCamera(FSM, DirectObject):
         self._hist = []
         self.camera.reparentTo(self.cameras.find("camera ThirdPerson"))
         self.cameras.find("camera ThirdPerson").setPos(0, -30, 0)
-        self.addTask(self.updateThirdPersonCam, "third person camera",
-                     taskChain="world")
+        #self.addTask(self.updateThirdPersonCam, "third person camera",
+        #             taskChain="world")
+        self.task = self.updateThirdPersonCam
         #print "entering third person"
 
     def exitThirdPerson(self, *args):
-        self.removeTask("third person camera")
+        #self.removeTask("third person camera")
+        self.task = lambda x: Task.cont
         del self._hist
-        #print "third person exited"
 
     def updateThirdPersonCam(self, task):
         """Updates camera position and rotation for ThirdPerson camera."""
@@ -280,6 +277,9 @@ class PlaneCamera(FSM, DirectObject):
 
         return Task.cont
 
+    def update(self, task):
+        return self.task(task)
+    
     def destroy(self):
         self.removeAllTasks()
         self.demand("Off")
