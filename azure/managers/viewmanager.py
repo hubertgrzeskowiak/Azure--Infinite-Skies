@@ -8,7 +8,7 @@ from direct.fsm import FSM
 from azure import views
 
 
-class ViewManager(FSM):
+class ViewManager(object):
     """A view manager holds instances of view classes that control
     cameras. There is only one active view at a time.
 
@@ -19,8 +19,6 @@ class ViewManager(FSM):
         """Arguments:
         camera -- NodePath to the camera used
         """
-        # TODO: Set up a log notifier
-        FSM.__init__(self, "view manager")
         self.camera = camera
         self.view = None
 
@@ -35,7 +33,7 @@ class ViewManager(FSM):
             self.view.destroy()
         if view in dir(views):
             V = getattr(views, view)
-            v = V(self.camera, *args, **kwargs)
+            self.view = V(self.camera, *args, **kwargs)
         else:
             raise Exception("Couldn't load view: {}".format(view))
 
@@ -50,9 +48,9 @@ class ViewManager(FSM):
         else:
             return None
 
-    def destroy(self):
+    def reset(self):
         """Destroy the active view and clean up this manager. This only resets
-        the manager to its initial state, so it's safe (but unrecommended) to
+        the manager to its initial state, so it's safe (but not recommended) to
         use it after calling this function.
         """
         self.view.destroy()
