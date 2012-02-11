@@ -20,7 +20,7 @@ fullscreen false
 # paths
 # -----
 # where to look for all models, textures, fonts etc.
-model-path $MAIN_DIR/assets
+model-path $MAIN_DIR/resources
 # OS dependent - will be determined by python. change to force
 #model-cache-dir /tmp/pandacache
 
