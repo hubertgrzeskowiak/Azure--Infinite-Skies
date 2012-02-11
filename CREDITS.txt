@@ -1,20 +1,19 @@
-Idea:
------
+Idea
+====
 Alexander Tiegel
 Hubert Grzeskowiak
 
-Development:
-------------
+Development
+===========
 Hubert Grzeskowiak
 
-Art:
-----
+Art
+===
 Hubert Grzeskowiak
 
-Special Thanks:
----------------
-Gary Martin for great chats and the airplane physics integration
-Reinier De Bois aka rdb for great support and his work on Panda3D
-s4msung - for Trac hosting and chat
+Special Thanks
+==============
+rdb and drwr for great support and their work on Panda3D
+garym for great chats and coding support
 sourceforge.net and tuxfamily.org - for hosting
 cgtextures.com - for super, free textures
