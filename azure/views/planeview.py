@@ -10,8 +10,8 @@ from direct.directnotify.DirectNotify import DirectNotify
 from direct.task import Task
 from direct.showbase.DirectObject import DirectObject
 
-from errors import *
-from aircrafts import Aeroplane
+from azure.errors import *
+from azure.assets import Aeroplane
 
 
 class PlaneView(FSM, DirectObject):
@@ -24,10 +24,10 @@ class PlaneView(FSM, DirectObject):
     plane_camera.setView("ThirdPerson")
     plane_camera.setView("Next")
     """
-    def __init__(self, parent, camera):
+    def __init__(self, camera, parent):
         """Arguments:
-        parent -- Aeroplane which the camera should follow
         camera -- Camera to be used
+        parent -- Aeroplane which the camera should follow
         """
 
         self.notifier = DirectNotify().newCategory("azure-camera")
@@ -188,7 +188,7 @@ class PlaneView(FSM, DirectObject):
         self.camera.setY(-30)
         self.sideview_cam.setH(self.sideview_direction)
         #self.addTask(self.updateSideview, "sideview camera", taskChain="world")
-        self.task = self.updateSidevew
+        self.task = self.updateSideview
 
     def exitSideview(self, *args):
         #self.removeTask("sideview camera")
