@@ -1,9 +1,12 @@
 import types
 
-from direct.showbase.Messenger import Messenger
-
+from azure.managers import AssetManager, ViewManager, ControlManager
 from preloader import Preloader
 from errors import ScenarioLoadingError
+
+class Managers(object):
+    """Dummy class we attach managers to."""
+    pass
 
 class ScenarioProxy(object):
     """Proxy for scenarios that adds a few methods and offers checks of a
@@ -13,7 +16,7 @@ class ScenarioProxy(object):
     def __init__(self, scenario):
         """Arguments:
         scenario -- a string that maps to a class name in the scenarios
-                    directory or class
+                    directory, or a class object
         """
         if isinstance(scenario, types.StringTypes):
             import scenarios
@@ -23,17 +26,17 @@ class ScenarioProxy(object):
                 raise ScenarioLoadingError(scenario)
         else:
             self.scenario = scenario()
-        # TODO: get render-top-root here, somehow
-        #self.root = root
-        #self.assetloader = AssetLoader(self.root)
-        #self.messenger = Messenger()
-        # TODO: task manager?
-        #self.taskmanager = ...?
+        self.root = render.attachNewNode("scenario "+self.scenario.name)
+
+        self.managers = Managers()
+        self.managers.assets = AssetManager(self.root)
+        self.managers.views = ViewManager(base.camera)
+        self.managers.controls = ControlManager()
+        # more to come
 
     def begin(self):
-        #self.scenario.begin(self.assetloader, self.messenger)
-        self.scenario.begin()
+        self.scenario.begin(self.managers)
 
     def destroy(self):
-        pass
-        # TODO.....
+        for m in self.managers:
+            m.destroy()
