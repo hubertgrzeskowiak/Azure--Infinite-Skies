@@ -1,3 +1,10 @@
+from ConfigParser import SafeConfigParser, NoSectionError
+
+from direct.showbase.DirectObject import DirectObject
+from panda3d.core import Filename
+from panda3d.core import ExecutionEnvironment as EE
+from direct.directnotify.DirectNotify import DirectNotify
+
 # TODO: declare private attributes and outsource some functions
 class ControlState(DirectObject):
     """Specific control state classes should inherit from this."""
@@ -15,6 +22,9 @@ class ControlState(DirectObject):
         self.name = self.__class__.__name__
         self.paused = False
         self.active = False
+        self.keymap = {}
+        self.functionmap = {}
+        self.requested_actions = set()
 
     def __repr__(self):
         t = "ControlState: " + self.name
@@ -43,13 +53,14 @@ class ControlState(DirectObject):
                         for k in map(str.strip, key.split(',')):
                             self.keymap[a] = k
         except NoSectionError:
-            notify.warning("".join("Keybindings for section {0} not found. ",
-                                  "Using built-in bindings").format(self.name))
+            #notify.warning("".join("Keybindings for section {0} not found. ",
+            #                      "Using built-in bindings").format(self.name))
+            pass
 
     def activate(self):
         if self.active is True:
             return False
-        notify.info("Activating %s" % self.name)
+        #notify.info("Activating %s" % self.name)
 
         def assignKey(key, action):
             self.accept(key, self.requested_actions.add, [action])
@@ -73,16 +84,16 @@ class ControlState(DirectObject):
                 self.addTask(*task, taskChain="world")
 
         self.active = True
-        ControlState.active_states.append(self)
+        #ControlState.active_states.append(self)
 
     def deactivate(self):
         if self.active is False:
             return False
-        notify.info("Deactivating %s" % self.name)
+        #notify.info("Deactivating %s" % self.name)
         self.ignoreAll()
         self.requested_actions.clear()
         #for task in self.tasks:
         #    self.removeTask(task)
         #self.removeAllTasks()
         self.active = False
-        ControlState.active_states.remove(self)
+        #ControlState.active_states.remove(self)

@@ -1,4 +1,5 @@
 from direct.task import Task
+from controlstate import ControlState
 
 class PlaneFlight(ControlState):
     """A control state for flying a plane."""

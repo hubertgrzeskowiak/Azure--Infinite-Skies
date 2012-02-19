@@ -1,5 +1,7 @@
 from direct.task import Task
 
+from controlstate import ControlState
+
 class Debug(ControlState):
     def __init__(self):
         ControlState.__init__(self)
