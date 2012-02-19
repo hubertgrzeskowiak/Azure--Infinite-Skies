@@ -1,6 +1,7 @@
 from panda3d.core import NodePath
+from direct.showbase.DirectObject import DirectObject
 
-class AssetBase(object):
+class AssetBase(DirectObject):
     """Classes for assets are considered proxies - mostly for models in the
     scene graph.
     """

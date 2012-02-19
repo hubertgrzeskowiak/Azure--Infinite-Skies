@@ -7,19 +7,19 @@ import os
 
 from pandac.PandaModules import ClockObject
 from pandac.PandaModules import NodePath
-from direct.showbase.DirectObject import DirectObject
 from direct.actor.Actor import Actor
 from direct.task import Task
 
 from azure.errors import *
 from azure.physics import AeroplanePhysics
+from assetbase import AssetBase
 
 #specs = ConfigParser.SafeConfigParser()
 #specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
 
 global_clock = ClockObject.getGlobalClock()
 
-class Aeroplane(DirectObject):
+class Aeroplane(AssetBase):
     """Standard aeroplane class."""
 
     def __init__(self, name, model=None, physics=False):
