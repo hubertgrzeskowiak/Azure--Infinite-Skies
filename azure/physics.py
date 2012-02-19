@@ -141,6 +141,14 @@ class AeroplanePhysics(Physical):
         elif value == "subtract" and self.thrust > 0.0:
             self.thrust -= 0.01
 
+    def setThrust(self, value):
+        if value <= 0:
+            self.thrust = 0
+        elif value >= 1:
+            self.thrust = 1
+        else:
+            self.thrust = value
+
     def getThrust(self):
         return self.thrust
 
