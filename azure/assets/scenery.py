@@ -3,7 +3,7 @@
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject
 
-from errors import *
+from azure.errors import *
 
 
 class Scenery(object):
