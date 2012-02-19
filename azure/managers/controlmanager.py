@@ -2,7 +2,7 @@
 
 from azure import controls
 
-class ControlManager(self):
+class ControlManager(object):
     def __init__(self):
         self.controlstates = []
 
@@ -11,11 +11,14 @@ class ControlManager(self):
         for c in self.controlstates:
             if c.__class__.__name__ == control and c.active:
                 c.disable()
-                print "WARNING! Disabling control state {} "
+                print "WARNING! Disabling control state {} "+\
                       "because of collision.".format(str(c))
-        self.controlstates.append(C(*args, **kwargs))
+        control = C(*args, **kwargs)
+        self.controlstates.append(control)
+        return control
 
     def activate(self, id):
+        print self.controlstates[id]
         self.controlstates[id].activate()
 
     def addAndActivate(self, control, *args, **kwargs):

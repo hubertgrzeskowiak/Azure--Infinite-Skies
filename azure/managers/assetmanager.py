@@ -1,5 +1,6 @@
 from azure import assets
 from azure.loader import Loader
+from azure.errors import ResourceLoadError
 
 
 class AssetManager(object):
@@ -37,7 +38,7 @@ class AssetManager(object):
             raise ResourceLoadError(asset, name)
 
         cls = getattr(assets, asset)
-        obj = cls(name, self.loader, *args, **kwargs)
+        obj = cls(name, *args, **kwargs)
         obj.node.reparentTo(self.root)
         self.assets.append(obj)
         return len(self.assets)-1
@@ -52,7 +53,7 @@ class AssetManager(object):
 
     def getLast(self):
         """Return the most recently added asset."""
-        return self.assets[len(self.assets-1)]
+        return self.assets[len(self.assets)-1]
 
     def deleteAsset(self, id):
         """Destroy an asset completely. Remove it from from the scene
