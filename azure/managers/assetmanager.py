@@ -20,10 +20,10 @@ class AssetManager(object):
         self.assets = []
         self.loader = Loader()
 
-    def add(self, asset, name="asset", *args, **kwargs):
+    def add(self, asset, name="asset", args=[], kwargs={}):
         """Load an asset from the assets package and initialise it.
-        Return an id on success or raises an Exception otherwise.
-        
+        Return an id on success or raise an Exception otherwise.
+
         Arguments:
         asset -- a class name from the assets package
         name -- a string that is used to identify this asset (doesn't have to
@@ -68,7 +68,7 @@ class AssetManager(object):
             a.destroy()
         self.assets = []
         self.root = None
-    
+
     def __repr__(self):
         r="AssetManager for root {}:".format(self.root)
         for a in self.assets:
