@@ -756,10 +756,10 @@ class Loader(DirectObject):
                 cb.requests[request] = True
             return cb
 
-    def unloadSfx (self, sfx):
-        if (sfx):
-            if(self.base.sfxManagerList):
-                self.base.sfxManagerList[0].uncacheSound (sfx.getName())
+#    def unloadSfx (self, sfx):
+#        if (sfx):
+#            if(self.base.sfxManagerList):
+#                self.base.sfxManagerList[0].uncacheSound (sfx.getName())
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
 ##         if nodeCount == 0:
