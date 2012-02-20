@@ -41,6 +41,7 @@ class Aeroplane(AssetBase):
                     a virtual container prevents accidential replacement and
                     seperates things.
         """
+        AssetBase.__init__(self)
         self.node = NodePath("aeroplane "+name)
 
         self.name = name

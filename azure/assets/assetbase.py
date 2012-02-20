@@ -1,6 +1,8 @@
 from panda3d.core import NodePath
 from direct.showbase.DirectObject import DirectObject
 
+__all__ = ["AssetBase"]
+
 class AssetBase(DirectObject):
     """Classes for assets are considered proxies - mostly for models in the
     scene graph.
@@ -22,6 +24,7 @@ class AssetBase(DirectObject):
         """Cleans up everyting this asset created and attached to the SG.
         Override to add more sophisticated cleanup functionality."""
         self.node.removeNode()
+        self.removeAllTasks()
 
     def __str__(self):
         return self.name
