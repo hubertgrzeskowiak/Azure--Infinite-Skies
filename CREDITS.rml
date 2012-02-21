@@ -1,0 +1,25 @@
+<h1 style="text-align:right;">Credits</h1>
+<div class="right box">
+<h2>Idea</h2>
+<ul>
+<li>Alexander Tiegel</li>
+<li>Hubert Grzeskowiak</li>
+</ul>
+
+<h2>Code</h2>
+<p>Hubert Grzeskowiak</p>
+
+<h2>Art</h2>
+<p>Hubert Grzeskowiak</p>
+</div>
+
+<div class="left box">
+<h2>Special Thanks</h2>
+<ul>
+<li>rdb and drwr for great support and their work on Panda3D</li>
+<li>garym for great chats and coding support</li>
+<li>&nbsp;</li>
+<li>sourceforge.net and tuxfamily.org - for hosting</li>
+<li>cgtextures.com - for super, free textures</li>
+</ul>
+</div>

@@ -1,0 +1,62 @@
+<rml>
+<head>
+<title>Main Menu</title>
+<link type="text/template" href="window.rml" />
+<style>
+h1 {
+    margin-top: 100px;
+    font-size: 60px;
+}
+.bar {
+    position: absolute;
+    width: 100%;
+    height: 150px;
+    /*background-color: #111;*/
+}
+.bar a {
+    padding: 20px 21px;
+    font-size: 170%;
+}
+.bar a:hover {
+    a-font-effect: outline;
+    a-color: #3af;
+    a-width: 1px;
+}
+.upper {
+    top: 0;
+    bar1-decorator: image;
+    bar1-image: menu.png 1px 0px 1px 150px;
+}
+.bottom {
+    bottom: 0;
+    bar2-decorator: image;
+    bar2-image: menu.png 3px 0px 3px 150px;
+}
+
+.bottom .center {
+    padding-top: 60px;
+}
+#logo {
+    margin-left: -400px;
+    margin-top: -200px;
+}
+</style>
+</head>
+
+<body template="window">
+<div class="upper bar">
+    <div class="center">
+        <img id="logo" src="azure_logo.png" />
+    </div>
+</div>
+<div class="bottom bar">
+    <div class="center">
+        <a href="script:adventure()">Adventure</a>
+        <a href="quick,rml">Quick Game</a>
+        <a href="options.rml">Options</a>
+        <a href="credits.rml">Credits</a>
+        <a href="script:exit()">Exit</a>
+    </div>
+</div>
+</body>
+</rml>

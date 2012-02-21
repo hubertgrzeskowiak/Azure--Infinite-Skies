@@ -1,19 +1,22 @@
-Idea
-====
-Alexander Tiegel
-Hubert Grzeskowiak
+Credits
+=======
 
-Development
-===========
+Idea
+----
+* Alexander Tiegel
+* Hubert Grzeskowiak
+
+Code
+-----------
 Hubert Grzeskowiak
 
 Art
-===
+---
 Hubert Grzeskowiak
 
 Special Thanks
-==============
-rdb and drwr for great support and their work on Panda3D
-garym for great chats and coding support
-sourceforge.net and tuxfamily.org - for hosting
-cgtextures.com - for super, free textures
+--------------
+* rdb and drwr for great support and their work on Panda3D
+* garym for great chats and coding support
+* sourceforge.net and tuxfamily.org - for hosting
+* cgtextures.com - for super, free textures

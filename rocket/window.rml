@@ -1,0 +1,47 @@
+<template name="window" content="content">
+<head>
+<link type="text/css" href="html4.rcss" />
+<script>
+
+def anchor(a):
+    """Triggered when an anchor is clicked."""
+    if a.HasAttribute("href"):
+        href = a.GetAttribute("href")
+        if href.endswith("rml"):
+            document.PushToBack()
+            document.context.LoadDocument(href).Show()
+        elif href.startswith("script:"):
+            href = href.split("script:")[1]
+            print "execute {} as code".format(href)
+
+def makeAnchors():
+    """Look up all a tags and assign them a click event."""
+    anchors = document.GetElementsByTagName("a")
+    for a in anchors:
+        a.AddEventListener("click", "anchor(self)")
+
+</script>
+<style>
+body {
+    height: 100%;
+    width: 100%;
+    font-family: linux libertine;
+    font-size: 140%;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: aranea;
+    font-weight: normal;
+}
+.center {
+    margin: auto;
+    text-align: center;
+}
+</style>
+</head>
+<body class="window" onload="makeAnchors()">
+	<div id="window">
+		<div id="content">
+		</div>
+	</div>
+</body>
+</template>
