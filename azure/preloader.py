@@ -1,9 +1,6 @@
-# TODO look at AsyncTask and PandaLoader, which seem to load everything
-
-#from panda3d.core import PandaLoader, TexturePool, FontPool
-# PandaLoader is the new ModelPool - kind of
-
 from direct.showbase.DirectObject import DirectObject
+
+from azure.loaderglobal import loader
 
 def scenarioPreloader(scenario):
     """Create a preloader and attach values from a scenario file to it, then
@@ -33,7 +30,7 @@ class Preloader(DirectObject):
         self.cubemaps = cubemaps
 
         # TODO: replace with something more object oriented and not so.. global
-        self.loader = base.loader
+        self.loader = loader
 
         self._preloaded = 0
         self._progress_cached = -1
