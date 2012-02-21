@@ -11,6 +11,7 @@ from panda3d.core import CullFaceAttrib, ClipPlaneAttrib
 from panda3d.core import RenderState
 
 from assetbase import AssetBase
+from azure.loaderglobal import loader
 
 class Water(AssetBase):
     def __init__(self, name, size=10000, resolution=1024):

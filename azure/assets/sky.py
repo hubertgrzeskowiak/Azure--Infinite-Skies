@@ -4,6 +4,7 @@ from panda3d.core import TextureStage, TexGenAttrib
 
 from azure.errors import ResourceLoadError
 from managedasset import ManagedAsset
+from azure.loaderglobal import loader
 
 class Sky(ManagedAsset):
     """A cube with a sky texture that always renders to background.

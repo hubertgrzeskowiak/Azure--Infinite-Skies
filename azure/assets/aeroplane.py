@@ -13,6 +13,7 @@ from direct.task import Task
 from azure.errors import *
 from azure.physics import AeroplanePhysics
 from assetbase import AssetBase
+from azure.loaderglobal import loader
 
 #specs = ConfigParser.SafeConfigParser()
 #specs.read(os.path.abspath(os.path.join(sys.path[0], "etc/CraftSpecs.cfg")))
