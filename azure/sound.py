@@ -1,4 +1,6 @@
-"""Audio Management."""
+"""Audio Management.
+This module is unused.
+"""
 
 # builtins like base, loader and camera are all defined in
 # direct.showbase.ShowBase.py
