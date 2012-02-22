@@ -1,0 +1,30 @@
+<template name="full_screen_modal" content="content">
+<head>
+<link type="text/template" href="default.rml" />
+<style>
+body {
+    background-color: #000c;
+}
+.middle {
+    width: 700px;
+    margin: 150px auto 0;
+}
+button.back {
+    display: block;
+    text-align: center;
+    margin: 2px auto;
+    font-size: 120%;
+    width: 4em;
+    padding: 1em;
+}
+button:hover {
+    a-font-effect: outline;
+    a-color: #3af;
+    a-width: 1px;
+}
+</style>
+</head>
+<body template="default">
+<div class="middle" id="content"></div>
+</body>
+</template>

@@ -8,15 +8,13 @@ from direct.directbase import DirectStart
 from direct.interval.IntervalGlobal import Sequence, Parallel
 
 LoadFontFace("aranea.ttf")
-LoadFontFace("DejaVuSansMono.ttf")
 LoadFontFace("LinLibertine_R.ttf")
-LoadFontFace("FreeSans.ttf")
 LoadFontFace("FreeSerif.ttf")
 
 r = RocketRegion.make('pandaRocket', base.win)
 r.setActive(1)
-#r.initDebugger()
-#r.setDebuggerVisible(1)
+r.initDebugger()
+r.setDebuggerVisible(1)
 context = r.getContext()
 
 #context.LoadDocument('data/background.rml').Show()

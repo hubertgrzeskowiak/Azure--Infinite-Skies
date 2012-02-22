@@ -1,36 +1,26 @@
 <rml>
 <head>
 <title>Credits</title>
-<link type="text/template" href="window.rml" />
+<link type="text/template" href="full_screen_modal.rml" />
 <script>
 def loadCredits():
-    text = open('../CREDITS.html').read()
+    text = open('../CREDITS.rml').read()
     credits = document.GetElementById("credits")
     credits.inner_rml = text
-    credits.style.height = str(document.context.dimensions.y - 300)+"px"
-    
+    # this could be used if scrolling (overflow: auto) worked
+    #credits.style.height = str(document.context.dimensions.y - 300)+"px"
+
 </script>
 <style>
-body {
-    background-color: #000c;
-    font-family: freeserif;
-}
 p {
     margin-top: 2px;
     margin-bottom: 2px;
 }
-#credits {
-    width: 700px;
-    margin: 150px auto 0;
-    font-size: 16px;
-}
 h1 {
-    font-size: 35px;
+    text-align: right;
     margin-bottom: 30px;
 }
 h2 {
-    font-family: linux libertine;
-    font-size: 24px;
     margin-bottom: 5px;
     margin-top: 10px;
 }
@@ -48,9 +38,10 @@ h2 {
 }
 </style>
 </head>
-<body template="window" onload="loadCredits()">
+<body template="full_screen_modal" onload="loadCredits()">
     <div id="credits">
         There should be names here, actually...
     </div>
+    <button class="back" onclick="document.Close()">Back</button>
 </body>
 </rml>

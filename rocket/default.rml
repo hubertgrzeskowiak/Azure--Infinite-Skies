@@ -1,0 +1,28 @@
+<template name="default" content="content">
+<head>
+<link type="text/css" href="html4.rcss" />
+<link type="text/css" href="default.rcss" />
+<script>
+def anchor(a):
+    """Triggered when an anchor is clicked."""
+    if a.HasAttribute("href"):
+        href = a.GetAttribute("href")
+        if href.endswith("rml"):
+            if a.HasAttribute("target") and  a.GetAttribute("target") == "modal":
+                document.PushToBack()
+                document.context.LoadDocument(href).Show()                
+            else:
+                document.context.LoadDocument(href).Show()
+                document.Close()
+
+def makeAnchors():
+    """Look up all a tags and assign them a click event."""
+    anchors = document.GetElementsByTagName("a")
+    for a in anchors:
+        a.AddEventListener("click", "anchor(self)")
+
+</script>
+</head>
+<body onload="makeAnchors()">
+</body>
+</template>

@@ -1,0 +1,12 @@
+<rml>
+<head>
+<title>Options</title>
+<link type="text/template" href="full_screen_modal.rml" />
+</head>
+<body template="full_screen_modal">
+    <div class="center">
+        Sorry, this is not yet implemented.
+    </div>
+    <button class="back" onclick="document.Close()">Back</button>
+</body>
+</rml>
