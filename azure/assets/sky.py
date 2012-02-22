@@ -22,14 +22,10 @@ class Sky(ManagedAsset):
 
         tex = None
         for ext in ("png", "jpg", "tga"):
-            #f = "skyboxes/%s/0.%s" % (resource, ext)
-            #if Filename.resolveFilename(f, getModelPath().getValue()):
-            #    tex = loader.loadCubeMap("skyboxes/%s/#.%s" % (resource, ext))
-            try:
+            f = Filename("skyboxes/{}/0.{}".format(resource, ext))
+            if f.resolveFilename(getModelPath().getValue()):
                 tex = loader.loadCubeMap("skyboxes/{}/#.{}".format(resource, ext))
                 break
-            except IOError:
-                continue
 
         if tex is None:
             raise ResourceLoadError("assets/skyboxes/%s" % resource,
