@@ -22,7 +22,8 @@ from options import options
 # untouched.
 if options.print_version:
     try:
-        print open(EE.expandString("$MAIN_DIR/VERSION")).read()
+        f = Filename(EE.expandString("$MAIN_DIR/VERSION")).toOsSpecific()
+        print open(f).read()
     except IOError:
         print "Version unknown. Can't find the VERSION file."
     sys.exit()
