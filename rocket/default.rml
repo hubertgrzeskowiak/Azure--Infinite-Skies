@@ -8,11 +8,17 @@ def anchor(a):
     if a.HasAttribute("href"):
         href = a.GetAttribute("href")
         if href.endswith("rml"):
-            if a.HasAttribute("target") and  a.GetAttribute("target") == "modal":
-                document.PushToBack()
-                document.context.LoadDocument(href).Show()                
+            # Move the cursor so that the underlying document loses focus.
+            new_doc = document.context.LoadDocument(href)
+            md = base.win.getPointer(0)
+            x = md.getX()
+            y = md.getY()
+            base.win.movePointer(0, x+1, y)
+            base.win.movePointer(0, x-1, y)
+            if a.HasAttribute("target") and a.GetAttribute("target") == "modal":
+                new_doc.Show()
             else:
-                document.context.LoadDocument(href).Show()
+                new_doc.Show()
                 document.Close()
 
 def makeAnchors():
