@@ -1,12 +1,10 @@
 from panda3d.core import CardMaker
 from panda3d.core import NodePath
 from panda3d.core import BitMask32
-from panda3d.core import Vec4, Vec3
-from panda3d.core import Point3
-from panda3d.core import VBase4
-from panda3d.core import Mat4
+from panda3d.core import Vec4, Vec3, Point3, VBase4, Mat4
 from panda3d.core import PlaneNode, Plane
 from panda3d.core import Texture, TextureStage
+from panda3d.core import TexturePool
 from panda3d.core import CullFaceAttrib, ClipPlaneAttrib
 from panda3d.core import RenderState
 
@@ -39,7 +37,7 @@ class Water(AssetBase):
         # size of one texture tile in meters
         self.tex_size = 100.0
 
-        diffuse = loader.loadTexture("textures/water.diffuse.png")
+        diffuse = TexturePool.loadTexture("textures/water.diffuse.png")
         diffuse.setWrapU(Texture.WMRepeat)
         diffuse.setWrapV(Texture.WMRepeat)
         diffuse.setMinfilter(Texture.FTLinearMipmapLinear)

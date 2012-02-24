@@ -1,6 +1,7 @@
 from panda3d.core import Filename
 from panda3d.core import getModelPath
 from panda3d.core import TextureStage, TexGenAttrib
+from panda3d.core import TexturePool
 
 from azure.errors import ResourceLoadError
 from managedasset import ManagedAsset
@@ -24,7 +25,7 @@ class Sky(ManagedAsset):
         for ext in ("png", "jpg", "tga"):
             f = Filename("skyboxes/{}/0.{}".format(resource, ext))
             if f.resolveFilename(getModelPath().getValue()):
-                tex = loader.loadCubeMap("skyboxes/{}/#.{}".format(resource, ext))
+                tex = TexturePool.loadCubeMap("skyboxes/{}/#.{}".format(resource, ext))
                 break
 
         if tex is None:
