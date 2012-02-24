@@ -31,7 +31,7 @@ if options.print_version:
 from pandac.PandaModules import loadPrcFile
 from pandac.PandaModules import Filename
 # Config file should be loaded as soon as possible.
-loadPrcFile(EE.expandString("$MAIN_DIR/etc/azure.prc"))
+loadPrcFile(Filename.expandFrom("$MAIN_DIR/etc/azure.prc"))
 from direct.showbase.ShowBase import ShowBase
 
 from core import Core
