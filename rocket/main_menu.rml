@@ -41,6 +41,10 @@ h1 {
     margin-top: -200px;
 }
 </style>
+<script>
+def adventure():
+	print "sorry, not yet implemented"
+</script>
 </head>
 
 <body template="default">

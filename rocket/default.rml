@@ -13,8 +13,8 @@ def anchor(a):
             md = base.win.getPointer(0)
             x = md.getX()
             y = md.getY()
-            base.win.movePointer(0, x+1, y)
-            base.win.movePointer(0, x-1, y)
+            base.win.movePointer(0, int(x+1), int(y))
+            base.win.movePointer(0, int(x-1), int(y))
             if a.HasAttribute("target") and a.GetAttribute("target") == "modal":
                 new_doc.Show()
             else:

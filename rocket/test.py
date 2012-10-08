@@ -17,8 +17,6 @@ r.initDebugger()
 r.setDebuggerVisible(1)
 context = r.getContext()
 
-#context.LoadDocument('data/background.rml').Show()
-
 doc = context.LoadDocument('main_menu.rml')
 doc.Show()
 
@@ -27,11 +25,10 @@ base.mouseWatcher.attachNewNode(ih)
 r.setInputHandler(ih)
 
 
-
-
 base.disableMouse()
 base.setBackgroundColor(0.4, 0.6, 0.76)
-g = loader.loadModel("../resources/planes/griffin/griffin")
+#g = loader.loadModel("../resources/planes/griffin/griffin")
+g = loader.loadModel("griffin")
 g.reparentTo(render)
 i1 = g.posInterval(1, Point3(.0,.0,0.3), startPos=Point3(.0,.0,-0.3))
 i2 = g.posInterval(1, Point3(.0,.0,-0.3), startPos=Point3(.0,.0,0.3))
